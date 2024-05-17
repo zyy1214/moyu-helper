@@ -44,7 +44,9 @@ int Date::get_weekday() const {
 // void RecordByMod::from_string(QString s) {
 
 // }
-
+Mod* RecordByMod::get_mod(){
+        return mod;
+}
 
 RecordDirect::RecordDirect(QString name, enum RECORD_TYPE type, int point, QDate date): name(name), type(type), point(point) {
     set_date(date);
