@@ -214,7 +214,7 @@ void LoginWindow::login_clicked() {
         show_warning("登录失败", "密码不能为空。");
         return;
     }
-    loginButton->setCheckable(false);
+    loginButton->setEnabled(false);
     Network *n = new Network(this, "https://geomedraw.com/qt/login"); // todo: 内存泄漏？
     n->add_data("username", usernameEdit->text());
     n->add_data("password", passwordEdit->text());
@@ -224,7 +224,7 @@ void LoginWindow::login_clicked() {
         LoginWindow *window = (LoginWindow *) w;
         if (reply == "") {
             show_warning("登录失败", "用户名或密码错误，请检查输入的信息。");
-            window->loginButton->setCheckable(true);
+            window->loginButton->setEnabled(true);
         } else {
             QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
             if (!jsonDoc.isNull()) {
@@ -240,13 +240,13 @@ void LoginWindow::login_clicked() {
                 qDebug() << "Failed to parse JSON.";
                 show_warning("网络错误", "网络连接失败。");
                 LoginWindow *window = (LoginWindow *) w;
-                window->loginButton->setCheckable(true);
+                window->loginButton->setEnabled(true);
             }
         }
     }, [=] (QMainWindow *w) {
         show_warning("网络错误", "网络连接失败。");
         LoginWindow *window = (LoginWindow *) w;
-        window->loginButton->setCheckable(true);
+        window->loginButton->setEnabled(true);
     });
 }
 
@@ -263,7 +263,7 @@ void LoginWindow::register_clicked() {
         show_warning("注册失败", "请确保两次输入的密码内容一致。");
         return;
     }
-    registerButton->setCheckable(false);
+    registerButton->setEnabled(false);
     Network *n = new Network(this, "https://geomedraw.com/qt/register"); // todo: 内存泄漏？
     //QString username = registerUsernameEdit->text();
     //QString password = registerPasswordEdit->text();
@@ -273,7 +273,7 @@ void LoginWindow::register_clicked() {
         LoginWindow *window = (LoginWindow *) w;
         if (reply != "true") {
             show_warning("注册失败", reply);
-            window->registerButton->setCheckable(true);
+            window->registerButton->setEnabled(true);
         } else {
             show_info("注册成功", "注册成功！");
             window->usernameEdit->setText(window->registerUsernameEdit->text());
@@ -283,7 +283,7 @@ void LoginWindow::register_clicked() {
     }, [=] (QMainWindow *w) {
         show_warning("网络错误", "网络连接失败。");
         LoginWindow *window = (LoginWindow *) w;
-        window->registerButton->setCheckable(true);
+        window->registerButton->setEnabled(true);
     });
 }
 
