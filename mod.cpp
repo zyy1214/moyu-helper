@@ -63,6 +63,9 @@ void Mod::change(QString a, Formula *b, enum RECORD_TYPE type){ //一个id，一
 void Mod::add_label(QString label){ //加标签
     labels.push_back(label);
 }
+std::vector<QString> get_labels(){
+    return labels;
+}
 void Mod::delete_label(QString label){ //删除标签
     auto it=find(labels.begin(), labels.end(), label);
     if(it==labels.end())
