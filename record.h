@@ -85,6 +85,7 @@ public:
     virtual enum RECORD_CLASS get_class() const {
         return BY_MOD;
     }
+    Mod* get_mod();
     virtual enum RECORD_TYPE get_type() const;
     virtual int get_point() const;
     virtual QString get_display_name() const;
