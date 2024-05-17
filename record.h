@@ -55,6 +55,9 @@ public:
     // 以下两个函数用于序列化、反序列化每种类型的 record 中存储的信息，以存入数据库中或从数据库中取出
     virtual QString to_string() const = 0;
     virtual void from_string(QString s) = 0;
+    virtual bool is_from_template() {
+        return false;
+    }
     int get_signed_point() {
         return get_type() == OBTAIN ? get_point() : -get_point();
     }
@@ -91,6 +94,9 @@ public:
     virtual QString get_display_name() const;
     virtual QString to_string() const;
     virtual void from_string(QString s);
+    virtual bool is_from_template() {
+        return true;
+    }
 };
 
 class RecordDirect: public Record {
