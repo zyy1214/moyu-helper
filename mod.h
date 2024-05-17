@@ -41,28 +41,28 @@ public:
     int id;
     enum RECORD_TYPE type = OBTAIN ;// 或者 TYPE_CONSUME; // 模板类型
     static int mod_search[200]; //搜索出的模板id
-    static int search_coun;//搜索出的个数
+    static int search_count;//搜索出的个数
     int input_num; // 代表该条记录需要几个变量
     std::vector<QString> variable; //记录变量的字符串
 
-    Mod(int mod_id, QString a, Formula *b, enum RECORD_TYPE typee);
-    void change(QString a, Formula *b, enum RECORD_TYPE typee);//更改模板
+    Mod(int mod_id, QString a, Formula *b, enum RECORD_TYPE type);
+    void change(QString a, Formula *b, enum RECORD_TYPE type);//更改模板
     void add_label(QString label); //加标签
     void delete_label(QString label); //删除标签
     bool find_label(QString label);//查找一个标签是否在这个模板里
     void delete_mod();//删除模板
-    bool isdelete();//是否被删除
+    bool is_deleted();//是否被删除
     bool search_str(QString aa); //查找一个字符串aa是否在name中
     QString print_name();//输出名字
     QString get_fun();//输出公式
 
-    static void add_mod(QString a, Formula *b, enum RECORD_TYPE typee);
-    static void change_mod(int before_mod_id, QString a, Formula *b, enum RECORD_TYPE typee, enum RECORD_TYPE change_type); //更改模板，先加再删
+    static void add_mod(QString a, Formula *b, enum RECORD_TYPE type);
+    static void change_mod(int before_mod_id, QString a, Formula *b, enum RECORD_TYPE type, enum RECORD_TYPE change_type); //更改模板，先加再删
     static void search_string(QString aa); //字符串搜索
     static void search_tag(QString aa);
     static void search(QString a, std::vector<QString> b);//a是查询的字符串，b是标签的数组
 
-    bool right_name(); //判断名字是否合法
+    bool name_legal(); //判断名字是否合法
 
 };
 extern std::vector<Mod*> mods;

@@ -122,7 +122,7 @@ public:
             //qDebug()<<"here";
             Mod* aaa=new Mod(0,text_name,&bb, button_type == 1 ? OBTAIN : CONSUME);
             //qDebug()<<"here1";
-            if(aaa->right_name())
+            if(aaa->name_legal())
             {
                 Mod::add_mod(text_name,new Formula(text_formula), button_type == 1 ? OBTAIN : CONSUME);
                 close();
@@ -238,7 +238,7 @@ public:
 
             Formula bb(text_formula);
             Mod* aaa=new Mod(0,text_name,&bb, button_type == 1 ? OBTAIN : CONSUME);
-            if(aaa->right_name())
+            if(aaa->name_legal())
             {
                 Mod::change_mod(before_id,text_name,new Formula(text_formula),
                                 button_type == 1 ? OBTAIN : CONSUME, change_type == 1 ? OBTAIN : CONSUME);
@@ -273,12 +273,12 @@ void setup_mods(Ui::ModWindow *ui) {
 
 
     //列出所有模板:
-    for (int i=1;i<=Mod::search_coun;i++) {
+    for (int i=1;i<=Mod::search_count;i++) {
         Mod* x=mods[Mod::mod_search[i]];
         //qDebug()<<x->id<<" "<<x->print_name()<<" "<<x->get_fun()<<" "<<x->input_num<<"\n";
         //for(int j=0;j<x->input_num;j++)
         //    qDebug()<<x->variable[j]<<" ";
-        if(x->isdelete())
+        if(x->is_deleted())
             continue;
         QHBoxLayout *temp=new QHBoxLayout;
 
