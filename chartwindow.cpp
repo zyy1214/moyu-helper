@@ -274,12 +274,12 @@ void MainWindow::on_select_label_currentIndexChanged(int index)
         _ui->select_mod->addItem("All");
     if(selected_command=="All"){
         for(int i = 0;i < mods.size(); i++){
-            _ui->select_mod->addItem(mods[i]->get_name());
+            _ui->select_mod->addItem(mods[i]->print_name());
         }
     }
     else{
         for(auto i = labels_to_mods[selected_command].begin();i != labels_to_mods[selected_command].end(); i++){
-            _ui->select_mod->addItem( (*i)->get_name());
+            _ui->select_mod->addItem( (*i)->print_name());
         }
     }
 
@@ -326,7 +326,7 @@ void MainWindow::on_select_mod_currentIndexChanged(int index)
         if(selected_command!="All"){
             _ui->select_type->clear();
             for(auto mr:mods){
-                if(mr->get_name()==selected_command){
+                if(mr->print_name()==selected_command){
                     if(mr->get_type()==OBTAIN)
                         _ui->select_type->addItem("Obtain");
                     else
