@@ -107,7 +107,7 @@ std::map<QDate,int> get_point_per_day(){
                 for (auto r : *(mr.second)) {
                     if(!r->is_from_template())
                         continue;
-                    if(((RecordByMod*)r)->get_mod()->get_name()!=ui->select_mod->currentText())
+                    if(((RecordByMod*)r)->get_mod()->print_name()!=ui->select_mod->currentText())
                         continue;
                     if(ui->select_type->currentText()=="All"){
                         temp_point+=r->get_signed_point();
