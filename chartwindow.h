@@ -18,7 +18,11 @@ class ChartWindow : public QMainWindow
 public:
     ChartWindow(Data *data, QWidget *parent = nullptr);
     ~ChartWindow();
-
+    void build_map();
+    bool will_build();
+    std::map<QDate,int> get_point_per_day();
+    std::map<Mod*,int> get_point_per_mod();
+    void build_graph();
     Data *data;
 
 private slots:
@@ -38,6 +42,6 @@ private slots:
     void on_date_end_userDateChanged(const QDate &date);
 
 private:
-    Ui::ChartWindow *_ui;
+    Ui::ChartWindow *ui;
 };
 #endif // CHARTWINDOW_H

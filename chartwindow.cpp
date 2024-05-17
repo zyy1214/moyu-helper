@@ -9,10 +9,10 @@
 #include <QDebug>
 int total_points = 0;
 int last_week_points = 0;
-std::map<QDate, MultipleRecord *, std::greater<QDate>> records;
+//std::map<QDate, MultipleRecord *, std::greater<QDate>> records;
 //std::vector<Mod *> mods;
 
-Ui::ChartWindow *ui;
+//Ui::ChartWindow *ui;
 void init_data() {
     // mods.push_back(new Mod({"学习"},"背单词",RECORD_TYPE::OBTAIN));
     // mods.push_back(new Mod({"学习","运动"},"打篮球",RECORD_TYPE::OBTAIN));
@@ -61,7 +61,7 @@ void init_data() {
     // }
 }
 std::map<QString,std::list<Mod *> > labels_to_mods;
-void build_map(){
+void ChartWindow::build_map(){
     labels_to_mods.clear();
     for(int i = 0;i < mods.size(); i++){
         std::vector<QString> temp_lables = mods[i]->get_labels();
@@ -72,18 +72,17 @@ void build_map(){
 }
 ChartWindow::ChartWindow(Data *data, QWidget *parent)
     : data(data), QMainWindow(parent)
-    , _ui(new Ui::ChartWindow)
+    , ui(new Ui::ChartWindow)
 {
-    ui = _ui;
     init_data();
-    _ui->setupUi(this);
-    _ui->date_end->setDate(QDate::currentDate());
+    ui->setupUi(this);
+    ui->date_end->setDate(QDate::currentDate());
     build_map();
     for(auto i = labels_to_mods.begin();i != labels_to_mods.end(); i++){
-        _ui->select_label->addItem(i->first);
+        ui->select_label->addItem(i->first);
     }
 }
-bool will_build(){
+bool ChartWindow::will_build(){
     if(ui->select_label->currentText()=="-"||ui->select_label->currentText()=="")
         return 0;
     if(ui->select_mod->currentText()=="-"||ui->select_mod->currentText()=="")
@@ -94,12 +93,12 @@ bool will_build(){
         return 0;
     return 1;
 }
-std::map<QDate,int> get_point_per_day(){
+std::map<QDate,int> ChartWindow::get_point_per_day(){
     QDate start_day=ui->date_start->date();
     QDate end_day=ui->date_end->date();
     std::map<QDate,int> point_per_day;
     if(ui->select_mod->currentText()!="All"){
-        for(auto mr: records){
+        for(auto mr: data->records){
             if(mr.first>=start_day&&mr.first<=end_day){
                 int temp_point=0;
                 bool is_changed=0;
@@ -133,7 +132,7 @@ std::map<QDate,int> get_point_per_day(){
         return point_per_day;
     }
     if(ui->select_label->currentText()=="All"){
-        for(auto mr: records){
+        for(auto mr: data->records){
             if(mr.first>=start_day&&mr.first<=end_day){
                 int temp_point=0;
                 bool is_changed=0;
@@ -161,7 +160,7 @@ std::map<QDate,int> get_point_per_day(){
         }
         return point_per_day;
     }
-    for(auto mr: records){
+    for(auto mr: data->records){
         if(mr.first>=start_day&&mr.first<=end_day){
             int temp_point=0;
             bool is_changed=0;
@@ -196,13 +195,13 @@ std::map<QDate,int> get_point_per_day(){
 }
 int else_point;
 bool have_else;
-std::map<Mod*,int> get_point_per_mod(){
+std::map<Mod*,int> ChartWindow::get_point_per_mod(){
     QDate start_day=ui->date_start->date();
     QDate end_day=ui->date_end->date();
     std::map<Mod*,int> point_per_mod;
     have_else=0;
     else_point=0;
-    for(auto mr:records){
+    for(auto mr:data->records){
         if(mr.first>=start_day&&mr.first<=end_day){
             for (auto r : *(mr.second)) {
                 if(r->get_class() != BY_MOD){
@@ -261,29 +260,29 @@ std::map<Mod*,int> get_point_per_mod(){
 }
 ChartWindow::~ChartWindow()
 {
-    delete _ui;
+    delete ui;
 }
 
 void ChartWindow::on_select_label_currentIndexChanged(int index)
 {
-    QString selected_command = _ui->select_label->itemText(index);
-    _ui->select_mod->clear();
-    _ui->select_mod->addItem("-");
+    QString selected_command = ui->select_label->itemText(index);
+    ui->select_mod->clear();
+    ui->select_mod->addItem("-");
     if(selected_command!="-")
-        _ui->select_mod->addItem("All");
+        ui->select_mod->addItem("All");
     if(selected_command=="All"){
         for(int i = 0;i < mods.size(); i++){
-            _ui->select_mod->addItem(mods[i]->get_name());
+            ui->select_mod->addItem(mods[i]->get_name());
         }
     }
     else{
         for(auto i = labels_to_mods[selected_command].begin();i != labels_to_mods[selected_command].end(); i++){
-            _ui->select_mod->addItem( (*i)->get_name());
+            ui->select_mod->addItem( (*i)->get_name());
         }
     }
 
 }
-void build_graph(){
+void ChartWindow::build_graph(){
     if(!will_build())
         return;
     if(ui->select_graph->currentText()=="Histogram"){
@@ -317,45 +316,45 @@ void build_graph(){
 
 void ChartWindow::on_select_mod_currentIndexChanged(int index)
 {
-    QString selected_command = _ui->select_mod->itemText(index);
-    _ui->select_graph->clear();
-    _ui->select_graph->addItem("-");
+    QString selected_command = ui->select_mod->itemText(index);
+    ui->select_graph->clear();
+    ui->select_graph->addItem("-");
     if(selected_command!="-"){
-        _ui->select_graph->addItem("Histogram");
+        ui->select_graph->addItem("Histogram");
         if(selected_command!="All"){
-            _ui->select_type->clear();
+            ui->select_type->clear();
             for(auto mr:mods){
                 if(mr->get_name()==selected_command){
                     if(mr->get_type()==OBTAIN)
-                        _ui->select_type->addItem("Obtain");
+                        ui->select_type->addItem("Obtain");
                     else
-                        _ui->select_type->addItem("Consume");
+                        ui->select_type->addItem("Consume");
                 }
             }
 
         }
     }
-    if(selected_command=="All"&&_ui->select_type->currentText()!="All"){
-        _ui->select_graph->addItem("Pie Chart");
+    if(selected_command=="All"&&ui->select_type->currentText()!="All"){
+        ui->select_graph->addItem("Pie Chart");
     }
     if(selected_command=="-"||selected_command=="All"){
-        _ui->select_type->clear();
-        _ui->select_type->addItem("All");
-        _ui->select_type->addItem("Obtain");
-        _ui->select_type->addItem("Consume");
+        ui->select_type->clear();
+        ui->select_type->addItem("All");
+        ui->select_type->addItem("Obtain");
+        ui->select_type->addItem("Consume");
     }
     build_graph();
 }
 
 void ChartWindow::on_select_graph_currentIndexChanged(int index)
 {
-    QString selected_command = _ui->select_graph->itemText(index);
-    _ui->select_time->clear();
-    _ui->select_time->addItem("-");
+    QString selected_command = ui->select_graph->itemText(index);
+    ui->select_time->clear();
+    ui->select_time->addItem("-");
     if(selected_command=="Histogram"){
-        _ui->select_time->addItem("Day");
-        _ui->select_time->addItem("Month");
-        _ui->select_time->addItem("Year");
+        ui->select_time->addItem("Day");
+        ui->select_time->addItem("Month");
+        ui->select_time->addItem("Year");
     }
     build_graph();
 }
@@ -363,13 +362,13 @@ void ChartWindow::on_select_graph_currentIndexChanged(int index)
 
 void ChartWindow::on_select_type_currentIndexChanged(int index)
 {
-    _ui->select_graph->clear();
-    _ui->select_graph->addItem("-");
-    if(_ui->select_mod->currentText()!="-"){
-        _ui->select_graph->addItem("Histogram");
+    ui->select_graph->clear();
+    ui->select_graph->addItem("-");
+    if(ui->select_mod->currentText()!="-"){
+        ui->select_graph->addItem("Histogram");
     }
-    if(_ui->select_mod->currentText()=="All"&&_ui->select_type->currentText()!="All"){
-        _ui->select_graph->addItem("Pie Chart");
+    if(ui->select_mod->currentText()=="All"&&ui->select_type->currentText()!="All"){
+        ui->select_graph->addItem("Pie Chart");
     }
     build_graph();
 }
