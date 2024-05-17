@@ -49,6 +49,7 @@ public:
     void change(QString a, Formula *b, enum RECORD_TYPE type);//更改模板
     void add_label(QString label); //加标签
     void delete_label(QString label); //删除标签
+    std::vector<QString> get_lables();//获取全部标签
     bool find_label(QString label);//查找一个标签是否在这个模板里
     void delete_mod();//删除模板
     bool is_deleted();//是否被删除
