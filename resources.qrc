@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/images">
+        <file alias="edit">resources/images/edit.png</file>
+        <file alias="delete">resources/images/delete.png</file>
+        <file alias="home">resources/images/home.png</file>
+        <file alias="account">resources/images/account.png</file>
+        <file alias="palette">resources/images/palette.png</file>
+        <file alias="puzzle">resources/images/puzzle.png</file>
+        <file alias="statistics">resources/images/statistics.png</file>
+        <file alias="chart">resources/images/chart.png</file>
+        <file alias="menu">resources/images/menu.png</file>
+        <file alias="plus">resources/images/plus.png</file>
+        <file alias="search">resources/images/search.png</file>
+    </qresource>
+    <qresource prefix="/fonts">
+        <file alias="icons">resources/fonts/icons.ttf</file>
+    </qresource>
+</RCC>
