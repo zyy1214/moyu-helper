@@ -31,7 +31,7 @@ std::unordered_map<QString, QString> kv_cache;
 
 void init_db_kv() {
     if (!db_kv_inited) {
-        db_kv = QSqlDatabase::addDatabase("QSQLITE", "kv");
+        db_kv = QSqlDatabase::addDatabase("QSQLITE");
         db_kv.setDatabaseName("database.db");
         if (!db_kv.open()) {
             qDebug() << "Error: Failed to connect to database:" << db_kv.lastError().text();
