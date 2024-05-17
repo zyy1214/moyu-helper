@@ -24,32 +24,7 @@
 #include <QScrollBar>
 
 void RecordWindow::init_data() {
-    //qDebug() << get_value("username") << get_value("password") << get_value("token");
     load_data(data->records);
-    // MultipleRecord *mr1 = new MultipleRecord();
-    // QDate date{2024, 5, 10};
-    // mr1->push_back(new RecordDirect("跑步5km", RECORD_TYPE::OBTAIN, 50, date));
-    // mr1->push_back(new RecordDirect("练习引体向上 20 个", RECORD_TYPE::OBTAIN, 20, date));
-    // mr1->push_back(new RecordDirect("摸鱼 1 小时", RECORD_TYPE::CONSUME, 25, date));
-    // records[date] = mr1;
-    // MultipleRecord *mr2 = new MultipleRecord;
-    // date = {2024, 5, 9};
-    // mr2->push_back(new RecordDirect("充值小月卡", RECORD_TYPE::CONSUME, 300, date));
-    // mr2->push_back(new RecordDirect("跑步10km", RECORD_TYPE::OBTAIN, 100, date));
-    // mr2->push_back(new RecordDirect("图书馆自习 2 小时", RECORD_TYPE::OBTAIN, 30, date));
-    // records[date] = mr2;
-    // MultipleRecord *mr3 = new MultipleRecord;
-    // date = {2024, 4, 30};
-    // mr3->push_back(new RecordDirect("买东西", RECORD_TYPE::CONSUME, 37, date));
-    // mr3->push_back(new RecordDirect("跑步5km", RECORD_TYPE::OBTAIN, 50, date));
-    // mr3->push_back(new RecordDirect("专注学习 3 小时", RECORD_TYPE::OBTAIN, 45, date));
-    // mr3->push_back(new RecordDirect("刷谢慧民20道题", RECORD_TYPE::OBTAIN, 50, date));
-    // records[{2024, 4, 30}] = mr3;
-    // records[{2024, 4, 29}] = mr3;
-    // records[{2024, 4, 28}] = mr3;
-    // records[{2024, 4, 27}] = mr3;
-    // records[{2024, 4, 26}] = mr3;
-    // records[{2024, 4, 25}] = mr3;
     for (auto mr : data->records) {
         for (auto r : *(mr.second)) {
             int point = r->get_signed_point();
@@ -407,10 +382,6 @@ public:
         //qDebug() << window;
         //qDebug() << "RecordItem deleted" << this;
     }
-    // void mousePressEvent(QMouseEvent *event) override {
-    //     std::cerr << "here" << std::endl;
-    //     QWidget::mousePressEvent(event);
-    // }
 };
 
 class DateItem : public QWidget {
@@ -490,139 +461,10 @@ public:
     }
 };
 
-// class RecordItemDelegate : public QStyledItemDelegate {
-// private:
-//     QPushButton *button;
-// public:
-//     RecordItemDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
-
-//     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
-//         if (index.isValid()) {
-//             std::pair<int, void *> data = *((std::pair<int, void *> *)index.data().data());
-//             if (data.first == 1) {
-//                 QDate d = *((QDate *) data.second);
-//                 DateItem widget(*((QDate *) data.second));
-//                 const QRect rect = option.rect;
-//                 widget.setGeometry(rect);
-//                 painter->save();
-//                 painter->translate(rect.topLeft());
-//                 widget.render(painter);
-//                 painter->restore();
-//             } else {
-//                 RecordItem widget(*((Record *) data.second));
-//                 const QRect rect = option.rect;
-//                 widget.setGeometry(rect);
-//                 painter->save();
-//                 painter->translate(rect.topLeft());
-//                 widget.render(painter);
-//                 painter->restore();
-//             }
-//         }
-//     }
-
-//     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
-//         Q_UNUSED(index);
-//         return QSize(option.rect.width(), 50);
-//     }
-
-//     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
-//         if (event->type() == QEvent::MouseButtonRelease) {
-//             // std::cerr << "aaaa" << std::endl;
-//             QMouseEvent *mouseEvent = (QMouseEvent *) event;
-//             if (mouseEvent->button() == Qt::LeftButton) {
-
-//             }
-
-//         }
-//         return QStyledItemDelegate::editorEvent(event, model, option, index);
-//     }
-// };
-
-class ListModel : public QAbstractListModel {
-private:
-    QList<std::pair<int, void *>> mObjects;
-public:
-    ListModel(QObject* parent = nullptr) : QAbstractListModel(parent) {}
-
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override {
-        Q_UNUSED(parent)
-        return mObjects.size();
-    }
-
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override {
-        if (!index.isValid() || index.row() >= mObjects.size())
-            return QVariant();
-
-        return QVariant::fromValue(mObjects[index.row()]);
-    }
-
-    void addObject(int type, void* obj) {
-        beginInsertRows(QModelIndex(), mObjects.size(), mObjects.size());
-        mObjects.append(std::make_pair(type, obj));
-        endInsertRows();
-    }
-};
-
-class MyListView;
-
-MyListView *list;
-
-class MyListView : public QListView {
-    //Q_OBJECT
-public:
-    MyListView(QWidget *parent = nullptr): QListView(parent) {
-        connect(this, &MyListView::clicked, this, &MyListView::handleButtonClick);
-    }
-
-private slots:
-    void handleButtonClick() {
-        // std::cerr << "sbsb" << std::endl;
-        // // 获取点击的Item
-        // auto a = currentIndex();
-        // RecordItem *item = (RecordItem *)(currentIndex().data(Qt::UserRole).value<QWidget*>());
-        // if (sbqt) {
-        //     std::cerr << "qtsb" << std::endl;
-        //     auto a = sender();
-        //     std::cerr << a << std::endl;
-        //     std::cerr << sbqt << std::endl;
-        //     std::cerr << list << std::endl;
-
-        //     if (sender() == sbqt) {
-        //         std::cerr << "qt!!!" << std::endl;
-        //     }
-        // }
-        // if (item) {
-        //     // 处理按钮点击事件
-        //     std::cerr << "abcd" << std::endl;
-        //     QPushButton *button = item->button;
-        //     if (sender() == button) {
-        //         std::cerr << "here" << std::endl;
-        //     }
-        // }
-    }
-};
-
-
-void refresh_shown_record(QDate date) {
-
-}
-
 
 int display_option = 1; // 1: 天；2: 周；3: 月；4: 年
 
 void RecordWindow::setup_records() {
-    // ListModel *model = new ListModel(window);
-    // for (auto &date : records) {
-    //     model->addObject(1, (void *) &date.first);
-    //     for (auto &record : *date.second) {
-    //         model->addObject(2, (void *) record);
-    //     }
-    // }
-    // ui->record_list->setItemDelegate(new RecordItemDelegate(ui->record_list));
-    // ui->record_list->setModel(model);
-
-
-
     QWidget *scrollWidget = new QWidget;
     QVBoxLayout *layout = new QVBoxLayout;
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -688,16 +530,6 @@ void RecordWindow::setup_records() {
     scrollArea->setWidgetResizable(true);
     //scrollArea->verticalScrollBar()->setMinimum(1);
     //scrollArea->verticalScrollBar()->setMaximum(i);
-
-
-
-    // list = new MyListView(window);
-    // ListModel *model1 = new ListModel(window);
-    // model1->addObject(2, (void *) (*(*records.begin()).second)[0]);
-    // //model1->addObject(2, (void *) (*(*records.begin()).second)[1]);
-    // list->setItemDelegate(new RecordItemDelegate(ui->record_list));
-    // list->setModel(model1);
-    // ui->verticalLayout_4->addWidget(list);
 }
 
 
