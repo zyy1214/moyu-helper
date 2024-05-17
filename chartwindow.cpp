@@ -106,7 +106,7 @@ std::map<QDate,int> get_point_per_day(){
                 for (auto r : *(mr.second)) {
                     if(r->get_class() != BY_MOD)
                         continue;
-                    if(((RecordByMod*)r)->get_mod()->print_name()!=ui->select_mod->currentText())
+                    if(((RecordByMod*)r)->get_mod()->get_name()!=ui->select_mod->currentText())
                         continue;
                     if(ui->select_type->currentText()=="All"){
                         temp_point+=r->get_signed_point();
@@ -273,12 +273,12 @@ void ChartWindow::on_select_label_currentIndexChanged(int index)
         _ui->select_mod->addItem("All");
     if(selected_command=="All"){
         for(int i = 0;i < mods.size(); i++){
-            _ui->select_mod->addItem(mods[i]->print_name());
+            _ui->select_mod->addItem(mods[i]->get_name());
         }
     }
     else{
         for(auto i = labels_to_mods[selected_command].begin();i != labels_to_mods[selected_command].end(); i++){
-            _ui->select_mod->addItem( (*i)->print_name());
+            _ui->select_mod->addItem( (*i)->get_name());
         }
     }
 
@@ -325,7 +325,7 @@ void ChartWindow::on_select_mod_currentIndexChanged(int index)
         if(selected_command!="All"){
             _ui->select_type->clear();
             for(auto mr:mods){
-                if(mr->print_name()==selected_command){
+                if(mr->get_name()==selected_command){
                     if(mr->get_type()==OBTAIN)
                         _ui->select_type->addItem("Obtain");
                     else
