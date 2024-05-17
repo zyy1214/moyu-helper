@@ -70,8 +70,8 @@ void build_map(){
         }
     }
 }
-ChartWindow::ChartWindow(QWidget *parent)
-    : QMainWindow(parent)
+ChartWindow::ChartWindow(Data *data, QWidget *parent)
+    : data(data), QMainWindow(parent)
     , _ui(new Ui::ChartWindow)
 {
     ui = _ui;

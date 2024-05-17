@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "data_storage.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class ChartWindow;
@@ -14,8 +16,10 @@ class ChartWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    ChartWindow(QWidget *parent = nullptr);
+    ChartWindow(Data *data, QWidget *parent = nullptr);
     ~ChartWindow();
+
+    Data *data;
 
 private slots:
 

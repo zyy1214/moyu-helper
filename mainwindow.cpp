@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     data = new Data();
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
-    cw = new ChartWindow(this);
+    cw = new ChartWindow(data, this);
     ui->stackedWidget->addWidget(rw);
     ui->stackedWidget->addWidget(mw);
     ui->stackedWidget->addWidget(cw);
