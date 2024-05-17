@@ -199,7 +199,7 @@ public:
         QLabel *label_formula=new QLabel("请输入公式：");
         label_formula->setFont(font);
         QLineEdit *lineEdit_name = new QLineEdit();
-        lineEdit_name->setText(mods[id]->print_name());
+        lineEdit_name->setText(mods[id]->get_name());
         lineEdit_name->setFont(font);
         QLineEdit *lineEdit_formula=new QLineEdit;
         lineEdit_formula->setText(mods[id]->get_fun());
@@ -300,7 +300,7 @@ void setup_mods(Ui::ModWindow *ui) {
 
 
         //名字与公式
-        QLabel *name_label=new QLabel(x->print_name());
+        QLabel *name_label=new QLabel(x->get_name());
         QLabel *fun_label=new QLabel(x->get_fun());
         QPushButton *delete_button=create_icon_button("delete", 24,[=](){
             x->delete_mod();

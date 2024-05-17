@@ -98,7 +98,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="button_statistics">
+       <widget class="QPushButton" name="button_chart">
         <property name="styleSheet">
          <string notr="true">border: none; outline: none; padding: 5;</string>
         </property>

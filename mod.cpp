@@ -93,7 +93,7 @@ bool Mod::search_str(QString aa){ //判断a是否在name中
         return true;
     return name.contains(aa);
 }
-QString Mod::print_name(){
+QString Mod::get_name(){
     return name;
 }
 Mod::Mod(int mod_id, QString a, Formula *b, enum RECORD_TYPE type){ //一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
@@ -194,7 +194,7 @@ void Mod::search(QString a, std::vector<QString> b){ //a是查询的字符串，
     {
         for(int i=1;i<=search_count;i++)
         {
-            mods[mod_search[i]]->print_name();
+            mods[mod_search[i]]->get_name();
 /////////////////////////////  要结合ui   /////////////////////////////
         }
     }

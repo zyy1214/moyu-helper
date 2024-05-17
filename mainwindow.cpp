@@ -23,8 +23,10 @@ MainWindow::MainWindow(QWidget *parent)
     data = new Data();
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
+    cw = new ChartWindow(this);
     ui->stackedWidget->addWidget(rw);
     ui->stackedWidget->addWidget(mw);
+    ui->stackedWidget->addWidget(cw);
     ui->stackedWidget->setCurrentWidget(rw);
     //rw->show();
 }
@@ -157,7 +159,7 @@ void MainWindow::on_button_menu_clicked()
 void MainWindow::clear_page_choice() {
     ui->button_record->setStyleSheet("border: none; outline: none; padding: 5;");
     ui->button_mod->setStyleSheet("border: none; outline: none; padding: 5;");
-    ui->button_statistics->setStyleSheet("border: none; outline: none; padding: 5;");
+    ui->button_chart->setStyleSheet("border: none; outline: none; padding: 5;");
     ui->button_theme->setStyleSheet("border: none; outline: none; padding: 5;");
 }
 
@@ -175,6 +177,10 @@ void MainWindow::on_button_mod_clicked()
     ui->stackedWidget->setCurrentWidget(mw);
 }
 
-
-
+void MainWindow::on_button_chart_clicked()
+{
+    clear_page_choice();
+    ui->button_chart->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->stackedWidget->setCurrentWidget(cw);
+}
 

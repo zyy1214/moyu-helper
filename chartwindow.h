@@ -5,17 +5,17 @@
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindow;
+class ChartWindow;
 }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
+class ChartWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ChartWindow(QWidget *parent = nullptr);
+    ~ChartWindow();
 
 private slots:
 
@@ -34,6 +34,6 @@ private slots:
     void on_date_end_userDateChanged(const QDate &date);
 
 private:
-    Ui::MainWindow *_ui;
+    Ui::ChartWindow *_ui;
 };
 #endif // CHARTWINDOW_H

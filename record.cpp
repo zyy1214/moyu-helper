@@ -45,7 +45,7 @@ int Date::get_weekday() const {
 
 // }
 Mod* RecordByMod::get_mod(){
-        return mod;
+    return mod;
 }
 
 RecordDirect::RecordDirect(QString name, enum RECORD_TYPE type, int point, QDate date): name(name), type(type), point(point) {

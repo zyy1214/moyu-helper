@@ -54,7 +54,7 @@ public:
     void delete_mod();//删除模板
     bool is_deleted();//是否被删除
     bool search_str(QString aa); //查找一个字符串aa是否在name中
-    QString print_name();//输出名字
+    QString get_name();//输出名字
     QString get_fun();//输出公式
 
     static void add_mod(QString a, Formula *b, enum RECORD_TYPE type);
@@ -64,6 +64,10 @@ public:
     static void search(QString a, std::vector<QString> b);//a是查询的字符串，b是标签的数组
 
     bool name_legal(); //判断名字是否合法
+
+    enum RECORD_TYPE get_type() {
+        return type;
+    }
 
 };
 extern std::vector<Mod*> mods;
