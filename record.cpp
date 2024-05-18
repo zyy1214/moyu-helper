@@ -26,9 +26,10 @@ int Date::get_weekday() const {
 // }
 
 
-// RecordByMod::RecordByMod(Mod *mod, std::vector<double> variables, QDate date) {
-//     set_date(date);
-// }
+RecordByMod::RecordByMod(Mod *mod, double *inputs, QDate date)
+    : inputs(inputs), mod(mod){
+    set_date(date);
+}
 enum RECORD_TYPE RecordByMod::get_type() const {
     if(mod->type==1)
         return OBTAIN;
@@ -49,12 +50,12 @@ int RecordByMod::get_point() const {
         {
             int pos=a.indexOf(mod->variable[i]);
             int len=(mod->variable[i]).size();
-            if(!isoperator(a[pos-1]))
+            if(pos - 1 >= 0 && !isoperator(a[pos-1]))
             {
                 hh=pos+len;
                 continue;
             }
-            if(!isoperator(a[pos+len]))
+            if(pos + len < a.length() && !isoperator(a[pos+len]))
             {
                 hh=pos+len;
                 continue;
@@ -105,6 +106,15 @@ void RecordByMod::from_string(QString s) {
 }
 Mod* RecordByMod::get_mod(){
     return mod;
+}
+void RecordByMod::set_mod(Mod *mod) {
+    this->mod = mod;
+}
+void RecordByMod::set_inputs(double *inputs) {
+    this->inputs = inputs;
+}
+double *RecordByMod::get_inputs() {
+    return inputs;
 }
 
 RecordDirect::RecordDirect(QString name, enum RECORD_TYPE type, int point, QDate date): name(name), type(type), point(point) {

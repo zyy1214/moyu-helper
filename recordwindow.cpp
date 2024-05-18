@@ -24,6 +24,12 @@
 #include <QScrollBar>
 
 void RecordWindow::init_data() {
+    data->mods.push_back(new Mod(0, QString("跑步{跑步里程}km"), new Formula(QString("跑步里程")), OBTAIN, "跑步"));
+    data->mods.push_back(new Mod(1, QString("做谢慧民{题目数量}道题"), new Formula(QString("题目数量/4")), OBTAIN, "做谢慧民"));
+    data->mods.push_back(new Mod(0, QString("玩原神{游戏时间}分钟（抵扣{抵扣时长}分钟）"), new Formula(QString("max((游戏时间-抵扣时长)/30,0)")), CONSUME, "玩原神"));
+    data->mods.push_back(new Mod(1, QString("做作业"),new Formula(QString("1")), OBTAIN, "做作业"));
+    data->mods.push_back(new Mod(1, QString("测试{x}{y}{z}{w}"),new Formula(QString("(x+y)*(z+w)")), CONSUME, "test"));
+
     load_data(data->records);
     for (auto mr : data->records) {
         for (auto r : *(mr.second)) {
@@ -90,6 +96,9 @@ private:
     QRadioButton *optionRadioButton2;
     Record *record;
     RecordWindow *window;
+    QComboBox *comboBox;
+    QVBoxLayout *inputLayout;
+    QLabel *preview_result_label;
 public:
     EditRecordDialog(RecordWindow *window, Record *record = nullptr, QWidget *parent = nullptr)
         : window(window), record(record), QDialog(parent) {
@@ -110,23 +119,37 @@ public:
         QLabel *mod_label = new QLabel("选择模板：", this);
         mod_label->setFont(font);
         mod_label->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
-        QComboBox *comboBox = new QComboBox(this);
+        comboBox = new QComboBox(this);
         comboBox->setFont(font);
         comboBox->setStyleSheet("font: 12pt Microsoft YaHei UI;");
         comboBox->setEditable(true);
-        comboBox->addItem("跑步");
-        comboBox->addItem("看书");
-        comboBox->addItem("背单词");
-        comboBox->addItem("玩游戏");
-        comboBox->addItem("做谢慧民");
-        comboBox->addItem("做算法题");
+        comboBox->addItem("-");
+        for (auto mod : window->data->mods) {
+            comboBox->addItem(mod->get_shortname());
+        }
 
         QHBoxLayout *select_mod_layout = new QHBoxLayout();
         select_mod_layout->addWidget(mod_label);
         select_mod_layout->addWidget(comboBox);
 
+        QScrollArea *scrollArea = new QScrollArea(this);
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setFrameStyle(QFrame::NoFrame);
+        scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        QWidget *scrollAreaWidget = new QWidget(this);
+        inputLayout = new QVBoxLayout(scrollAreaWidget);
+        inputLayout->setAlignment(Qt::AlignTop);
+        scrollArea->setWidget(scrollAreaWidget);
+        connect(comboBox, &QComboBox::currentIndexChanged, this, &EditRecordDialog::updateInputFields);
+
+        preview_result_label = new QLabel("");
+        preview_result_label->setFont(font);
+
         QVBoxLayout *mod_layout = new QVBoxLayout(mod_widget);
+        mod_layout->setContentsMargins(30, 20, 30, 20);
         mod_layout->addLayout(select_mod_layout);
+        mod_layout->addWidget(scrollArea);
+        mod_layout->addWidget(preview_result_label);
 
         mod_widget->setLayout(mod_layout);
         tabWidget->addTab(mod_widget, "从模版添加");
@@ -166,24 +189,6 @@ public:
         numberInputLayout->addWidget(numberLabel);
         numberInputLayout->addWidget(numberLineEdit);
 
-
-        // 添加日期选择框和标签
-        QHBoxLayout *dateLayout;
-        if (!record) {
-            QLabel *dateLabel = new QLabel("选择日期：", this);
-            dateLabel->setFont(font);
-            dateLabel->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
-            dateEdit = new QDateEdit(this);
-            dateEdit->setFont(font);
-            dateEdit->setDate(QDate::currentDate());
-            dateEdit->setMaximumDate(QDate::currentDate());
-
-            dateLayout = new QHBoxLayout();
-            dateLayout->addWidget(dateLabel);
-            dateLayout->addWidget(dateEdit);
-        }
-
-
         if (record) {
             if (record->get_type() == CONSUME) {
                 optionRadioButton2->setChecked(true);
@@ -198,18 +203,65 @@ public:
         optionLayout->setContentsMargins(0, 0, 0, 5);
         textInputLayout->setContentsMargins(0, 5, 0, 5);
         numberInputLayout->setContentsMargins(0, 5, 0, 5);
-        if (!record) dateLayout->setContentsMargins(0, 5, 0, 5);
 
         direct_layout->addLayout(optionLayout);
         direct_layout->addLayout(textInputLayout);
         direct_layout->addLayout(numberInputLayout);
-        if (!record) direct_layout->addLayout(dateLayout);
+        //if (!record) direct_layout->addLayout(dateLayout);
 
         direct_widget->setLayout(direct_layout);
         tabWidget->addTab(direct_widget, "直接添加");
+        if (record) {
+            if (record->get_class() == DIRECT) {
+                tabWidget->setCurrentWidget(direct_widget);
+                tabWidget->setTabEnabled(0, false);
+            } else {
+                tabWidget->setTabEnabled(1, false);
+                RecordByMod *rbm = dynamic_cast<RecordByMod *>(record);
+                int index = 0;
+                QString mod_name = rbm->get_mod()->get_shortname();
+                for (int i = 1, len = comboBox->count(); i < len; i++) {
+                    if (mod_name == comboBox->itemText(i)) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index == 0) {
+                    // todo: 如果是被删掉的 mod，...
+                }
+                comboBox->setCurrentIndex(index);
+                updateInputFields(index);
+                double *inputs = rbm->get_inputs();
+                // todo: input_num 理应是 private 的
+                qDebug() << selected_mod->input_num;
+                for (int i = 0; i < selected_mod->input_num; i++) {
+                    variable_inputs[i]->setText(QString::number(inputs[i]));
+                }
+            }
+        }
+
+        // 添加日期选择框和标签
+        QHBoxLayout *dateLayout;
+        if (!record) {
+            QLabel *dateLabel = new QLabel("选择日期：", this);
+            dateLabel->setFont(font);
+            dateLabel->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+            dateEdit = new QDateEdit(this);
+            dateEdit->setFont(font);
+            dateEdit->setDate(QDate::currentDate());
+            dateEdit->setMaximumDate(QDate::currentDate());
+
+            dateLayout = new QHBoxLayout();
+            dateLayout->addSpacing(20);
+            dateLayout->addWidget(dateLabel);
+            dateLayout->addWidget(dateEdit);
+            dateLayout->addSpacing(20);
+            dateLayout->setContentsMargins(0, 5, 0, 5);
+        }
 
         QVBoxLayout *layout = new QVBoxLayout(this);
         layout->addWidget(tabWidget);
+        if (!record) layout->addItem(dateLayout);
 
         // 添加确定和取消按钮
         QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -230,12 +282,84 @@ public:
         setLayout(layout);
         adjustSize();
     }
+private:
+    void clearLayout(QLayout *layout) {
+        QLayoutItem *child;
+        while ((child = layout->takeAt(0)) != nullptr) {
+            if (child->layout() != nullptr) {
+                clearLayout(child->layout());
+                delete child->layout();
+            } else if (child->widget() != nullptr) {
+                child->widget()->setParent(nullptr); // This is important to avoid double deletion
+                delete child->widget();
+            }
+            //delete child;
+        }
+    }
+
+    std::vector<QLineEdit *> variable_inputs;
+    Mod *selected_mod;
+
+    double *get_inputs() {
+        double *inputs = new double[variable_inputs.size()];
+        for (int i = 0, len = variable_inputs.size(); i < len; i++) {
+            inputs[i] = variable_inputs[i]->text().toDouble();
+        }
+        return inputs;
+    }
+
 private slots:
+    void updateInputFields(int index) {
+        if (inputLayout->layout()) {
+            clearLayout(inputLayout->layout());
+        }
+
+        if (index == 0) {
+            selected_mod = nullptr;
+            return;
+        }
+        selected_mod = window->data->mods[index - 1];
+        // todo: 把 variable 改成 get_variables
+        std::vector<QString> variables = selected_mod->variable;
+        //qDebug() << variables;
+
+        variable_inputs.clear();
+
+        QFont font("Microsoft YaHei UI", 12);
+        for (const QString &variable : variables) {
+            QHBoxLayout *rowLayout = new QHBoxLayout();
+            QLabel *label = new QLabel(variable + "：");
+            QLineEdit *lineEdit = new QLineEdit();
+            lineEdit->setValidator(new QDoubleValidator(lineEdit));
+            connect(lineEdit, &QLineEdit::textChanged, this, &EditRecordDialog::variable_edited);
+            label->setFont(font);
+            lineEdit->setFont(font);
+            rowLayout->addWidget(label);
+            rowLayout->addWidget(lineEdit);
+            inputLayout->addLayout(rowLayout);
+            variable_inputs.push_back(lineEdit);
+        }
+
+        variable_edited("");
+    }
+
+    void variable_edited(const QString &text) {
+        double *inputs = get_inputs();
+        RecordByMod record(selected_mod, inputs, QDate::currentDate());
+        preview_result_label->setText((record.get_type() == OBTAIN ? "将获取 " : "将消耗 ")
+                                      + QString::number(record.get_point()) + " 分");
+        delete[] inputs;
+    }
+
     void onOKButtonClicked() {
         enum RECORD_TYPE type = optionRadioButton1->isChecked() ? OBTAIN : CONSUME;
         if (!record) {
             QDate date = dateEdit->date();
-            record = new RecordDirect(textLineEdit->text(), type, numberLineEdit->text().toInt(), date);
+            if (tabWidget->currentIndex() == 0) {
+                record = new RecordByMod(selected_mod, get_inputs(), date);
+            } else {
+                record = new RecordDirect(textLineEdit->text(), type, numberLineEdit->text().toInt(), date);
+            }
             record->create_uuid();
             record->set_id(db_add_record(record));
             MultipleRecord *daily_record = window->data->records[date];
@@ -250,14 +374,22 @@ private slots:
             // todo: 如果有需要，更改日期选择 widget 的可选择范围
         }
         else {
-            RecordDirect *rd = dynamic_cast<RecordDirect *>(record);
             int d_points = record->get_signed_point();
-            if (rd) {
-                rd->set_name(textLineEdit->text());
-                rd->set_type(type);
-                rd->set_point(numberLineEdit->text().toInt());
+            if (record->get_class() == BY_MOD) {
+                RecordByMod *rbm = dynamic_cast<RecordByMod *>(record);
+                if (rbm) {
+                    rbm->set_mod(selected_mod);
+                    rbm->set_inputs(get_inputs());
+                }
+            } else {
+                RecordDirect *rd = dynamic_cast<RecordDirect *>(record);
+                if (rd) {
+                    rd->set_name(textLineEdit->text());
+                    rd->set_type(type);
+                    rd->set_point(numberLineEdit->text().toInt());
+                }
+                db_modify_record(record);
             }
-            db_modify_record(record);
             d_points = record->get_signed_point() - d_points;
             window->data->total_points += d_points;
             if (record->get_date().daysTo(QDate::currentDate()) <= 6) {

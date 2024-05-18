@@ -165,7 +165,12 @@ void load_data(std::map<QDate, MultipleRecord *, std::greater<QDate>> &records) 
 
         Record *record = nullptr;
         switch (record_class) {
-            case BY_MOD: break;
+            case BY_MOD: {
+                // todo: 这一部分还需等待 wzl 把相关代码写完
+                // record = new RecordByMod(nullptr, nullptr, date);
+                // record->from_string(record_info);
+                break;
+            }
             case DIRECT: {
                 record = new RecordDirect(record_info, record_type, point, date);
                 break;
@@ -190,7 +195,7 @@ int db_add_record(Record *record) {
     query.prepare("INSERT INTO records (uuid, user, date, sort_order, record_class, record_type, point, record_info) "
                   "VALUES (:uuid, :username, :date, :sort_order, :record_class, :record_type, :point, :record_info)");
 
-    query.bindValue(":uuid", record->get_uuid().toString());
+    query.bindValue(":uuid", record->get_uuid().toString(QUuid::WithoutBraces));
     query.bindValue(":username", username);
     query.bindValue(":date", record->get_date().toString(Qt::ISODate));
     query.bindValue(":sort_order", 0);

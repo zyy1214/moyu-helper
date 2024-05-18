@@ -84,7 +84,7 @@ class RecordByMod: public Record {
     Mod *mod;
     double *inputs;
 public:
-    RecordByMod(Mod *mod, std::vector<double> variables, QDate date);
+    RecordByMod(Mod *mod, double *inputs, QDate date);
     virtual enum RECORD_CLASS get_class() const {
         return BY_MOD;
     }
@@ -97,6 +97,9 @@ public:
     virtual bool is_from_template() {
         return true;
     }
+    void set_mod(Mod *mod);
+    void set_inputs(double *inputs);
+    double *get_inputs();
 };
 
 class RecordDirect: public Record {
