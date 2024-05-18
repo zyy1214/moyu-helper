@@ -1,5 +1,5 @@
 #include "record.h"
-
+#include "calculate.h"
 class Formula; // wzl 负责
 
 /*Record::Record() {
@@ -29,21 +29,80 @@ int Date::get_weekday() const {
 // RecordByMod::RecordByMod(Mod *mod, std::vector<double> variables, QDate date) {
 //     set_date(date);
 // }
-// enum RECORD_TYPE RecordByMod::get_type() const {
-//     return mod->get_type();
-// }
-// int RecordByMod::get_point() const {
-//     return 0;
-// }
-// QString RecordByMod::get_display_name() const {
-//     return mod->get_name();
-// }
-// QString RecordByMod::to_string() const {
-//     return "";
-// }
-// void RecordByMod::from_string(QString s) {
-
-// }
+enum RECORD_TYPE RecordByMod::get_type() const {
+    if(mod->type==1)
+        return OBTAIN;
+    return CONSUME;
+}
+bool isoperator(QChar a)
+{
+    if(a=='='||a=='+'||a=='-'||a=='*'||a=='/'||a=='('||a==')'||a=='<'||a=='>'||a=='!'||a=='^'||a==' ')
+        return true;
+    return false;
+}
+int RecordByMod::get_point() const {
+    QString a=mod->get_fun();
+    for(int i=0;i<mod->input_num;i++)
+    {
+        int hh=0;
+        while(a.indexOf(mod->variable[i],hh)!=-1)
+        {
+            int pos=a.indexOf(mod->variable[i]);
+            int len=(mod->variable[i]).size();
+            if(!isoperator(a[pos-1]))
+            {
+                hh=pos+len;
+                continue;
+            }
+            if(!isoperator(a[pos+len]))
+            {
+                hh=pos+len;
+                continue;
+            }
+            a.replace(pos,len,QString::number(inputs[i]));
+        }
+    }
+    return calc(a);
+}
+QString RecordByMod::get_display_name() const {
+    return mod->get_shortname();
+}
+QString RecordByMod::to_string() const {
+    QString a=QString::number(mod->id);
+    for(int i=0;i<mod->input_num;i++)
+    {
+        a=a+",";
+        a=a+QString::number(inputs[i]);
+    }
+    a=a+",";
+    return a;
+}
+void RecordByMod::from_string(QString s) {
+    QString a="";
+    int flag=0;
+    int total=0;
+    for(int i=0;i<s.size();i++)
+        if(s[i]==',')
+            total++;
+    total--;
+    inputs=new double[total];
+    int cntt=0;
+    for(int i=0;i<s.size();i++)
+    {
+        if(s[i]!=',')
+            a=a+s[i];
+        else
+        {
+            if(flag==0)
+                mod=mods[a.toInt()];
+            else
+            {
+                inputs[cntt++]=a.toDouble();
+                a="";
+            }
+        }
+    }
+}
 Mod* RecordByMod::get_mod(){
     return mod;
 }
