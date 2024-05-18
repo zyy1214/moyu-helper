@@ -34,33 +34,36 @@ int Formula::what_type(QString a)
 }
 
 
-void Mod::change(QString a, Formula *b, enum RECORD_TYPE type){ //一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
-        name=a;
-        formula=b;
-        this->type=type;
-        input_num=0;
-        variable.clear();
-        variable.shrink_to_fit();
-        int i=0;
-        while(i<name.size())
+void Mod::change(QString a, Formula *b, enum RECORD_TYPE type,QString shortn){ //一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
+    name=a;
+    formula=b;
+    short_name=shortn;
+    this->type=type;
+    input_num=0;
+    variable.clear();
+    variable.shrink_to_fit();
+    int i=0;
+    while(i<name.size())
+    {
+        if(name[i]=='{')
         {
-            if(name[i]=='{')
-            {
-                i++;
-                QString temp="";
-                input_num++;
-                while(i<name.size() && name[i]!='}')
-                {
-                    temp=temp+QString(1,name[i]);
-                    i++;
-                }
-                variable.push_back(temp);
-                b->var.push_back(temp);
-            }
             i++;
+            QString temp="";
+            input_num++;
+            while(i<name.size() && name[i]!='}')
+            {
+                temp=temp+QString(1,name[i]);
+                i++;
+            }
+            variable.push_back(temp);
+            b->var.push_back(temp);
         }
+        i++;
     }
+}
 void Mod::add_label(QString label){ //加标签
+    if(std::find(totallabels.begin(),totallabels.end(),label)!=totallabels.end())
+        totallabels.push_back(label);
     labels.push_back(label);
 }
 std::vector<QString> Mod::get_labels(){
@@ -96,10 +99,14 @@ bool Mod::search_str(QString aa){ //判断a是否在name中
 QString Mod::get_name(){
     return name;
 }
-Mod::Mod(int mod_id, QString a, Formula *b, enum RECORD_TYPE type){ //一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
+QString Mod::get_shortname(){
+    return short_name;
+}
+Mod::Mod(int mod_id, QString a, Formula *b, enum RECORD_TYPE type , QString shortn){ //一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
     name=a;
     formula=b;
     id=mod_id;
+    short_name=shortn;
     this->type=type;
     deleted=false;
     input_num=0;
@@ -124,18 +131,19 @@ Mod::Mod(int mod_id, QString a, Formula *b, enum RECORD_TYPE type){ //一个id�
 }
 
 std::vector<Mod*> mods; // 存放所有模板
+std::vector<QString> totallabels;// 存放所有标签
 
-void Mod::add_mod(QString a,Formula *b,enum RECORD_TYPE type){//一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
-    Mod* aaa=new Mod(mod_cnt,a,b,type);// id从0开始
+void Mod::add_mod(QString a,Formula *b,enum RECORD_TYPE type, QString shortn){//一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
+    Mod* aaa=new Mod(mod_cnt,a,b,type,shortn);// id从0开始
     mod_cnt++;
     mods.push_back(aaa);
     mod_search[++search_count]=mod_cnt-1;
 }
 
-void Mod::change_mod(int before_mod_id,QString a,Formula *b, enum RECORD_TYPE type, enum RECORD_TYPE change_type){//更改模板，先加再删
+void Mod::change_mod(int before_mod_id,QString a,Formula *b, enum RECORD_TYPE type, enum RECORD_TYPE change_type, QString shortn){//更改模板，先加再删
     if(change_type==0) //0则为不更改，1为更改
     {
-        Mod* aaa=new Mod(mod_cnt,a,b,type);
+        Mod* aaa=new Mod(mod_cnt,a,b,type,shortn);
         mod_cnt++;
         mods.push_back(aaa);
         mods[before_mod_id]->delete_mod();
@@ -143,8 +151,8 @@ void Mod::change_mod(int before_mod_id,QString a,Formula *b, enum RECORD_TYPE ty
     }
     else
     {
-        mods[before_mod_id]->change(a,b,type);
-/////////////////////////////  还要更改总积分，要看记录怎么写   /////////////////////////////
+        mods[before_mod_id]->change(a,b,type,shortn);
+        /////////////////////////////  还要更改总积分，要看记录怎么写   /////////////////////////////
 
     }
 }
@@ -195,7 +203,7 @@ void Mod::search(QString a, std::vector<QString> b){ //a是查询的字符串，
         for(int i=1;i<=search_count;i++)
         {
             mods[mod_search[i]]->get_name();
-/////////////////////////////  要结合ui   /////////////////////////////
+            /////////////////////////////  要结合ui   /////////////////////////////
         }
     }
 }

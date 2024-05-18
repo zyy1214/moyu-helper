@@ -11,6 +11,7 @@
         <file alias="menu">resources/images/menu.png</file>
         <file alias="plus">resources/images/plus.png</file>
         <file alias="search">resources/images/search.png</file>
+        <file alias="tag">resources/images/tag.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="icons">resources/fonts/icons.ttf</file>
