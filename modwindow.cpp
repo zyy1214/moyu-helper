@@ -22,10 +22,101 @@
 
 #include "data_storage.h"
 
-class TagButton : public QPushButton {
+
+
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QScrollArea>
+#include <QLabel>
+
+class tags_dialog : public QDialog { //标签dialog
+public:
+    tags_dialog(int id,QWidget *parent = nullptr) :idd(id) ,QDialog(parent) {
+        setWindowTitle("Label Dialog");
+        mainLayout = new QVBoxLayout(this);
+        setupUI();
+    }
+
+
+private:
+    bool flag=0;
+    int idd;
+    QVBoxLayout* mainLayout;
+    void setupUI() {
+        QFont font("consolos", 16);//字体
+        delete mainLayout;
+        mainLayout = new QVBoxLayout(this);
+        QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+        QVBoxLayout* labelsLayout = new QVBoxLayout();
+        QScrollArea* scrollArea = new QScrollArea();
+        scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+        scrollArea->setStyleSheet("background-color: #eeeeee;");
+
+        // 设置滚动区域
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setWidget(new QWidget());
+        scrollArea->widget()->setLayout(labelsLayout);
+
+        Mod* aa=mods[idd];
+
+        for (int i = 0; i < (aa->labels).size(); i++) {
+            QHBoxLayout *label_layout=new QHBoxLayout;
+            QLabel *label = new QLabel(aa->labels[i]);
+            label->setFont(font);
+            //删除更改按钮
+            QPushButton *delete_button=create_icon_button("delete", 24,[=](){
+                aa->delete_label(label->text());
+                setupUI();
+            });
+            label_layout->addWidget(label);
+            label_layout->addWidget(delete_button);
+            labelsLayout->addLayout(label_layout);
+            label->setStyleSheet("color: white; background-color: rgba(0, 0, 255, 188); border-radius: 10px");
+            label->setAlignment(Qt::AlignCenter);
+        }
+        if(flag==0)
+        {
+            QPushButton *addButton = create_icon_button("plus",24,[=]{
+                flag=1;
+                setupUI();
+            });
+            labelsLayout->addWidget(addButton);
+        }
+        else
+        {
+            QHBoxLayout *addd= new QHBoxLayout;
+            QLineEdit *add_name= new QLineEdit();
+            add_name->setFont(font);
+            QPushButton *addButton = create_icon_button("check",24,[=]{
+                flag=0;
+                QString addtag=add_name->text();
+                if(addtag!=""&& std::find((aa->labels).begin(),(aa->labels).end(),addtag)==(aa->labels).end())
+                {
+                    aa->add_label(addtag);
+                }
+                setupUI();
+            });
+            addd->addWidget(add_name);
+            addd->addWidget(addButton);
+            labelsLayout->addLayout(addd);
+        }
+        labelsLayout->addItem(spacer);
+
+        mainLayout->addWidget(scrollArea);
+    }
+
+
+};
+
+
+
+
+
+class TagButton : public QPushButton { //标签button
 
 public:
-    TagButton(QWidget *parent = nullptr) : QPushButton(parent) {
+    TagButton(int id,QWidget *parent = nullptr) : idd(id), QPushButton(parent) {
         connect(&hideTimer, &QTimer::timeout, this, &TagButton::hideDialog);
         installEventFilter(this);
     }
@@ -52,20 +143,21 @@ protected:
     }
 
 private:
+    int idd;
     void showDialog() {
         // 创建对话框并设置布局
-        dialog = new QDialog(this);
-        //dialog->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
-        QVBoxLayout *layout = new QVBoxLayout(dialog);
+        dialog = new tags_dialog(idd,this);
+        dialog->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+        // QVBoxLayout *layout = new QVBoxLayout(dialog);
 
-        // 添加标签到对话框中
-        QLabel *label1 = new QLabel("标签1", dialog);
-        QLabel *label2 = new QLabel("标签2", dialog);
-        layout->addWidget(label1);
-        layout->addWidget(label2);
+        // // 添加标签到对话框中
+        // QLabel *label1 = new QLabel("标签1", dialog);
+        // QLabel *label2 = new QLabel("标签2", dialog);
+        // layout->addWidget(label1);
+        // layout->addWidget(label2);
 
         // 设置对话框位置
-        dialog->setFixedSize(200, 100);
+        dialog->setFixedSize(200, 200);
         //dialog->move(pos().x(),pos().y()+size().height()+80);
         QPoint newPos = this->mapToGlobal(QPoint(0, this->size().height()));
         dialog->move(newPos.x()-100, newPos.y() + 10);
@@ -129,6 +221,9 @@ public:
         });
     }
 };
+
+
+
 
 
 //添加对话框
@@ -339,7 +434,7 @@ public:
             if(aaa->name_legal())
             {
                 Mod::change_mod(before_id,text_name,new Formula(text_formula),
-                                button_type == 1 ? OBTAIN : CONSUME, change_type == 1 ? OBTAIN : CONSUME,text_shortname);
+                                button_type == 1 ? OBTAIN : CONSUME, change_type == 1 ? 1 : 0,text_shortname);
                 close();
             }
             else
@@ -361,13 +456,85 @@ private:
 };
 
 
+
+//标签搜索
+class Tags_shearch_Dialog : public QDialog {
+
+public:
+    Tags_shearch_Dialog(QWidget *parent = nullptr) : QDialog(parent) {
+
+        QFont font("consolos", 18);//字体
+
+        setWindowTitle(QString("选择标签"));
+
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        QVBoxLayout* labelsLayout = new QVBoxLayout();
+        QScrollArea* scrollArea = new QScrollArea();
+
+
+        scrollArea->setStyleSheet("background-color: white;");
+
+        // 设置滚动区域
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setWidget(new QWidget());
+        scrollArea->widget()->setLayout(labelsLayout);
+
+        qDebug()<<totallabels.size();
+
+        for(int i=0;i<totallabels.size();i+=4)
+        {
+            qDebug()<<totallabels[i];
+            QHBoxLayout *linelayout=new QHBoxLayout;
+            for(int j=0;j<=3;j++)
+            {
+                if(i+j<totallabels.size())
+                {
+                    QPushButton* hh = new QPushButton(totallabels[i+j]);
+                    hh->setFixedWidth(100); // 设置按钮宽度为100像素
+                    if(ischose[i+j]==0)
+                        hh->setStyleSheet("color: white; background-color: rgba(0, 0, 255, 188); border-radius: 10px");
+                    else
+                        hh->setStyleSheet("color: white; background-color: rgba(0, 255, 255, 188); border-radius: 10px");
+                    hh->setFont(font);
+                    connect(hh, &QPushButton::clicked,[=](){
+                        ischose[i+j]=(! ischose[i+j]);
+                        if(ischose[i+j]==0)
+                            hh->setStyleSheet("color: white; background-color: rgba(0, 0, 255, 188); border-radius: 10px");
+                        else
+                            hh->setStyleSheet("color: white; background-color: rgba(0, 255, 255, 188); border-radius: 10px");
+                    });
+                    linelayout->addWidget(hh);
+                    linelayout->addSpacing(10);
+                }
+            }
+            QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Maximum);
+            linelayout->addItem(spacer);
+            labelsLayout->addLayout(linelayout);
+            labelsLayout->addSpacing(10);
+        }
+        QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+        labelsLayout->addItem(spacer);
+        layout->addWidget(scrollArea);
+        //setLayout(layout);
+        setFixedSize(500, 300);
+
+    }
+
+private:
+    QButtonGroup buttonGroup;
+};
+
+
+
+
+
 void setup_mods(Ui::ModWindow *ui) {
     QWidget *scrollWidget = new QWidget;
     scrollWidget->setStyleSheet("background-color: white;");
     QVBoxLayout *layout = new QVBoxLayout;
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->setSpacing(20);
-    QFont font("consolos", 18);//字体
+    QFont font("consolos", 20);//字体
     QFont font1("consolos", 14);//字体
 
 
@@ -418,7 +585,7 @@ void setup_mods(Ui::ModWindow *ui) {
             setup_mods(ui);
         });
 
-        TagButton *tagbutton = new TagButton;
+        TagButton *tagbutton = new TagButton(x->id);
         tagbutton->setIcon(QIcon(":/images/tag"));
         tagbutton->setIconSize(QSize(24, 24));
         tagbutton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
@@ -461,6 +628,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::ModWindow)
 {
+    QFont font("consolos", 14);//字体
     Mod::add_mod(QString("学习数学分析{x}分钟"),new Formula(QString("x^2")), OBTAIN,"学习高代");
     Mod::add_mod(QString("学习高等代数{x}分钟"),new Formula(QString("2*x")), OBTAIN,"学习数分");
     Mod::add_mod(QString("玩第五人格{x}分钟"),new Formula(QString("x+1")), CONSUME,"第五人格");
@@ -476,12 +644,21 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
         setup_mods(ui);
     });
     QLineEdit *lineEdit_search_string = new QLineEdit();
+    lineEdit_search_string->setFont(font);
+    QPushButton *tagsButton = create_icon_button("tag",34,[=]{
+        Tags_shearch_Dialog dialog;
+        dialog.exec();
+    });
     QPushButton *searchButton = create_icon_button("search",34,[=]{
         std::vector<QString> b;
+        for(int i=0;i<totallabels.size();i++)
+            if(ischose[i])
+                b.push_back(totallabels[i]);
         Mod::search(lineEdit_search_string->text(),b);
         setup_mods(ui);
     });
     ui->horizontalLayout_2->addWidget(lineEdit_search_string);
+    ui->horizontalLayout_2->addWidget(tagsButton);
     ui->horizontalLayout_2->addWidget(searchButton);
     ui->horizontalLayout_2->addWidget(addButton);
     std::vector<QString> b;

@@ -62,7 +62,7 @@ void Mod::change(QString a, Formula *b, enum RECORD_TYPE type,QString shortn){ /
     }
 }
 void Mod::add_label(QString label){ //加标签
-    if(std::find(totallabels.begin(),totallabels.end(),label)!=totallabels.end())
+    if(std::find(totallabels.begin(),totallabels.end(),label)==totallabels.end())
         totallabels.push_back(label);
     labels.push_back(label);
 }
@@ -77,6 +77,23 @@ void Mod::delete_label(QString label){ //删除标签
     {
         labels.erase(it);
     }
+    int flagg=0;
+    for(int i=0;i<mods.size();i++)
+    {
+        if(mods[i]->is_deleted())
+            continue;
+        if(find( (mods[i]->labels).begin() , (mods[i]->labels).end() , label ) != (mods[i]->labels).end() )
+        {
+            flagg=1;
+            break;
+        }
+    }
+    auto itt=find(totallabels.begin(), totallabels.end(), label);
+    if(flagg==0)
+    {
+        totallabels.erase(itt);
+        memset(ischose,0,sizeof(ischose));
+    }
 }
 bool Mod::find_label(QString label){ //查找标签
     auto it=find(labels.begin(), labels.end(), label);
@@ -87,6 +104,8 @@ bool Mod::find_label(QString label){ //查找标签
 }
 void Mod::delete_mod(){
     deleted=true;
+    for(int i=0;i<labels.size();i++)
+        delete_label(labels[i]);
 }
 bool Mod::is_deleted(){
     return deleted;
@@ -132,6 +151,7 @@ Mod::Mod(int mod_id, QString a, Formula *b, enum RECORD_TYPE type , QString shor
 
 std::vector<Mod*> mods; // 存放所有模板
 std::vector<QString> totallabels;// 存放所有标签
+bool ischose[1000]; //是否选择这个标签
 
 void Mod::add_mod(QString a,Formula *b,enum RECORD_TYPE type, QString shortn){//一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
     Mod* aaa=new Mod(mod_cnt,a,b,type,shortn);// id从0开始
@@ -140,12 +160,14 @@ void Mod::add_mod(QString a,Formula *b,enum RECORD_TYPE type, QString shortn){//
     mod_search[++search_count]=mod_cnt-1;
 }
 
-void Mod::change_mod(int before_mod_id,QString a,Formula *b, enum RECORD_TYPE type, enum RECORD_TYPE change_type, QString shortn){//更改模板，先加再删
+void Mod::change_mod(int before_mod_id,QString a,Formula *b, enum RECORD_TYPE type, int change_type, QString shortn){//更改模板，先加再删
     if(change_type==0) //0则为不更改，1为更改
     {
         Mod* aaa=new Mod(mod_cnt,a,b,type,shortn);
         mod_cnt++;
         mods.push_back(aaa);
+        for(int i=0;i<(mods[before_mod_id]->labels).size();i++)
+            aaa->add_label(mods[before_mod_id]->labels[i]);
         mods[before_mod_id]->delete_mod();
         mod_search[++search_count]=mod_cnt-1;
     }
