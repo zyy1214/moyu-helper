@@ -4,6 +4,7 @@
 #include "record.h"
 #include "uitools.h"
 #include "data_storage.h"
+#include "network.h"
 
 #include <QApplication>
 #include <QComboBox>
@@ -77,6 +78,25 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     }
     on_option_by_day_pressed();
     setup_records();
+    Network *n = new Network(this, "https://v1.hitokoto.cn/");
+    n->post([] (QMainWindow *w, QString reply) {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
+        if (!jsonDoc.isNull()) {
+            QJsonObject jsonObj = jsonDoc.object();
+            QString author = jsonDoc["from_who"].toString();
+            QString text = "    “" + jsonObj["hitokoto"].toString() + "”";
+            RecordWindow *window = (RecordWindow *) w;
+            window->ui->quotation->setText(text);
+            if (author != "") {
+                window->ui->quotation_author->setText("——" + author);
+            }
+        } else {
+            qDebug() << "Failed to parse JSON.";
+        }
+    }, [] (QMainWindow *w) {
+
+    });
+
 }
 
 RecordWindow::~RecordWindow()
