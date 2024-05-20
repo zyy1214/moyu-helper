@@ -13,7 +13,8 @@ QString get_value(QString key);
 class Data {
 public:
     std::map<QDate, MultipleRecord *, std::greater<QDate>> records;
-    std::vector<Mod*> mods;
+    std::vector<Mod*> mods;//模板
+    std::vector<QString> totallabels;// 存放所有标签
     int total_points = 0;
     int last_week_points = 0;
 };

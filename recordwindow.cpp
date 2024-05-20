@@ -122,6 +122,7 @@ private:
 public:
     EditRecordDialog(RecordWindow *window, Record *record = nullptr, QWidget *parent = nullptr)
         : window(window), record(record), QDialog(parent) {
+        qDebug() << record;
         setWindowTitle(record ? "修改记录" : "添加记录");
         //setFixedSize(300, 240);
 
@@ -380,6 +381,7 @@ private slots:
             } else {
                 record = new RecordDirect(textLineEdit->text(), type, numberLineEdit->text().toInt(), date);
             }
+            qDebug() << record;
             record->create_uuid();
             record->set_id(db_add_record(record));
             MultipleRecord *daily_record = window->data->records[date];
