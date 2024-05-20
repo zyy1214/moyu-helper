@@ -37,7 +37,7 @@ enum RECORD_TYPE RecordByMod::get_type() const {
 }
 bool isoperator(QChar a)
 {
-    if(a=='='||a=='+'||a=='-'||a=='*'||a=='/'||a=='('||a==')'||a=='<'||a=='>'||a=='!'||a=='^'||a==' ')
+    if(a=='='||a=='+'||a=='-'||a=='*'||a=='/'||a=='('||a==')'||a=='<'||a=='>'||a=='!'||a=='^'||a==' '||a==',')
         return true;
     return false;
 }
@@ -48,7 +48,7 @@ int RecordByMod::get_point() const {
         int hh=0;
         while(a.indexOf(mod->variable[i],hh)!=-1)
         {
-            int pos=a.indexOf(mod->variable[i]);
+            int pos=a.indexOf(mod->variable[i],hh);
             int len=(mod->variable[i]).size();
             if(pos - 1 >= 0 && !isoperator(a[pos-1]))
             {
@@ -69,40 +69,41 @@ QString RecordByMod::get_display_name() const {
     return mod->get_shortname();
 }
 QString RecordByMod::to_string() const {
-    QString a=QString::number(mod->id);
-    for(int i=0;i<mod->input_num;i++)
-    {
-        a=a+",";
-        a=a+QString::number(inputs[i]);
-    }
-    a=a+",";
-    return a;
+    // QString a=QString::number(mod->id);
+    // for(int i=0;i<mod->input_num;i++)
+    // {
+    //     a=a+",";
+    //     a=a+QString::number(inputs[i]);
+    // }
+    // a=a+",";
+    // return a;
+    return "";
 }
 void RecordByMod::from_string(QString s) {
-    QString a="";
-    int flag=0;
-    int total=0;
-    for(int i=0;i<s.size();i++)
-        if(s[i]==',')
-            total++;
-    total--;
-    inputs=new double[total];
-    int cntt=0;
-    for(int i=0;i<s.size();i++)
-    {
-        if(s[i]!=',')
-            a=a+s[i];
-        else
-        {
-            if(flag==0)
-                mod=mods[a.toInt()];
-            else
-            {
-                inputs[cntt++]=a.toDouble();
-                a="";
-            }
-        }
-    }
+    // QString a="";
+    // int flag=0;
+    // int total=0;
+    // for(int i=0;i<s.size();i++)
+    //     if(s[i]==',')
+    //         total++;
+    // total--;
+    // inputs=new double[total];
+    // int cntt=0;
+    // for(int i=0;i<s.size();i++)
+    // {
+    //     if(s[i]!=',')
+    //         a=a+s[i];
+    //     else
+    //     {
+    //         if(flag==0)
+    //             mod=mods[a.toInt()];
+    //         else
+    //         {
+    //             inputs[cntt++]=a.toDouble();
+    //             a="";
+    //         }
+    //     }
+    // }
 }
 Mod* RecordByMod::get_mod(){
     return mod;
@@ -113,6 +114,7 @@ void RecordByMod::set_mod(Mod *mod) {
 void RecordByMod::set_inputs(double *inputs) {
     this->inputs = inputs;
 }
+
 double *RecordByMod::get_inputs() {
     return inputs;
 }

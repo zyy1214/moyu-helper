@@ -31,7 +31,9 @@
 
 class tags_dialog : public QDialog { //标签dialog
 public:
-    tags_dialog(int id,QWidget *parent = nullptr) :idd(id) ,QDialog(parent) {
+    ModWindow *window;
+    tags_dialog(ModWindow *window, Mod *id,QWidget *parent = nullptr)
+        :window(window), idd(id) ,QDialog(parent) {
         setWindowTitle("Label Dialog");
         mainLayout = new QVBoxLayout(this);
         setupUI();
@@ -40,7 +42,7 @@ public:
 
 private:
     bool flag=0;
-    int idd;
+    Mod *idd;
     QVBoxLayout* mainLayout;
     void setupUI() {
         QFont font("consolos", 16);//字体
@@ -58,7 +60,7 @@ private:
         scrollArea->setWidget(new QWidget());
         scrollArea->widget()->setLayout(labelsLayout);
 
-        Mod* aa=mods[idd];
+        Mod* aa=idd;
 
         for (int i = 0; i < (aa->labels).size(); i++) {
             QHBoxLayout *label_layout=new QHBoxLayout;
@@ -66,7 +68,7 @@ private:
             label->setFont(font);
             //删除更改按钮
             QPushButton *delete_button=create_icon_button("delete", 24,[=](){
-                aa->delete_label(label->text());
+                window->delete_label(aa, label->text());
                 setupUI();
             });
             label_layout->addWidget(label);
@@ -93,7 +95,7 @@ private:
                 QString addtag=add_name->text();
                 if(addtag!=""&& std::find((aa->labels).begin(),(aa->labels).end(),addtag)==(aa->labels).end())
                 {
-                    aa->add_label(addtag);
+                    window->add_label(aa, addtag);
                 }
                 setupUI();
             });
@@ -116,7 +118,9 @@ private:
 class TagButton : public QPushButton { //标签button
 
 public:
-    TagButton(int id,QWidget *parent = nullptr) : idd(id), QPushButton(parent) {
+    ModWindow *window;
+    TagButton(ModWindow *window, Mod *id,QWidget *parent = nullptr)
+        : window(window), idd(id), QPushButton(parent) {
         connect(&hideTimer, &QTimer::timeout, this, &TagButton::hideDialog);
         installEventFilter(this);
     }
@@ -143,10 +147,10 @@ protected:
     }
 
 private:
-    int idd;
+    Mod *idd;
     void showDialog() {
         // 创建对话框并设置布局
-        dialog = new tags_dialog(idd,this);
+        dialog = new tags_dialog(window, idd,this);
         dialog->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
         // QVBoxLayout *layout = new QVBoxLayout(dialog);
 
@@ -230,7 +234,9 @@ public:
 class AddDialog : public QDialog {
 
 public:
-    AddDialog(QWidget *parent = nullptr) : QDialog(parent) {
+    ModWindow *window;
+    AddDialog(ModWindow *window, QWidget *parent = nullptr)
+        : window(window), QDialog(parent) {
 
         QFont font("consolos", 12);//字体
 
@@ -307,7 +313,7 @@ public:
             //qDebug()<<"here1";
             if(aaa->name_legal())
             {
-                Mod::add_mod(text_name,new Formula(text_formula), button_type == 1 ? OBTAIN : CONSUME, text_shortname);
+                window->add_mod(text_name,new Formula(text_formula), button_type == 1 ? OBTAIN : CONSUME, text_shortname);
                 close();
             }
             else
@@ -330,7 +336,9 @@ private:
 class ChangeDialog : public QDialog {
 
 public:
-    ChangeDialog(int id,QWidget *parent = nullptr) : before_id(id), QDialog(parent) {
+    ModWindow *window;
+    ChangeDialog(ModWindow *window, Mod* x,QWidget *parent = nullptr)
+        : window(window), before_mod(x), QDialog(parent) {
 
         QFont font("consolos", 12);//字体
 
@@ -362,7 +370,7 @@ public:
         consumeButton->setFont(font);
         QRadioButton *obtainButton = new QRadioButton("获得");
         obtainButton->setFont(font);
-        if(mods[id]->type==1)
+        if(x->type==1)
             obtainButton->setChecked(true);
         else
             consumeButton->setChecked(true);
@@ -384,13 +392,13 @@ public:
         QLabel *label_formula=new QLabel("请输入公式：");
         label_formula->setFont(font);
         QLineEdit *lineEdit_shortname = new QLineEdit();
-        lineEdit_shortname->setText(mods[id]->get_shortname());
+        lineEdit_shortname->setText(x->get_shortname());
         lineEdit_shortname->setFont(font);
         QLineEdit *lineEdit_name = new QLineEdit();
-        lineEdit_name->setText(mods[id]->get_name());
+        lineEdit_name->setText(x->get_name());
         lineEdit_name->setFont(font);
         QLineEdit *lineEdit_formula=new QLineEdit;
-        lineEdit_formula->setText(mods[id]->get_fun());
+        lineEdit_formula->setText(x->get_fun());
         lineEdit_formula->setFont(font);
         QHBoxLayout *input_shortname=new QHBoxLayout;
         QHBoxLayout *input_name=new QHBoxLayout;
@@ -433,7 +441,7 @@ public:
             Mod* aaa=new Mod(0,text_name,&bb, button_type == 1 ? OBTAIN : CONSUME,text_shortname);
             if(aaa->name_legal())
             {
-                Mod::change_mod(before_id,text_name,new Formula(text_formula),
+                window->change_mod(before_mod,text_name,new Formula(text_formula),
                                 button_type == 1 ? OBTAIN : CONSUME, change_type == 1 ? 1 : 0,text_shortname);
                 close();
             }
@@ -452,7 +460,7 @@ public:
 private:
     QButtonGroup buttonGroup1;
     QButtonGroup buttonGroup;
-    int before_id;
+    Mod *before_mod;
 };
 
 
@@ -461,7 +469,9 @@ private:
 class Tags_shearch_Dialog : public QDialog {
 
 public:
-    Tags_shearch_Dialog(QWidget *parent = nullptr) : QDialog(parent) {
+    ModWindow *window;
+    Tags_shearch_Dialog(ModWindow *window, QWidget *parent = nullptr)
+        : window(window), QDialog(parent) {
 
         QFont font("consolos", 18);//字体
 
@@ -479,26 +489,26 @@ public:
         scrollArea->setWidget(new QWidget());
         scrollArea->widget()->setLayout(labelsLayout);
 
-        qDebug()<<totallabels.size();
+        qDebug()<< window->data->totallabels.size();
 
-        for(int i=0;i<totallabels.size();i+=4)
+        for(int i=0;i<window->data->totallabels.size();i+=4)
         {
-            qDebug()<<totallabels[i];
+            qDebug()<<window->data->totallabels[i];
             QHBoxLayout *linelayout=new QHBoxLayout;
             for(int j=0;j<=3;j++)
             {
-                if(i+j<totallabels.size())
+                if(i+j<window->data->totallabels.size())
                 {
-                    QPushButton* hh = new QPushButton(totallabels[i+j]);
+                    QPushButton* hh = new QPushButton(window->data->totallabels[i+j]);
                     hh->setFixedWidth(100); // 设置按钮宽度为100像素
-                    if(ischose[i+j]==0)
+                    if(window->ischose[i+j]==0)
                         hh->setStyleSheet("color: white; background-color: rgba(0, 0, 255, 188); border-radius: 10px");
                     else
                         hh->setStyleSheet("color: white; background-color: rgba(0, 255, 255, 188); border-radius: 10px");
                     hh->setFont(font);
                     connect(hh, &QPushButton::clicked,[=](){
-                        ischose[i+j]=(! ischose[i+j]);
-                        if(ischose[i+j]==0)
+                        window->ischose[i+j]=(! window->ischose[i+j]);
+                        if(window->ischose[i+j]==0)
                             hh->setStyleSheet("color: white; background-color: rgba(0, 0, 255, 188); border-radius: 10px");
                         else
                             hh->setStyleSheet("color: white; background-color: rgba(0, 255, 255, 188); border-radius: 10px");
@@ -528,7 +538,7 @@ private:
 
 
 
-void setup_mods(Ui::ModWindow *ui) {
+void ModWindow::setup_mods() {
     QWidget *scrollWidget = new QWidget;
     scrollWidget->setStyleSheet("background-color: white;");
     QVBoxLayout *layout = new QVBoxLayout;
@@ -539,8 +549,8 @@ void setup_mods(Ui::ModWindow *ui) {
 
 
     //列出所有模板:
-    for (int i=1;i<=Mod::search_count;i++) {
-        Mod* x=mods[Mod::mod_search[i]];
+    for (int i=1;i<=search_count;i++) {
+        Mod* x=data->mods[mod_search[i]];
         //qDebug()<<x->id<<" "<<x->print_name()<<" "<<x->get_fun()<<" "<<x->input_num<<"\n";
         //for(int j=0;j<x->input_num;j++)
         //    qDebug()<<x->variable[j]<<" ";
@@ -571,21 +581,24 @@ void setup_mods(Ui::ModWindow *ui) {
         shortname_label->setFixedWidth(200);
         QLabel *name_label=new QLabel(x->get_name());
         name_label->setAlignment(Qt::AlignCenter);
+        name_label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Maximum);
+        name_label->setFixedWidth(300);
+
         //QLabel *fun_label=new QLabel(x->get_fun());
         //fun_label->setAlignment(Qt::AlignCenter);
 
         //删除更改按钮
         QPushButton *delete_button=create_icon_button("delete", 24,[=](){
-            x->delete_mod();
-            setup_mods(ui);
+            delete_mod(x);
+            setup_mods();
         });
         QPushButton *changeButton = create_icon_button("edit",24,[=]{
-            ChangeDialog dialog(x->id);
+            ChangeDialog dialog(this, x);
             dialog.exec();
-            setup_mods(ui);
+            setup_mods();
         });
 
-        TagButton *tagbutton = new TagButton(x->id);
+        TagButton *tagbutton = new TagButton(this, x);
         tagbutton->setIcon(QIcon(":/images/tag"));
         tagbutton->setIconSize(QSize(24, 24));
         tagbutton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
@@ -613,6 +626,10 @@ void setup_mods(Ui::ModWindow *ui) {
         QSpacerItem *rightSpacer = new QSpacerItem(20, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
         temp->addItem(rightSpacer);
 
+        QFontMetrics fontMetrics(name_label->font());
+        QString strDes = QFontMetrics(name_label->font()).elidedText(x->get_name(), Qt::ElideRight, name_label->width());
+        name_label->setText(strDes);
+
         layout->addLayout(temp);
     }
     layout->addItem(spacer);
@@ -625,46 +642,51 @@ void setup_mods(Ui::ModWindow *ui) {
 
 
 ModWindow::ModWindow(Data *data, QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::ModWindow)
+    : data(data), QMainWindow(parent), ui(new Ui::ModWindow)
 {
     QFont font("consolos", 14);//字体
-    Mod::add_mod(QString("学习数学分析{x}分钟"),new Formula(QString("x^2")), OBTAIN,"学习高代");
-    Mod::add_mod(QString("学习高等代数{x}分钟"),new Formula(QString("2*x")), OBTAIN,"学习数分");
-    Mod::add_mod(QString("玩第五人格{x}分钟"),new Formula(QString("x+1")), CONSUME,"第五人格");
-    Mod::add_mod(QString("玩原神{x}分钟"),new Formula(QString("x/2")), CONSUME,"原神");
-    Mod::add_mod(QString("跑步{x}分钟，速度{y}"),new Formula(QString("10*x/y")), OBTAIN,"跑步锻炼");
+    // add_mod(QString("学习数学分析{x}分钟"),new Formula(QString("x^2")), OBTAIN,"学习高代");
+    // add_mod(QString("学习高等代数{x}分钟"),new Formula(QString("2*x")), OBTAIN,"学习数分");
+    // add_mod(QString("玩第五人格{x}分钟"),new Formula(QString("x+1")), CONSUME,"第五人格");
+    // add_mod(QString("玩原神{x}分钟"),new Formula(QString("x/2")), CONSUME,"原神");
+    // add_mod(QString("跑步{x}分钟，速度{y}"),new Formula(QString("10*x/y")), OBTAIN,"跑步锻炼");
 
     ui->setupUi(this);
 
+    mod_cnt=data->mods.size();
+    for(int i=0;i<data->mods.size();i++)
+    {
+        mod_search[++search_count]=i;
+    }
+
     //添加模板
-    QPushButton *addButton = create_icon_button("plus",34,[=]{
-        AddDialog dialog;
+    QPushButton *addButton = create_icon_button("plus",40,[=]{
+        AddDialog dialog(this);
         dialog.exec();
-        setup_mods(ui);
+        setup_mods();
     });
     QLineEdit *lineEdit_search_string = new QLineEdit();
     lineEdit_search_string->setFont(font);
     QPushButton *tagsButton = create_icon_button("tag",34,[=]{
-        Tags_shearch_Dialog dialog;
+        Tags_shearch_Dialog dialog(this);
         dialog.exec();
     });
-    QPushButton *searchButton = create_icon_button("search",34,[=]{
+    QPushButton *searchButton = create_icon_button("search",38,[=]{
         std::vector<QString> b;
-        for(int i=0;i<totallabels.size();i++)
+        for(int i=0;i<data->totallabels.size();i++)
             if(ischose[i])
-                b.push_back(totallabels[i]);
-        Mod::search(lineEdit_search_string->text(),b);
-        setup_mods(ui);
+                b.push_back(data->totallabels[i]);
+        search(lineEdit_search_string->text(),b);
+        setup_mods();
     });
     ui->horizontalLayout_2->addWidget(lineEdit_search_string);
     ui->horizontalLayout_2->addWidget(tagsButton);
     ui->horizontalLayout_2->addWidget(searchButton);
     ui->horizontalLayout_2->addWidget(addButton);
     std::vector<QString> b;
-    Mod::search("",b);
+    search("",b);
 
-    setup_mods(ui);
+    setup_mods();
 
 }
 
@@ -673,3 +695,121 @@ ModWindow::~ModWindow()
 {
     delete ui;
 }
+
+
+void ModWindow::add_mod(QString a,Formula *b,enum RECORD_TYPE type, QString shortn){//一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
+    Mod* aaa=new Mod(mod_cnt,a,b,type,shortn);// id从0开始
+    mod_cnt++;
+    data->mods.push_back(aaa);
+    mod_search[++search_count]=mod_cnt-1;
+}
+
+void ModWindow::delete_mod(Mod *mod){
+    mod->set_deleted(true);
+    for(int i=0;i<mod->labels.size();i++)
+        delete_label(mod, mod->labels[i]);
+}
+
+void ModWindow::change_mod(Mod *before_mod, QString a,Formula *b, enum RECORD_TYPE type, int change_type, QString shortn){//更改模板，先加再删
+    if(change_type==0) //0则为不更改，1为更改
+    {
+        Mod *aaa=new Mod(mod_cnt,a,b,type,shortn);
+        mod_cnt++;
+        data->mods.push_back(aaa);
+        for(int i=0;i<(before_mod->labels).size();i++)
+            add_label(aaa, before_mod->labels[i]);
+        delete_mod(before_mod);
+        mod_search[++search_count]=mod_cnt-1;
+    }
+    else
+    {
+        before_mod->change(a,b,type,shortn);
+        /////////////////////////////  还要更改总积分，要看记录怎么写   /////////////////////////////
+
+    }
+}
+
+void ModWindow::search_string(QString aa){//字符串搜索
+    temp_count=0;
+    for(int i=1;i<=search_count;i++)
+    {
+        if(data->mods[mod_search[i]]->is_deleted()==true)//如果是被删除的模板就跳过
+            continue;
+        if(data->mods[mod_search[i]]->search_str(aa)==true)
+        {
+            temp_search[++temp_count]=mod_search[i];//如果找到一个符合要求的模板就加进temp里
+        }
+    }
+    search_count=temp_count;
+    for(int i=1;i<=temp_count;i++)
+        mod_search[i]=temp_search[i];
+}
+
+void ModWindow::search_tag(QString aa){
+    temp_count=0;
+    for(int i=1;i<=search_count;i++)
+    {
+        if(data->mods[mod_search[i]]->is_deleted()==true)//如果是被删除的模板就跳过
+            continue;
+        if(data->mods[mod_search[i]]->find_label(aa)==true)
+        {
+            temp_search[++temp_count]=mod_search[i];//如果找到一个符合要求的模板就加进temp里
+        }
+    }
+    search_count=temp_count;
+    for(int i=1;i<=temp_count;i++)
+        mod_search[i]=temp_search[i];
+}
+
+void ModWindow::search(QString a, std::vector<QString> b){ //a是查询的字符串，b是标签的数组
+    search_count=data->mods.size();
+    for(int i=1;i<=search_count;i++)
+        mod_search[i]=i-1;
+    search_string(a);
+    for(int i=0;i<b.size();i++)
+        search_tag(b[i]);
+    if(search_count==0)
+        qDebug() << "未搜索到结果";
+    else
+    {
+        for(int i=1;i<=search_count;i++)
+        {
+            data->mods[mod_search[i]]->get_name();
+            /////////////////////////////  要结合ui   /////////////////////////////
+        }
+    }
+}
+
+void ModWindow::add_label(Mod *mod, QString label){ //加标签
+    if(std::find(data->totallabels.begin(), data->totallabels.end(), label)==data->totallabels.end())
+        data->totallabels.push_back(label);
+    mod->labels.push_back(label);
+}
+
+void ModWindow::delete_label(Mod *mod, QString label){ //删除标签
+    auto it=std::find(mod->labels.begin(), mod->labels.end(), label);
+    if(it==mod->labels.end())
+        qDebug() << "未找到改标签";
+    else
+    {
+        mod->labels.erase(it);
+    }
+    int flagg=0;
+    for(int i=0;i<data->mods.size();i++)
+    {
+        if(data->mods[i]->is_deleted())
+            continue;
+        if(std::find( (data->mods[i]->labels).begin() , (data->mods[i]->labels).end() , label ) != (data->mods[i]->labels).end() )
+        {
+            flagg=1;
+            break;
+        }
+    }
+    auto itt=std::find(data->totallabels.begin(), data->totallabels.end(), label);
+    if(flagg==0)
+    {
+        data->totallabels.erase(itt);
+        memset(ischose,0,sizeof(ischose));
+    }
+}
+

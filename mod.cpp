@@ -2,11 +2,7 @@
 #include <QDebug>
 #include <vector>
 #include "mod.h"
-int Mod::search_count=0;
-int Mod::temp_count=0;
-int Mod::mod_cnt=0;
-int Mod::temp_search[200] = {};
-int Mod::mod_search[200]={};
+
 Formula::Formula(QString a)
 {
     func=a;
@@ -61,51 +57,17 @@ void Mod::change(QString a, Formula *b, enum RECORD_TYPE type,QString shortn){ /
         i++;
     }
 }
-void Mod::add_label(QString label){ //加标签
-    if(std::find(totallabels.begin(),totallabels.end(),label)==totallabels.end())
-        totallabels.push_back(label);
-    labels.push_back(label);
-}
+
 std::vector<QString> Mod::get_labels(){
     return labels;
 }
-void Mod::delete_label(QString label){ //删除标签
-    auto it=find(labels.begin(), labels.end(), label);
-    if(it==labels.end())
-        qDebug() << "未找到改标签";
-    else
-    {
-        labels.erase(it);
-    }
-    int flagg=0;
-    for(int i=0;i<mods.size();i++)
-    {
-        if(mods[i]->is_deleted())
-            continue;
-        if(find( (mods[i]->labels).begin() , (mods[i]->labels).end() , label ) != (mods[i]->labels).end() )
-        {
-            flagg=1;
-            break;
-        }
-    }
-    auto itt=find(totallabels.begin(), totallabels.end(), label);
-    if(flagg==0)
-    {
-        totallabels.erase(itt);
-        memset(ischose,0,sizeof(ischose));
-    }
-}
+
 bool Mod::find_label(QString label){ //查找标签
     auto it=find(labels.begin(), labels.end(), label);
     if(it==labels.end())
         return false;
     else
         return true;
-}
-void Mod::delete_mod(){
-    deleted=true;
-    for(int i=0;i<labels.size();i++)
-        delete_label(labels[i]);
 }
 bool Mod::is_deleted(){
     return deleted;
@@ -149,86 +111,7 @@ Mod::Mod(int mod_id, QString a, Formula *b, enum RECORD_TYPE type , QString shor
     }
 }
 
-std::vector<Mod*> mods; // 存放所有模板
-std::vector<QString> totallabels;// 存放所有标签
-bool ischose[1000]; //是否选择这个标签
 
-void Mod::add_mod(QString a,Formula *b,enum RECORD_TYPE type, QString shortn){//一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
-    Mod* aaa=new Mod(mod_cnt,a,b,type,shortn);// id从0开始
-    mod_cnt++;
-    mods.push_back(aaa);
-    mod_search[++search_count]=mod_cnt-1;
-}
-
-void Mod::change_mod(int before_mod_id,QString a,Formula *b, enum RECORD_TYPE type, int change_type, QString shortn){//更改模板，先加再删
-    if(change_type==0) //0则为不更改，1为更改
-    {
-        Mod* aaa=new Mod(mod_cnt,a,b,type,shortn);
-        mod_cnt++;
-        mods.push_back(aaa);
-        for(int i=0;i<(mods[before_mod_id]->labels).size();i++)
-            aaa->add_label(mods[before_mod_id]->labels[i]);
-        mods[before_mod_id]->delete_mod();
-        mod_search[++search_count]=mod_cnt-1;
-    }
-    else
-    {
-        mods[before_mod_id]->change(a,b,type,shortn);
-        /////////////////////////////  还要更改总积分，要看记录怎么写   /////////////////////////////
-
-    }
-}
-
-void Mod::search_string(QString aa){//字符串搜索
-    temp_count=0;
-    for(int i=1;i<=search_count;i++)
-    {
-        if(mods[mod_search[i]]->is_deleted()==true)//如果是被删除的模板就跳过
-            continue;
-        if(mods[mod_search[i]]->search_str(aa)==true)
-        {
-            temp_search[++temp_count]=mod_search[i];//如果找到一个符合要求的模板就加进temp里
-        }
-    }
-    search_count=temp_count;
-    for(int i=1;i<=temp_count;i++)
-        mod_search[i]=temp_search[i];
-}
-
-void Mod::search_tag(QString aa){
-    temp_count=0;
-    for(int i=1;i<=search_count;i++)
-    {
-        if(mods[mod_search[i]]->is_deleted()==true)//如果是被删除的模板就跳过
-            continue;
-        if(mods[mod_search[i]]->find_label(aa)==true)
-        {
-            temp_search[++temp_count]=mod_search[i];//如果找到一个符合要求的模板就加进temp里
-        }
-    }
-    search_count=temp_count;
-    for(int i=1;i<=temp_count;i++)
-        mod_search[i]=temp_search[i];
-}
-
-void Mod::search(QString a, std::vector<QString> b){ //a是查询的字符串，b是标签的数组
-    search_count=mods.size();
-    for(int i=1;i<=search_count;i++)
-        mod_search[i]=i-1;
-    search_string(a);
-    for(int i=0;i<b.size();i++)
-        search_tag(b[i]);
-    if(search_count==0)
-        qDebug() << "未搜索到结果";
-    else
-    {
-        for(int i=1;i<=search_count;i++)
-        {
-            mods[mod_search[i]]->get_name();
-            /////////////////////////////  要结合ui   /////////////////////////////
-        }
-    }
-}
 
 bool Mod::name_legal(){
     int cntt=0;

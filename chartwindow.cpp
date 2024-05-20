@@ -63,10 +63,10 @@ void init_data() {
 std::map<QString,std::list<Mod *> > labels_to_mods;
 void ChartWindow::build_map(){
     labels_to_mods.clear();
-    for(int i = 0;i < mods.size(); i++){
-        std::vector<QString> temp_lables = mods[i]->get_labels();
+    for(int i = 0;i < data->mods.size(); i++){
+        std::vector<QString> temp_lables = data->mods[i]->get_labels();
         for(int j = 0;j < temp_lables.size(); j++){
-            labels_to_mods[temp_lables[j]].push_back(mods[i]);
+            labels_to_mods[temp_lables[j]].push_back(data->mods[i]);
         }
     }
 }
@@ -271,8 +271,8 @@ void ChartWindow::on_select_label_currentIndexChanged(int index)
     if(selected_command!="-")
         ui->select_mod->addItem("All");
     if(selected_command=="All"){
-        for(int i = 0;i < mods.size(); i++){
-            ui->select_mod->addItem(mods[i]->get_name());
+        for(int i = 0;i < data->mods.size(); i++){
+            ui->select_mod->addItem(data->mods[i]->get_name());
         }
     }
     else{
@@ -335,7 +335,7 @@ void ChartWindow::on_select_mod_currentIndexChanged(int index)
         ui->select_graph->addItem("Line Chart");
         if(selected_command!="All"){
             ui->select_type->clear();
-            for(auto mr:mods){
+            for(auto mr:data->mods){
                 if(mr->get_name()==selected_command){
                     if(mr->get_type()==OBTAIN)
                         ui->select_type->addItem("Obtain");
