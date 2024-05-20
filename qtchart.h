@@ -295,9 +295,20 @@ QChartView* build_piechart(std::map<Mod*,int> points_per_mod,int else_point,bool
 QChartView* build_linechart_day(std::map<QDate, int> points_per_day){
     QLineSeries *series = new QLineSeries();
     int tmp=0;
+    int cnt=0;
+    QDate temp_date;
     for(auto mr:points_per_day){
+        cnt++;
+        temp_date=mr.first;
+        auto it=points_per_day.find(temp_date.addDays(-1));
+        if(cnt!=1&&it==points_per_day.end()){
+            series->append(QDateTime(temp_date.addDays(-1),QTime(0,0)).toMSecsSinceEpoch(),tmp);
+        }
         tmp+=mr.second;
-        series->append(QDateTime(mr.first,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+        series->append(QDateTime(temp_date,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+    }
+    if(cnt==1){
+        series->append(QDateTime(temp_date.addDays(-1),QTime(0,0)).toMSecsSinceEpoch(),0);
     }
     QChart *chart = new QChart();
     chart->addSeries(series);
@@ -319,29 +330,46 @@ QChartView* build_linechart_month(std::map<QDate, int> points_per_day){
     int temp_point=0;
     int temp_month=0,temp_year=0;
     int tmp=0;
+    int cnt=0;
     QDate temp_date;
+    std::vector<QDate> x_date;
     if(!points_per_day.empty()){
         temp_month=points_per_day.begin()->first.month();
         temp_year=points_per_day.begin()->first.year();
-        temp_date=points_per_day.begin()->first;
+        QDate the_date=points_per_day.begin()->first;
+        temp_date=QDate(the_date.year(),the_date.month(),1);
+        x_date.push_back(temp_date);
     }
     for(auto mr:points_per_day){
         if(mr.first.month()==temp_month&&mr.first.year()==temp_year){
             temp_point+=mr.second;
         }
         else{
-            tmp+=mr.second;
-            series->append(QDateTime(mr.first,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+            cnt++;
+            if(cnt!=1){
+                series->append(QDateTime(temp_date.addDays(-1),QTime(0,0)).toMSecsSinceEpoch(),tmp);
+            }
+            tmp+=temp_point;
+            series->append(QDateTime(temp_date,QTime(0,0)).toMSecsSinceEpoch(),tmp);
             temp_point=mr.second;
             temp_year=mr.first.year();
             temp_month=mr.first.month();
-            temp_date=mr.first;
+            temp_date=QDate(temp_year,temp_month,1);
+            x_date.push_back(temp_date);
         }
 
     }
-    tmp+=temp_point;
     if(!points_per_day.empty()){
+        cnt++;
+        if(cnt!=1){
+            series->append(QDateTime(temp_date.addDays(-1),QTime(0,0)).toMSecsSinceEpoch(),tmp);
+        }
+        tmp+=temp_point;
         series->append(QDateTime(temp_date,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+    }
+    if(cnt==1){
+        series->append(QDateTime(temp_date.addDays(-1),QTime(0,0)).toMSecsSinceEpoch(),0);
+        series->append(QDateTime(temp_date.addMonths(-1),QTime(0,0)).toMSecsSinceEpoch(),0);
     }
     QChart *chart = new QChart();
     chart->addSeries(series);
@@ -363,26 +391,43 @@ QChartView* build_linechart_year(std::map<QDate, int> points_per_day){
     int temp_point=0;
     int temp_year=0;
     int tmp=0;
+    int cnt=0;
     QDate temp_date;
+    std::vector<QDate> x_date;
     if(!points_per_day.empty()){
         temp_year=points_per_day.begin()->first.year();
-        temp_date=points_per_day.begin()->first;
+        QDate the_date=points_per_day.begin()->first;
+        temp_date=QDate(the_date.year(),1,1);
+        x_date.push_back(temp_date);
     }
     for(auto mr:points_per_day){
         if(mr.first.year()==temp_year){
             temp_point+=mr.second;
         }
         else{
+            cnt++;
+            if(cnt!=1){
+                series->append(QDateTime(temp_date.addDays(-1),QTime(0,0)).toMSecsSinceEpoch(),tmp);
+            }
             tmp+=temp_point;
-            series->append(QDateTime(mr.first,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+            series->append(QDateTime(temp_date,QTime(0,0)).toMSecsSinceEpoch(),tmp);
             temp_point=mr.second;
             temp_year=mr.first.year();
-            temp_date=mr.first;
+            temp_date=QDate(temp_year,1,1);
+            x_date.push_back(temp_date);
         }
     }
-    tmp+=temp_point;
     if(!points_per_day.empty()){
+        cnt++;
+        if(cnt!=1){
+            series->append(QDateTime(temp_date.addDays(-1),QTime(0,0)).toMSecsSinceEpoch(),tmp);
+        }
+        tmp+=temp_point;
         series->append(QDateTime(temp_date,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+    }
+    if(cnt==1){
+        series->append(QDateTime(temp_date.addDays(-1),QTime(0,0)).toMSecsSinceEpoch(),0);
+        series->append(QDateTime(temp_date.addYears(-1),QTime(0,0)).toMSecsSinceEpoch(),0);
     }
     QChart *chart = new QChart();
     chart->addSeries(series);
