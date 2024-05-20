@@ -16,6 +16,7 @@
 #include <bits/stdc++.h>
 #include "record.h"
 #include "mod.h"
+#include <QDebug>
 QChartView* build_histogram_day(std::map<QDate, int> points_per_day){
     QBarSet *set0 = new QBarSet("Points Per Day");
     for(auto mr:points_per_day){
@@ -290,5 +291,120 @@ QChartView* build_piechart(std::map<Mod*,int> points_per_mod,int else_point,bool
     chart->setAnimationOptions(QChart::SeriesAnimations);
     QChartView *chartView = new QChartView(chart);
     return chartView;
+}
+QChartView* build_linechart_day(std::map<QDate, int> points_per_day){
+    QLineSeries *series = new QLineSeries();
+    int tmp=0;
+    for(auto mr:points_per_day){
+        tmp+=mr.second;
+        series->append(QDateTime(mr.first,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+    }
+    QChart *chart = new QChart();
+    chart->addSeries(series);
+    chart->setTitle("Points By Day");
+    QDateTimeAxis *axisX = new QDateTimeAxis;
+    axisX->setFormat("dd MM yyyy");
+    axisX->setTitleText("日期");
+    QValueAxis *axisY = new QValueAxis;
+    axisY->setTitleText("数值");
+    chart->addAxis(axisX, Qt::AlignBottom);
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisX);
+    series->attachAxis(axisY);
+    QChartView *chartView = new QChartView(chart);
+    return chartView;
+}
+QChartView* build_linechart_month(std::map<QDate, int> points_per_day){
+    QLineSeries *series = new QLineSeries();
+    int temp_point=0;
+    int temp_month=0,temp_year=0;
+    int tmp=0;
+    QDate temp_date;
+    if(!points_per_day.empty()){
+        temp_month=points_per_day.begin()->first.month();
+        temp_year=points_per_day.begin()->first.year();
+        temp_date=points_per_day.begin()->first;
+    }
+    for(auto mr:points_per_day){
+        if(mr.first.month()==temp_month&&mr.first.year()==temp_year){
+            temp_point+=mr.second;
+        }
+        else{
+            tmp+=mr.second;
+            series->append(QDateTime(mr.first,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+            temp_point=mr.second;
+            temp_year=mr.first.year();
+            temp_month=mr.first.month();
+            temp_date=mr.first;
+        }
+
+    }
+    tmp+=temp_point;
+    if(!points_per_day.empty()){
+        series->append(QDateTime(temp_date,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+    }
+    QChart *chart = new QChart();
+    chart->addSeries(series);
+    chart->setTitle("Points By Month");
+    QDateTimeAxis *axisX = new QDateTimeAxis;
+    axisX->setFormat("MM yyyy");
+    axisX->setTitleText("日期");
+    QValueAxis *axisY = new QValueAxis;
+    axisY->setTitleText("数值");
+    chart->addAxis(axisX, Qt::AlignBottom);
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisX);
+    series->attachAxis(axisY);
+    QChartView *chartView = new QChartView(chart);
+    return chartView;
+}
+QChartView* build_linechart_year(std::map<QDate, int> points_per_day){
+    QLineSeries *series = new QLineSeries();
+    int temp_point=0;
+    int temp_year=0;
+    int tmp=0;
+    QDate temp_date;
+    if(!points_per_day.empty()){
+        temp_year=points_per_day.begin()->first.year();
+        temp_date=points_per_day.begin()->first;
+    }
+    for(auto mr:points_per_day){
+        if(mr.first.year()==temp_year){
+            temp_point+=mr.second;
+        }
+        else{
+            tmp+=temp_point;
+            series->append(QDateTime(mr.first,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+            temp_point=mr.second;
+            temp_year=mr.first.year();
+            temp_date=mr.first;
+        }
+    }
+    tmp+=temp_point;
+    if(!points_per_day.empty()){
+        series->append(QDateTime(temp_date,QTime(0,0)).toMSecsSinceEpoch(),tmp);
+    }
+    QChart *chart = new QChart();
+    chart->addSeries(series);
+    chart->setTitle("Points By Year");
+    QDateTimeAxis *axisX = new QDateTimeAxis;
+    axisX->setFormat("yyyy");
+    axisX->setTitleText("日期");
+    QValueAxis *axisY = new QValueAxis;
+    axisY->setTitleText("数值");
+    chart->addAxis(axisX, Qt::AlignBottom);
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisX);
+    series->attachAxis(axisY);
+    QChartView *chartView = new QChartView(chart);
+    return chartView;
+}
+QChartView* build_linechart(std::map<QDate, int> points_per_day,QString time){
+    if(time=="Day")
+        return build_linechart_day(points_per_day);
+    else if(time=="Month")
+        return build_linechart_month(points_per_day);
+    else
+        return build_linechart_year(points_per_day);
 }
 #endif // QTCHART_H

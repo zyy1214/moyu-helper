@@ -89,7 +89,7 @@ bool ChartWindow::will_build(){
         return 0;
     if(ui->select_graph->currentText()=="-"||ui->select_graph->currentText()=="")
         return 0;
-    if(ui->select_graph->currentText()=="Histogram"&&(ui->select_time->currentText()=="-"||ui->select_time->currentText()==""))
+    if(ui->select_graph->currentText()!="Pie Chart"&&(ui->select_time->currentText()=="-"||ui->select_time->currentText()==""))
         return 0;
     return 1;
 }
@@ -312,6 +312,17 @@ void ChartWindow::build_graph(){
 
         ui->chart_layout->addWidget(chartView);
     }
+    if(ui->select_graph->currentText()=="Line Chart"){
+        if(ui->chart_layout->itemAt(0)){
+            QWidget *widget=ui->chart_layout->itemAt(0)->widget();
+            ui->chart_layout->removeItem(ui->chart_layout->itemAt(0));
+            delete qobject_cast<QChartView *>(widget);
+        }
+        std::map<QDate,int> point_per_day=get_point_per_day();
+        QChartView* chartView=build_linechart(point_per_day,ui->select_time->currentText());
+        chartView->setRenderHint(QPainter::Antialiasing);
+        ui->chart_layout->addWidget(chartView);
+    }
 }
 
 void ChartWindow::on_select_mod_currentIndexChanged(int index)
@@ -321,6 +332,7 @@ void ChartWindow::on_select_mod_currentIndexChanged(int index)
     ui->select_graph->addItem("-");
     if(selected_command!="-"){
         ui->select_graph->addItem("Histogram");
+        ui->select_graph->addItem("Line Chart");
         if(selected_command!="All"){
             ui->select_type->clear();
             for(auto mr:data->mods){
@@ -351,7 +363,7 @@ void ChartWindow::on_select_graph_currentIndexChanged(int index)
     QString selected_command = ui->select_graph->itemText(index);
     ui->select_time->clear();
     ui->select_time->addItem("-");
-    if(selected_command=="Histogram"){
+    if(selected_command=="Histogram"||selected_command=="Line Chart"){
         ui->select_time->addItem("Day");
         ui->select_time->addItem("Month");
         ui->select_time->addItem("Year");
@@ -366,6 +378,7 @@ void ChartWindow::on_select_type_currentIndexChanged(int index)
     ui->select_graph->addItem("-");
     if(ui->select_mod->currentText()!="-"){
         ui->select_graph->addItem("Histogram");
+        ui->select_graph->addItem("Line Chart");
     }
     if(ui->select_mod->currentText()=="All"&&ui->select_type->currentText()!="All"){
         ui->select_graph->addItem("Pie Chart");
