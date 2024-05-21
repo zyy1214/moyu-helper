@@ -137,14 +137,18 @@ void MainWindow::on_button_menu_clicked()
                         "QMenu::item { padding-top: 8px; padding-bottom: 8px; padding-left: 25px; padding-right: 25px}");
 
     QAction *action_settings = menu->addAction("设置");
-    QAction *action_feedback = menu->addAction("反馈");
+    QAction *focus_mode = menu->addAction("专注模式");
+    QAction *action_feedback = menu->addAction("反馈与帮助");
     QAction *action_about = menu->addAction("关于");
     connect(action_settings, &QAction::triggered, this, [this] () {
         SettingsDialog *dialog = new SettingsDialog(nullptr, this);
         dialog->show();
     });
+    connect(focus_mode, &QAction::triggered, this, [this] () {
+        show_info("专注模式", "该功能正在开发中，将在未来版本中更新，敬请期待……");
+    });
     connect(action_feedback, &QAction::triggered, this, [this] () {
-
+        show_info("反馈与帮助", "您可以联系 zyy@stu.pku.edu.cn 以反馈问题或获取帮助。");
     });
     connect(action_about, &QAction::triggered, this, [this]() {
         show_info("关于", "软件名称：摸鱼小助手\n软件版本：v0.0.1\n制作人员：张远洋 王之略 刘曜玮");

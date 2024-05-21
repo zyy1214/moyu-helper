@@ -25,13 +25,13 @@
 #include <QScrollBar>
 
 void RecordWindow::init_data() {
-    data->mods.push_back(new Mod(0, QString("跑步{跑步里程}km"), new Formula(QString("跑步里程")), OBTAIN, "跑步"));
-    data->mods.push_back(new Mod(1, QString("做谢慧民{题目数量}道题"), new Formula(QString("题目数量/4")), OBTAIN, "做谢慧民"));
-    data->mods.push_back(new Mod(0, QString("玩原神{游戏时间}分钟（抵扣{抵扣时长}分钟）"), new Formula(QString("max((游戏时间-抵扣时长)/30,0)")), CONSUME, "玩原神"));
-    data->mods.push_back(new Mod(1, QString("做作业"),new Formula(QString("1")), OBTAIN, "做作业"));
-    data->mods.push_back(new Mod(1, QString("测试{x}{y}{z}{w}"),new Formula(QString("(x+y)*(z+w)")), CONSUME, "test"));
+    // data->mods.push_back(new Mod(0, QString("跑步{跑步里程}km"), new Formula(QString("跑步里程")), OBTAIN, "跑步"));
+    // data->mods.push_back(new Mod(1, QString("做谢慧民{题目数量}道题"), new Formula(QString("题目数量/4")), OBTAIN, "做谢慧民"));
+    // data->mods.push_back(new Mod(0, QString("玩原神{游戏时间}分钟（抵扣{抵扣时长}分钟）"), new Formula(QString("max((游戏时间-抵扣时长)/30,0)")), CONSUME, "玩原神"));
+    // data->mods.push_back(new Mod(1, QString("做作业"),new Formula(QString("1")), OBTAIN, "做作业"));
+    // data->mods.push_back(new Mod(1, QString("测试{x}{y}{z}{w}"),new Formula(QString("(x+y)*(z+w)")), CONSUME, "test"));
 
-    load_data(data->records);
+    load_data(data);
     for (auto mr : data->records) {
         for (auto r : *(mr.second)) {
             int point = r->get_signed_point();
@@ -373,6 +373,7 @@ private slots:
     }
 
     void onOKButtonClicked() {
+        // todo: 对修改进行合法性校验，包括是否未选中任何 mod 等情况
         enum RECORD_TYPE type = optionRadioButton1->isChecked() ? OBTAIN : CONSUME;
         if (!record) {
             QDate date = dateEdit->date();
@@ -410,8 +411,8 @@ private slots:
                     rd->set_type(type);
                     rd->set_point(numberLineEdit->text().toInt());
                 }
-                db_modify_record(record);
             }
+            db_modify_record(record);
             d_points = record->get_signed_point() - d_points;
             window->data->total_points += d_points;
             if (record->get_date().daysTo(QDate::currentDate()) <= 6) {

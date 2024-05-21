@@ -3,13 +3,6 @@
 
 #include "record.h"
 
-void load_data(std::map<QDate, MultipleRecord *, std::greater<QDate>> &records);
-int db_add_record(Record *record); // 返回数据的 id
-bool db_modify_record(Record *record);
-bool db_delete_record(Record *record);
-void save_value(QString key, QString value);
-QString get_value(QString key);
-
 class Data {
 public:
     std::map<QDate, MultipleRecord *, std::greater<QDate>> records;
@@ -18,5 +11,17 @@ public:
     int total_points = 0;
     int last_week_points = 0;
 };
+
+void load_data(Data *data);
+int db_add_record(Record *record); // 返回数据的 id
+bool db_modify_record(Record *record);
+bool db_delete_record(Record *record);
+
+int db_add_mod(Mod *mod);
+bool db_modify_mod(Mod *mod);
+bool db_delete_mod(Mod *mod);
+
+void save_value(QString key, QString value);
+QString get_value(QString key);
 
 #endif // DATA_STORAGE_H

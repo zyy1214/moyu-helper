@@ -9,6 +9,7 @@
 #include <QSqlQuery>
 
 #include "record.h"
+#include "data_storage.h"
 
 bool isTableExists(const QString& tableName, QSqlDatabase& db) {
     QSqlQuery query(db);
@@ -98,7 +99,7 @@ QString get_value(QString key) {
 QSqlDatabase db;
 
 QString username;
-void load_data(std::map<QDate, MultipleRecord *, std::greater<QDate>> &records) {
+void load_data(Data *data) {
     username = get_value("username");
     username = username == "" ? "local" : "user-" + username;
     db = QSqlDatabase::addDatabase("QSQLITE", "main");
@@ -114,31 +115,85 @@ void load_data(std::map<QDate, MultipleRecord *, std::greater<QDate>> &records) 
     QSqlQuery query_create(db);
 
     // 创建表
-    QString createTableQuery = "CREATE TABLE IF NOT EXISTS records ("
-                               "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                               "uuid TEXT,"
-                               "user TEXT,"
-                               "create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
-                               "date DATE,"
-                               "sort_order INTEGER,"
-                               "record_class INTEGER,"
-                               "record_type INTEGER,"
-                               "point INTEGER,"
-                               "record_info TEXT)";
+    QString create_records_table_query = "CREATE TABLE IF NOT EXISTS records ("
+                                         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                         "uuid TEXT,"
+                                         "user TEXT,"
+                                         "create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                                         "date DATE,"
+                                         "sort_order INTEGER,"
+                                         "record_class INTEGER,"
+                                         "record_type INTEGER,"
+                                         "point INTEGER,"
+                                         "record_info TEXT)";
 
-    if (!query_create.exec(createTableQuery)) {
-        qDebug() << "Error creating table:" << query_create.lastError().text();
+    if (!query_create.exec(create_records_table_query)) {
+        qDebug() << "Error creating table records:" << query_create.lastError().text();
         return;
     }
     query_create.exec("CREATE INDEX IF NOT EXISTS user_index ON records (user)");
 
+    QString create_mods_table_query = "CREATE TABLE IF NOT EXISTS mods ("
+                                      "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                      "uuid TEXT,"
+                                      "user TEXT,"
+                                      "create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                                      "mod_type INTEGER,"
+                                      "deleted INTEGER,"
+                                      "name TEXT,"
+                                      "content TEXT,"
+                                      "name_merge TEXT,"
+                                      "formula TEXT,"
+                                      "labels TEXT)";
+
+    if (!query_create.exec(create_mods_table_query)) {
+        qDebug() << "Error creating table mods:" << query_create.lastError().text();
+        return;
+    }
+    query_create.exec("CREATE INDEX IF NOT EXISTS user_index ON mods (user)");
+
     QSqlQuery query(db);
 
+
     // 准备查询语句
-    QString selectQuery = "SELECT * FROM records WHERE user = :username "
+    QString mods_query = "SELECT * FROM mods WHERE user = :username "
+                         "ORDER BY create_time ASC";
+
+    query.prepare(mods_query);
+    query.bindValue(":username", username);
+    // 执行查询
+    if (!query.exec()) {
+        qDebug() << "Error selecting mods:" << query.lastError().text();
+        return;
+    }
+
+    std::unordered_map<QString, Mod *> uuid_map;
+    while (query.next()) {
+        int id = query.value("id").toInt();
+        //QDateTime createTime = query.value("create_time").toDateTime();
+        enum RECORD_TYPE mod_type = query.value("mod_type").toInt() == 1 ? OBTAIN : CONSUME;
+        bool deleted = query.value("deleted").toInt();
+        QString name = query.value("name").toString();
+        QString content = query.value("content").toString();
+        QString name_merge = query.value("name_merge").toString();
+        QString formula = query.value("formula").toString();
+        QString labels = query.value("labels").toString();
+        QString uuid = query.value("uuid").toString();
+
+        Mod *mod = new Mod(id, content, new Formula(formula), mod_type, name);
+        mod->set_deleted(deleted);
+        mod->set_labels_string(labels);
+        mod->set_uuid(uuid);
+        data->mods.push_back(mod);
+
+        uuid_map[uuid] = mod;
+    }
+
+    // 准备查询语句
+    QString records_query = "SELECT * FROM records WHERE user = :username "
                           "ORDER BY date DESC, sort_order DESC, create_time DESC";
 
-    query.prepare(selectQuery);
+    query.prepare(records_query);
     query.bindValue(":username", username);
     // 执行查询
     if (!query.exec()) {
@@ -158,7 +213,7 @@ void load_data(std::map<QDate, MultipleRecord *, std::greater<QDate>> &records) 
         QString record_info = query.value("record_info").toString();
 
         if (!last || date != (*last)) {
-            if (mr) records[*last] = mr;
+            if (mr) data->records[*last] = mr;
             last = new QDate(date);
             mr = new MultipleRecord;
         }
@@ -166,9 +221,8 @@ void load_data(std::map<QDate, MultipleRecord *, std::greater<QDate>> &records) 
         Record *record = nullptr;
         switch (record_class) {
             case BY_MOD: {
-                // todo: 这一部分还需等待 wzl 把相关代码写完
-                // record = new RecordByMod(nullptr, nullptr, date);
-                // record->from_string(record_info);
+                record = new RecordByMod(nullptr, nullptr, date);
+                record->from_string(uuid_map, record_info);
                 break;
             }
             case DIRECT: {
@@ -184,7 +238,7 @@ void load_data(std::map<QDate, MultipleRecord *, std::greater<QDate>> &records) 
         }
     }
     if (mr) {
-        records[*last] = mr;
+        data->records[*last] = mr;
     }
 }
 
@@ -256,3 +310,67 @@ bool db_delete_record(Record *record) {
     return true;
 }
 
+int db_add_mod(Mod *mod) {
+    qDebug() << "Start adding mod.";
+    QSqlQuery query(db);
+
+    query.prepare("INSERT INTO mods (uuid, user, mod_type, deleted, name, content, name_merge, formula, labels) "
+                  "VALUES (:uuid, :username, :mod_type, :deleted, :name, :content, :name_merge, :formula, :labels)");
+
+    query.bindValue(":uuid", mod->get_uuid().toString(QUuid::WithoutBraces));
+    query.bindValue(":username", username);
+    query.bindValue(":mod_type", (int) mod->get_type());
+    query.bindValue(":deleted", (int) mod->is_deleted());
+    query.bindValue(":name", mod->get_shortname());
+    query.bindValue(":content", mod->get_name());
+    query.bindValue(":name_merge", mod->get_name_merge());
+    query.bindValue(":formula", mod->get_formula_text());
+    query.bindValue(":labels", mod->get_labels_string());
+
+    if (!query.exec()) {
+        qDebug() << "Error inserting mod:" << query.lastError().text();
+        return -1;
+    }
+    int id = query.lastInsertId().toInt();
+    qDebug() << "End adding mod, id =" << id;
+    return id;
+}
+bool db_modify_mod(Mod *mod) {
+    qDebug() << "Start modifying mod.";
+    QSqlQuery query(db);
+
+    query.prepare("UPDATE mods "
+                  "SET mod_type = :mod_type, deleted = :deleted, name = :name, "
+                  "content = :content, name_merge = :name_merge, formula = :formula, labels = :labels "
+                  "WHERE id = :id");
+
+    query.bindValue(":mod_type", (int) mod->get_type());
+    query.bindValue(":deleted", (int) mod->is_deleted());
+    query.bindValue(":name", mod->get_shortname());
+    query.bindValue(":content", mod->get_name());
+    query.bindValue(":name_merge", mod->get_name_merge());
+    query.bindValue(":formula", mod->get_formula_text());
+    query.bindValue(":labels", mod->get_labels_string());
+    query.bindValue(":id", mod->get_id());
+
+    if (!query.exec()) {
+        qDebug() << "Error modifying mod:" << query.lastError().text();
+        return false;
+    }
+    qDebug() << "End modifying mod.";
+    return true;
+}
+bool db_delete_mod(Mod *mod) {
+    qDebug() << "Start deleting mod.";
+    QSqlQuery query(db);
+
+    query.prepare("DELETE FROM mods WHERE id = :id");
+    query.bindValue(":id", mod->get_id());
+
+    if (!query.exec()) {
+        qDebug() << "Error deleting mod:" << query.lastError().text();
+        return false;
+    }
+    qDebug() << "End deleting mod.";
+    return true;
+}

@@ -54,7 +54,7 @@ public:
     virtual QString get_display_name() const = 0;
     // 以下两个函数用于序列化、反序列化每种类型的 record 中存储的信息，以存入数据库中或从数据库中取出
     virtual QString to_string() const = 0;
-    virtual void from_string(QString s) = 0;
+    virtual void from_string(std::unordered_map<QString, Mod *> uuid_map, QString s) = 0;
     virtual bool is_from_template() {
         return false;
     }
@@ -93,7 +93,7 @@ public:
     virtual int get_point() const;
     virtual QString get_display_name() const;
     virtual QString to_string() const;
-    virtual void from_string(QString s);
+    virtual void from_string(std::unordered_map<QString, Mod *> uuid_map, QString s);
     virtual bool is_from_template() {
         return true;
     }
@@ -115,7 +115,7 @@ public:
     virtual int get_point() const;
     virtual QString get_display_name() const;
     virtual QString to_string() const;
-    virtual void from_string(QString s);
+    virtual void from_string(std::unordered_map<QString, Mod *> uuid_map, QString s);
     void set_type(enum RECORD_TYPE type);
     void set_point(int point);
     void set_name(QString name);

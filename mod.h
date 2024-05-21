@@ -4,6 +4,7 @@
 
 #include <QDate>
 #include <QString>
+#include <QUuid>
 #include <vector>
 
 enum RECORD_TYPE {
@@ -22,10 +23,12 @@ public:
 };
 
 class Mod {
+    int id;
+    QUuid uuid;
     bool deleted; // 用户修改模板时，可以选择保留之前的记录不被修改，此时该模板状态为 deleted，不在模板列表里显示
     QString name; // 记录显示出来的信息
     QString short_name;//别名
-    QString name_sum; // 记录同一个模板的记录合并后展示的信息
+    QString name_merge; // 记录同一个模板的记录合并后展示的信息
     // 例：使用手机 {x} 分钟，使用电脑 {y} 分钟
     // 2024年4月 "共计使用手机 {x} 分钟，使用电脑 {y} 分钟。“
     Formula *formula; // 用于计算积分的公式
@@ -34,10 +37,7 @@ class Mod {
     //////////////////////////////////////////////////////////////
 
 public:
-    int id;
     enum RECORD_TYPE type = OBTAIN ;// 或者 TYPE_CONSUME; // 模板类型
-    static int mod_search[200]; //搜索出的模板id
-    static int search_count;//搜索出的个数
     int input_num; // 代表该条记录需要几个变量
     std::vector<QString> variable; //记录变量的字符串
     std::vector<QString> labels;
@@ -60,6 +60,60 @@ public:
 
     void set_deleted(bool deleted) {
         this->deleted = deleted;
+    }
+
+    QUuid get_uuid() {
+        return uuid;
+    }
+    void set_uuid(QString uuid) {
+        this->uuid = QUuid(uuid);
+    }
+    void create_uuid() {
+        uuid = QUuid::createUuid();
+    }
+
+    QString get_name_merge() {
+        return name_merge;
+    }
+
+    QString get_formula_text() {
+        return formula->func;
+    }
+
+    QString get_labels_string() {
+        QString result;
+        for (const QString &str : labels) {
+            result.append(str).append('\n');
+        }
+        // 删除最后一个多余的换行符
+        if (!result.isEmpty()) {
+            result.chop(1);
+        }
+        return result;
+    }
+    void set_labels_string(QString labels_string) {
+        QStringList list = labels_string.split('\n');
+        for (const QString &s : list) {
+            if (s != "") {
+                labels.push_back(s);
+            }
+        }
+    }
+
+    int get_id() {
+        return id;
+    }
+    void set_id(int id) {
+        this->id = id;
+    }
+    void set_name(QString name) {
+        this->name = name;
+    }
+    void set_short_name(QString name) {
+        this->short_name = name;
+    }
+    void set_type(enum RECORD_TYPE type) {
+        this->type = type;
     }
 
 };

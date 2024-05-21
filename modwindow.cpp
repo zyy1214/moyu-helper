@@ -112,9 +112,6 @@ private:
 };
 
 
-
-
-
 class TagButton : public QPushButton { //标签button
 
 public:
@@ -225,9 +222,6 @@ public:
         });
     }
 };
-
-
-
 
 
 //添加对话框
@@ -686,6 +680,8 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     std::vector<QString> b;
     search("",b);
 
+    // todo: 读入的 mods 中包含标签时，搜索标签功能失效
+
     setup_mods();
 
 }
@@ -697,10 +693,13 @@ ModWindow::~ModWindow()
 }
 
 
-void ModWindow::add_mod(QString a,Formula *b,enum RECORD_TYPE type, QString shortn){//一个id，一个 使用手机 {} 分钟，使用电脑 {} 分钟 ，一个公式,一个类型
-    Mod* aaa=new Mod(mod_cnt,a,b,type,shortn);// id从0开始
+void ModWindow::add_mod(QString name, Formula *formula, enum RECORD_TYPE type, QString short_name){
+    Mod* mod = new Mod(mod_cnt, name, formula, type, short_name);// id从0开始
+    mod->create_uuid();
+    int id = db_add_mod(mod);
+    mod->set_id(id);
     mod_cnt++;
-    data->mods.push_back(aaa);
+    data->mods.push_back(mod);
     mod_search[++search_count]=mod_cnt-1;
 }
 
@@ -708,22 +707,30 @@ void ModWindow::delete_mod(Mod *mod){
     mod->set_deleted(true);
     for(int i=0;i<mod->labels.size();i++)
         delete_label(mod, mod->labels[i]);
+    db_modify_mod(mod);
 }
 
-void ModWindow::change_mod(Mod *before_mod, QString a,Formula *b, enum RECORD_TYPE type, int change_type, QString shortn){//更改模板，先加再删
-    if(change_type==0) //0则为不更改，1为更改
+// change_legacy: 是否更新之前这一模板留下的记录
+void ModWindow::change_mod(Mod *before_mod, QString name, Formula *formula, enum RECORD_TYPE type, int change_legacy, QString short_name){
+    // 0则为不更改，1为更改
+    if(change_legacy==0)
     {
-        Mod *aaa=new Mod(mod_cnt,a,b,type,shortn);
+        Mod *mod = new Mod(mod_cnt, name, formula, type, short_name);
         mod_cnt++;
-        data->mods.push_back(aaa);
+        data->mods.push_back(mod);
         for(int i=0;i<(before_mod->labels).size();i++)
-            add_label(aaa, before_mod->labels[i]);
+            add_label(mod, before_mod->labels[i]);
         delete_mod(before_mod);
         mod_search[++search_count]=mod_cnt-1;
+
+        db_modify_mod(before_mod);
+        mod->create_uuid();
+        mod->set_id(db_add_mod(mod));
     }
     else
     {
-        before_mod->change(a,b,type,shortn);
+        before_mod->change(name,formula,type,short_name);
+        db_modify_mod(before_mod);
         /////////////////////////////  还要更改总积分，要看记录怎么写   /////////////////////////////
 
     }
@@ -784,6 +791,7 @@ void ModWindow::add_label(Mod *mod, QString label){ //加标签
     if(std::find(data->totallabels.begin(), data->totallabels.end(), label)==data->totallabels.end())
         data->totallabels.push_back(label);
     mod->labels.push_back(label);
+    db_modify_mod(mod);
 }
 
 void ModWindow::delete_label(Mod *mod, QString label){ //删除标签
@@ -811,5 +819,6 @@ void ModWindow::delete_label(Mod *mod, QString label){ //删除标签
         data->totallabels.erase(itt);
         memset(ischose,0,sizeof(ischose));
     }
+    db_modify_mod(mod);
 }
 

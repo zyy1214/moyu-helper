@@ -1,11 +1,5 @@
 #include "record.h"
 #include "calculate.h"
-class Formula; // wzl 负责
-
-/*Record::Record() {
-    id = ++current_max_id;
-}
-int Record::current_max_id = 0;*/
 
 Date::Date(int y, int m, int d): y(y), m(m), d(d) {}
 bool Date::operator < (const Date &date) const {
@@ -20,11 +14,6 @@ bool Date::operator < (const Date &date) const {
 int Date::get_weekday() const {
     return (d + 2 * m + int(3 * (m + 1) / 5) + y + int(y / 4) - int(y / 100) + int(y / 400)) % 7;
 }
-
-// QString Mod::get_name() {
-//     return "";
-// }
-
 
 RecordByMod::RecordByMod(Mod *mod, double *inputs, QDate date)
     : inputs(inputs), mod(mod){
@@ -69,17 +58,23 @@ QString RecordByMod::get_display_name() const {
     return mod->get_shortname();
 }
 QString RecordByMod::to_string() const {
-    // QString a=QString::number(mod->id);
-    // for(int i=0;i<mod->input_num;i++)
-    // {
-    //     a=a+",";
-    //     a=a+QString::number(inputs[i]);
-    // }
-    // a=a+",";
-    // return a;
-    return "";
+    QString result = mod->get_uuid().toString(QUuid::WithoutBraces);
+    for(int i=0;i<mod->input_num;i++) {
+        result += "\n";
+        result += QString::number(inputs[i]);
+    }
+    return result;
 }
-void RecordByMod::from_string(QString s) {
+void RecordByMod::from_string(std::unordered_map<QString, Mod *> uuid_map, QString str) {
+    std::vector<QString> result;
+    QStringList list = str.split('\n');
+
+    mod = uuid_map[list[0]];
+
+    inputs = new double[list.size() - 1];
+    for (int i = 1, len = list.size(); i < len; i++) {
+        inputs[i - 1] = list[i].toDouble();
+    }
     // QString a="";
     // int flag=0;
     // int total=0;
@@ -134,7 +129,7 @@ QString RecordDirect::get_display_name() const {
 QString RecordDirect::to_string() const {
     return name;
 }
-void RecordDirect::from_string(QString s) {
+void RecordDirect::from_string(std::unordered_map<QString, Mod *> uuid_map, QString s) {
     name = s;
 }
 void RecordDirect::set_type(enum RECORD_TYPE type) {
