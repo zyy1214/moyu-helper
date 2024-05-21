@@ -42,5 +42,8 @@ private:
 
     void setup_mods();
 
+private slots:
+    void on_mod_added(Mod *mod);
+    void on_mod_modified(Mod *mod);
 };
 #endif // MODWINDOW_H

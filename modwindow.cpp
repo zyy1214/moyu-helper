@@ -22,8 +22,6 @@
 
 #include "data_storage.h"
 
-
-
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QScrollArea>
@@ -303,9 +301,9 @@ public:
 
             Formula bb(text_formula);
             //qDebug()<<"here";
-            Mod* aaa=new Mod(0,text_name,&bb, button_type == 1 ? OBTAIN : CONSUME , text_shortname);
+            Mod* mod = new Mod(0,text_name,&bb, button_type == 1 ? OBTAIN : CONSUME, text_shortname);
             //qDebug()<<"here1";
-            if(aaa->name_legal())
+            if(mod->name_legal())
             {
                 window->add_mod(text_name,new Formula(text_formula), button_type == 1 ? OBTAIN : CONSUME, text_shortname);
                 close();
@@ -315,7 +313,7 @@ public:
                 Warning_Dialog dialog;
                 dialog.exec();
             }
-            delete aaa;
+            delete mod;
         });
         connect(cancelButton, &QPushButton::clicked,[=](){
             close();
@@ -458,7 +456,6 @@ private:
 };
 
 
-
 //标签搜索
 class Tags_shearch_Dialog : public QDialog {
 
@@ -527,8 +524,6 @@ public:
 private:
     QButtonGroup buttonGroup;
 };
-
-
 
 
 
@@ -684,6 +679,8 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
 
     setup_mods();
 
+    connect(data, &Data::mod_added, this, &ModWindow::on_mod_added);
+    connect(data, &Data::mod_modified, this, &ModWindow::on_mod_modified);
 }
 
 
@@ -696,10 +693,10 @@ ModWindow::~ModWindow()
 void ModWindow::add_mod(QString name, Formula *formula, enum RECORD_TYPE type, QString short_name){
     Mod* mod = new Mod(mod_cnt, name, formula, type, short_name);// id从0开始
     mod->create_uuid();
-    int id = db_add_mod(mod);
+    int id = db_add_mod(data, mod);
     mod->set_id(id);
-    mod_cnt++;
     data->mods.push_back(mod);
+    mod_cnt++;
     mod_search[++search_count]=mod_cnt-1;
 }
 
@@ -707,7 +704,7 @@ void ModWindow::delete_mod(Mod *mod){
     mod->set_deleted(true);
     for(int i=0;i<mod->labels.size();i++)
         delete_label(mod, mod->labels[i]);
-    db_modify_mod(mod);
+    db_modify_mod(data, mod);
 }
 
 // change_legacy: 是否更新之前这一模板留下的记录
@@ -723,14 +720,14 @@ void ModWindow::change_mod(Mod *before_mod, QString name, Formula *formula, enum
         delete_mod(before_mod);
         mod_search[++search_count]=mod_cnt-1;
 
-        db_modify_mod(before_mod);
+        db_modify_mod(data, before_mod);
         mod->create_uuid();
-        mod->set_id(db_add_mod(mod));
+        mod->set_id(db_add_mod(data, mod));
     }
     else
     {
         before_mod->change(name,formula,type,short_name);
-        db_modify_mod(before_mod);
+        db_modify_mod(data, before_mod);
         /////////////////////////////  还要更改总积分，要看记录怎么写   /////////////////////////////
 
     }
@@ -791,7 +788,7 @@ void ModWindow::add_label(Mod *mod, QString label){ //加标签
     if(std::find(data->totallabels.begin(), data->totallabels.end(), label)==data->totallabels.end())
         data->totallabels.push_back(label);
     mod->labels.push_back(label);
-    db_modify_mod(mod);
+    db_modify_mod(data, mod);
 }
 
 void ModWindow::delete_label(Mod *mod, QString label){ //删除标签
@@ -819,6 +816,15 @@ void ModWindow::delete_label(Mod *mod, QString label){ //删除标签
         data->totallabels.erase(itt);
         memset(ischose,0,sizeof(ischose));
     }
-    db_modify_mod(mod);
+    db_modify_mod(data, mod);
 }
 
+void ModWindow::on_mod_added(Mod *mod) {
+    mod_cnt++;
+    mod_search[++search_count]=mod_cnt-1;
+    setup_mods();
+}
+
+void ModWindow::on_mod_modified(Mod *mod) {
+    setup_mods();
+}

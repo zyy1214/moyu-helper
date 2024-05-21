@@ -75,10 +75,14 @@ public:
     QString get_name_merge() {
         return name_merge;
     }
+    void set_name_merge(QString name_merge) {
+        this->name_merge = name_merge;
+    }
 
     QString get_formula_text() {
         return formula->func;
     }
+    void set_formula_text(QString formula);
 
     QString get_labels_string() {
         QString result;

@@ -58,6 +58,33 @@ void Mod::change(QString a, Formula *b, enum RECORD_TYPE type,QString shortn){ /
     }
 }
 
+void Mod::set_formula_text(QString formula) {
+    delete this->formula;
+    this->formula = new Formula(formula);
+
+    input_num=0;
+    variable.clear();
+    variable.shrink_to_fit();
+    int i=0;
+    while(i<name.size())
+    {
+        if(name[i]=='{')
+        {
+            i++;
+            QString temp="";
+            input_num++;
+            while(i<name.size() && name[i]!='}')
+            {
+                temp=temp+QString(1,name[i]);
+                i++;
+            }
+            variable.push_back(temp);
+            this->formula->var.push_back(temp);
+        }
+        i++;
+    }
+}
+
 std::vector<QString> Mod::get_labels(){
     return labels;
 }

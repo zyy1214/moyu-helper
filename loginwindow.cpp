@@ -220,7 +220,7 @@ void LoginWindow::login_clicked() {
     n->add_data("password", passwordEdit->text());
     save_value("username", usernameEdit->text());
     save_value("password", passwordEdit->text());
-    n->post([=] (QMainWindow *w, QString reply) {
+    n->post([=] (void *w, QString reply) {
         LoginWindow *window = (LoginWindow *) w;
         if (reply == "") {
             show_warning("登录失败", "用户名或密码错误，请检查输入的信息。");
@@ -269,7 +269,7 @@ void LoginWindow::register_clicked() {
     //QString password = registerPasswordEdit->text();
     n->add_data("username", registerUsernameEdit->text());
     n->add_data("password", registerPasswordEdit->text());
-    n->post([=] (QMainWindow *w, QString reply) {
+    n->post([=] (void *w, QString reply) {
         LoginWindow *window = (LoginWindow *) w;
         if (reply != "true") {
             show_warning("注册失败", reply);

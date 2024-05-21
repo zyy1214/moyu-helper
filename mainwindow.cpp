@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setPalette(QPalette(QColor(Qt::white)));
     data = new Data();
+    load_data(data);
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
     cw = new ChartWindow(data, this);

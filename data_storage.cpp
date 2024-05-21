@@ -10,6 +10,7 @@
 
 #include "record.h"
 #include "data_storage.h"
+#include "network.h"
 
 bool isTableExists(const QString& tableName, QSqlDatabase& db) {
     QSqlQuery query(db);
@@ -49,8 +50,11 @@ void init_db_kv() {
         db_kv_inited = true;
     }
 }
-void save_value(QString key, QString value) {
+void save_value(QString key, QString value, bool user_specific) {
     init_db_kv();
+    if (user_specific) {
+        key += "__" + get_value("userid");
+    }
     QSqlQuery query(db_kv);
     query.prepare("SELECT COUNT(*) FROM kv_table WHERE key = :key");
     query.bindValue(":key", key);
@@ -72,8 +76,11 @@ void save_value(QString key, QString value) {
     }
     kv_cache[key] = value;
 }
-QString get_value(QString key) {
+QString get_value(QString key, bool user_specific) {
     init_db_kv();
+    if (user_specific) {
+        key += "__" + get_value("userid");
+    }
     if (kv_cache.find(key) != kv_cache.end()) {
         return kv_cache[key];
     }
@@ -152,6 +159,28 @@ void load_data(Data *data) {
     }
     query_create.exec("CREATE INDEX IF NOT EXISTS user_index ON mods (user)");
 
+
+    QString create_mod_operations_query = "CREATE TABLE IF NOT EXISTS mod_operations ("
+                                          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                          "uuid TEXT,"
+                                          "user TEXT,"
+                                          "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                                          "operation_type INT,"
+                                          "mod_uuid TEXT,"
+                                          "mod_type INTEGER,"
+                                          "deleted INTEGER,"
+                                          "name TEXT,"
+                                          "content TEXT,"
+                                          "name_merge TEXT,"
+                                          "formula TEXT,"
+                                          "labels TEXT)";
+    if (!query_create.exec(create_mod_operations_query)) {
+        qDebug() << "Error creating table mod_operations:" << query_create.lastError().text();
+        return;
+    }
+    query_create.exec("CREATE INDEX IF NOT EXISTS user_index ON mods (user)");
+
+
     QSqlQuery query(db);
 
 
@@ -182,6 +211,7 @@ void load_data(Data *data) {
 
         Mod *mod = new Mod(id, content, new Formula(formula), mod_type, name);
         mod->set_deleted(deleted);
+        mod->set_name_merge(name_merge);
         mod->set_labels_string(labels);
         mod->set_uuid(uuid);
         data->mods.push_back(mod);
@@ -240,6 +270,8 @@ void load_data(Data *data) {
     if (mr) {
         data->records[*last] = mr;
     }
+
+    sync_mods_data(data);
 }
 
 int db_add_record(Record *record) {
@@ -310,7 +342,212 @@ bool db_delete_record(Record *record) {
     return true;
 }
 
-int db_add_mod(Mod *mod) {
+
+enum MOD_OPERATION_TYPE {
+    ADD = 1, MODIFY = 2
+};
+
+bool mods_contains(QString &uuid) {
+    QSqlQuery query(db);
+    query.prepare("SELECT id FROM mod_operations WHERE uuid = :uuid");
+    query.bindValue(":uuid", uuid);
+    query.exec();
+    int cnt = 0;
+    return query.next();
+}
+
+// 合并来自网络的模版操作记录
+void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
+    QSqlQuery query(db);
+
+    QString earliest_time = "9999-99-99 99:99:99";
+    // 将获取到的操作记录存入数据库中
+    for (const QJsonValue &value : jsonArray) {
+        QJsonObject operation = value.toObject();
+        query.prepare("SELECT id FROM mod_operations WHERE uuid = :uuid");
+        query.bindValue(":uuid", operation["uuid"].toString());
+        query.exec();
+        int cnt = 0;
+        while (query.next()) {
+            cnt++;
+        }
+        if (cnt != 0) continue;
+
+        query.prepare("INSERT INTO mod_operations (uuid, user, time, operation_type, mod_uuid, "
+                      "mod_type, deleted, name, content, name_merge, formula, labels) "
+                      "VALUES (:uuid, :username, :time, :operation_type, :mod_uuid, "
+                      ":mod_type, :deleted, :name, :content, :name_merge, :formula, :labels)");
+        query.bindValue(":uuid", operation["uuid"].toString());
+        query.bindValue(":username", username);
+        QString time = operation["time"].toString();
+        qDebug() << time;
+        if (time < earliest_time) earliest_time = time;
+        query.bindValue(":time", time);
+        query.bindValue(":operation_type", operation["operation_type"].toInt());
+        query.bindValue(":mod_uuid", operation["mod_uuid"].toString());
+        query.bindValue(":mod_type", operation["mod_type"].toInt());
+        query.bindValue(":deleted", operation["deleted"].toBool());
+        query.bindValue(":name", operation["name"].toString());
+        query.bindValue(":content", operation["content"].toString());
+        query.bindValue(":name_merge", operation["name_merge"].toString());
+        query.bindValue(":formula", operation["formula"].toString());
+        query.bindValue(":labels", operation["labels"].toString());
+        if (!query.exec()) {
+            qDebug() << "Failed to insert operation:" << query.lastError().text();
+        }
+    }
+
+    std::unordered_map<QString, Mod *> uuid_map;
+    for (Mod *mod : data->mods) {
+        uuid_map[mod->get_uuid().toString(QUuid::WithoutBraces)] = mod;
+    }
+
+    qDebug() << earliest_time;
+    query.prepare("SELECT * FROM mod_operations WHERE time >= :earliest_time ORDER BY time ASC");
+    query.bindValue(":earliest_time", earliest_time);
+    if (!query.exec()) {
+        qDebug() << "Failed to get mod_operations:" << query.lastError().text();
+    }
+    while (query.next()) {
+        enum MOD_OPERATION_TYPE operation_type = query.value("operation_type").toInt() == 1 ? ADD : MODIFY;
+        QString name = query.value("name").toString();
+        QString content = query.value("content").toString();
+        QString name_merge = query.value("name_merge").toString();
+        QString formula = query.value("formula").toString();
+        QString labels = query.value("labels").toString();
+        QString mod_uuid = query.value("mod_uuid").toString();
+        enum RECORD_TYPE mod_type = query.value("mod_type").toInt() == 1 ? OBTAIN : CONSUME;
+        bool deleted = query.value("deleted").toBool();
+        switch (operation_type) {
+            case ADD: {
+                if (uuid_map.find(mod_uuid) == uuid_map.end()) {
+                    Mod *mod = new Mod(0, content, new Formula(formula), mod_type, name);
+                    mod->set_uuid(mod_uuid);
+                    mod->set_name_merge(name_merge);
+                    mod->set_labels_string(labels);
+                    mod->set_id(db_add_mod(data, mod, false));
+                    mod->set_deleted(deleted);
+                    uuid_map[mod_uuid] = mod;
+                    data->mods.push_back(mod);
+                    emit data->mod_added(mod);
+                }
+                break;
+            }
+            case MODIFY: {
+                if (uuid_map.find(mod_uuid) != uuid_map.end()) {
+                    Mod *mod = uuid_map[mod_uuid];
+                    mod->set_short_name(name);
+                    mod->set_name(content);
+                    mod->set_name_merge(name_merge);
+                    mod->set_deleted(deleted);
+                    mod->set_labels_string(labels);
+                    mod->set_type(mod_type);
+                    mod->set_formula_text(formula);
+                    emit data->mod_modified(mod);
+                    db_modify_mod(data, mod, false);
+                } else {
+                    qDebug() << "Error! Can't find uuid.";
+                }
+                break;
+            }
+        }
+    }
+}
+
+// 同步模板数据
+void sync_mods_data(Data *data) {
+    QString token = get_value("token");
+    if (token == "") {
+        // 当前未登录
+        return;
+    }
+    Network *n = new Network(data, "https://geomedraw.com/qt/commit_mod_change");
+    n->add_data("token", token);
+    n->add_data("latest_mod_operation", get_value("latest_mod_operation", true));
+
+    QSqlQuery query(db);
+    query.prepare("SELECT id FROM mod_operations WHERE uuid = :uuid");
+    query.bindValue(":uuid", get_value("latest_mod_operation", true));
+    int latestOperationId = 0;
+    if (!query.exec() || !query.next()) {
+        qWarning() << "Query Error or Operation not found:" << query.lastError().text();
+    } else {
+        latestOperationId = query.value("id").toInt();
+    }
+    query.prepare("SELECT * FROM mod_operations WHERE id > :id");
+    query.bindValue(":id", latestOperationId);
+    if (!query.exec()) {
+        qWarning() << "Query Error:" << query.lastError().text();
+        return;
+    }
+    // 将查询结果转换为 JSON 数组
+    QJsonArray jsonArray;
+    while (query.next()) {
+        QJsonObject jsonObj;
+        jsonObj["uuid"] = query.value("uuid").toString();
+        jsonObj["time"] = query.value("time").toString();
+        jsonObj["operation_type"] = query.value("operation_type").toInt();
+        jsonObj["mod_uuid"] = query.value("mod_uuid").toString();
+        jsonObj["mod_type"] = query.value("mod_type").toInt();
+        jsonObj["deleted"] = query.value("deleted").toBool();
+        jsonObj["name"] = query.value("name").toString();
+        jsonObj["content"] = query.value("content").toString();
+        jsonObj["name_merge"] = query.value("name_merge").toString();
+        jsonObj["formula"] = query.value("formula").toString();
+        jsonObj["labels"] = query.value("labels").toString();
+        jsonArray.append(jsonObj);
+    }
+    n->add_data("mod_operations_data", QJsonDocument(jsonArray).toJson());
+    n->post([=] (void *data, QString reply) {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
+        if (!jsonDoc.isNull()) {
+            QJsonObject jsonObj = jsonDoc.object();
+            bool succeed = jsonObj["succeed"].toBool();
+            if (!succeed) {
+                qDebug() << jsonObj["error_message"].toString();
+                return;
+            }
+            QJsonArray operations = jsonObj["operations"].toArray();
+            merge_mod_operations((Data *) data, operations);
+            QString last_uuid = jsonObj["last_uuid"].toString();
+            if (last_uuid != "") {
+                save_value("latest_mod_operation", last_uuid, true);
+            }
+        } else {
+            qDebug() << "Failed to parse JSON.";
+        }
+    }, [] (QMainWindow *window) {});
+    return;
+}
+
+void db_save_mod_operation(Data *data, Mod *mod, enum MOD_OPERATION_TYPE operation_type) {
+    QSqlQuery query(db);
+
+    query.prepare("INSERT INTO mod_operations (uuid, user, operation_type, mod_uuid, "
+                  "mod_type, deleted, name, content, name_merge, formula, labels) "
+                  "VALUES (:uuid, :username, :operation_type, :mod_uuid, "
+                  ":mod_type, :deleted, :name, :content, :name_merge, :formula, :labels)");
+
+    query.bindValue(":uuid", QUuid::createUuid().toString(QUuid::WithoutBraces));
+    query.bindValue(":username", username);
+    query.bindValue(":operation_type", (int) operation_type);
+    query.bindValue(":mod_uuid", mod->get_uuid().toString(QUuid::WithoutBraces));
+    query.bindValue(":mod_type", (int) mod->get_type());
+    query.bindValue(":deleted", (int) mod->is_deleted());
+    query.bindValue(":name", mod->get_shortname());
+    query.bindValue(":content", mod->get_name());
+    query.bindValue(":name_merge", mod->get_name_merge());
+    query.bindValue(":formula", mod->get_formula_text());
+    query.bindValue(":labels", mod->get_labels_string());
+
+    if (!query.exec()) {
+        qDebug() << "Error inserting mod_operation:" << query.lastError().text();
+    }
+
+    sync_mods_data(data);
+}
+
+int db_add_mod(Data *data, Mod *mod, bool record_operation) {
     qDebug() << "Start adding mod.";
     QSqlQuery query(db);
 
@@ -333,9 +570,12 @@ int db_add_mod(Mod *mod) {
     }
     int id = query.lastInsertId().toInt();
     qDebug() << "End adding mod, id =" << id;
+    if (record_operation) {
+        db_save_mod_operation(data, mod, ADD);
+    }
     return id;
 }
-bool db_modify_mod(Mod *mod) {
+bool db_modify_mod(Data *data, Mod *mod, bool record_operation) {
     qDebug() << "Start modifying mod.";
     QSqlQuery query(db);
 
@@ -358,9 +598,12 @@ bool db_modify_mod(Mod *mod) {
         return false;
     }
     qDebug() << "End modifying mod.";
+    if (record_operation) {
+        db_save_mod_operation(data, mod, MODIFY);
+    }
     return true;
 }
-bool db_delete_mod(Mod *mod) {
+bool db_delete_mod(Data *data, Mod *mod, bool record_operation) {
     qDebug() << "Start deleting mod.";
     QSqlQuery query(db);
 

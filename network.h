@@ -10,17 +10,21 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "data_storage.h"
+
 class Network : public QObject
 {
 private:
     QMainWindow *window;
     QNetworkRequest *request;
-    QUrlQuery *data;
+    QUrlQuery *query_data;
     QNetworkAccessManager *manager;
     QNetworkReply *reply;
+    Data *data;
 
 public:
     Network(QMainWindow *window, QString url);
+    Network(Data *data, QString url);
     void add_data(QString key, QString value);
 
     void finished() {
@@ -30,7 +34,7 @@ public:
 
     template<class F1, class F2>
     void post(F1 f1, F2 f2) {
-        reply = manager->post(*request, data->toString(QUrl::FullyEncoded).toUtf8());
+        reply = manager->post(*request, query_data->toString(QUrl::FullyEncoded).toUtf8());
         //reply = manager->get(*request);
         qDebug() << reply;
         qDebug() << reply->readAll();
@@ -41,7 +45,8 @@ public:
                 qDebug() << "Request succeeded";
                 QString reply_string = reply->readAll();
                 qDebug() << "Response:" << reply_string;
-                f1(window, reply_string);
+                if (window) f1(window, reply_string);
+                else f1(data, reply_string);
                 reply->deleteLater();
             } else {
                 qDebug() << "Error:" << reply->errorString();

@@ -31,7 +31,6 @@ void RecordWindow::init_data() {
     // data->mods.push_back(new Mod(1, QString("做作业"),new Formula(QString("1")), OBTAIN, "做作业"));
     // data->mods.push_back(new Mod(1, QString("测试{x}{y}{z}{w}"),new Formula(QString("(x+y)*(z+w)")), CONSUME, "test"));
 
-    load_data(data);
     for (auto mr : data->records) {
         for (auto r : *(mr.second)) {
             int point = r->get_signed_point();
@@ -79,11 +78,11 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     on_option_by_day_pressed();
     setup_records();
     Network *n = new Network(this, "https://v1.hitokoto.cn/");
-    n->post([] (QMainWindow *w, QString reply) {
+    n->post([] (void *w, QString reply) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
         if (!jsonDoc.isNull()) {
             QJsonObject jsonObj = jsonDoc.object();
-            QString author = jsonDoc["from_who"].toString();
+            QString author = jsonObj["from_who"].toString();
             QString text = "    “" + jsonObj["hitokoto"].toString() + "”";
             RecordWindow *window = (RecordWindow *) w;
             window->ui->quotation->setText(text);
@@ -96,7 +95,6 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     }, [] (QMainWindow *w) {
 
     });
-
 }
 
 RecordWindow::~RecordWindow()
