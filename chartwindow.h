@@ -41,6 +41,7 @@ private slots:
 
     void on_date_end_userDateChanged(const QDate &date);
 
+    void modify_label();
 private:
     Ui::ChartWindow *ui;
 };
