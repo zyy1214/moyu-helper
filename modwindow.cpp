@@ -647,6 +647,13 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     {
         mod_search[++search_count]=i;
     }
+    for (Mod *mod : data->mods) {
+        for (QString &label : mod->labels) {
+            if (std::find(data->totallabels.begin(), data->totallabels.end(), label) == data->totallabels.end()) {
+                data->totallabels.push_back(label);
+            }
+        }
+    }
 
     //添加模板
     QPushButton *addButton = create_icon_button("plus",40,[=]{
