@@ -281,7 +281,7 @@ QChartView* build_histogram(std::map<QDate, int> points_per_day,QString time,QSt
 QChartView* build_piechart(std::map<Mod*,int> points_per_mod,int else_point,bool have_else){
     QPieSeries *series = new QPieSeries();
     for(auto mr:points_per_mod){
-        *series<<new QPieSlice(mr.first->get_name(),mr.second);
+        *series<<new QPieSlice(mr.first->get_shortname(),mr.second);
     }
     if(have_else)
         *series<<new QPieSlice("其它",else_point);
