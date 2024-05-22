@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->addWidget(mw);
     ui->stackedWidget->addWidget(cw);
     ui->stackedWidget->setCurrentWidget(rw);
-    //rw->show();
+    setWindowTitle("摸鱼小助手 - 主页");
 }
 
 MainWindow::~MainWindow()
@@ -111,7 +111,7 @@ void SettingsDialog::setupUi()
     mainLayout->addLayout(buttonsLayout);
     mainLayout->addWidget(scrollWidget);
 
-    setWindowTitle(tr("Settings"));
+    setWindowTitle("设置");
 }
 
 void SettingsDialog::changePage()
@@ -173,6 +173,7 @@ void MainWindow::on_button_record_clicked()
     clear_page_choice();
     ui->button_record->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
     ui->stackedWidget->setCurrentWidget(rw);
+    setWindowTitle("摸鱼小助手 - 主页");
 }
 
 void MainWindow::on_button_mod_clicked()
@@ -180,6 +181,7 @@ void MainWindow::on_button_mod_clicked()
     clear_page_choice();
     ui->button_mod->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
     ui->stackedWidget->setCurrentWidget(mw);
+    setWindowTitle("摸鱼小助手 - 模板");
 }
 
 void MainWindow::on_button_chart_clicked()
@@ -187,5 +189,6 @@ void MainWindow::on_button_chart_clicked()
     clear_page_choice();
     ui->button_chart->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
     ui->stackedWidget->setCurrentWidget(cw);
+    setWindowTitle("摸鱼小助手 - 统计");
 }
 

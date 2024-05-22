@@ -21,6 +21,8 @@ LoginWindow::LoginWindow(QWidget *parent)
     setCentralWidget(centralWidget);
     centralWidget->setStyleSheet("background-color: white;"); // 设置背景颜色为白色
 
+    setWindowTitle("摸鱼小助手 - 登录");
+
     // 禁止用户调整窗口大小
     setFixedSize(350, 450);
 
@@ -76,6 +78,7 @@ LoginWindow::LoginWindow(QWidget *parent)
 
     connect(registerLabel, &QLabel::linkActivated, [=]() {
         stackedWidget->setCurrentIndex(1);
+        setWindowTitle("摸鱼小助手 - 注册");
     });
 
     stackedWidget->addWidget(loginPage);
@@ -127,6 +130,7 @@ LoginWindow::LoginWindow(QWidget *parent)
 
     connect(loginLinkLabel, &QLabel::linkActivated, [=]() {
         stackedWidget->setCurrentIndex(0);
+        setWindowTitle("摸鱼小助手 - 登录");
     });
 
     stackedWidget->addWidget(registerPage);
