@@ -81,13 +81,15 @@ ChartWindow::ChartWindow(Data *data, QWidget *parent)
     for(auto i = labels_to_mods.begin();i != labels_to_mods.end(); i++){
         ui->select_label->addItem(i->first);
     }
-    connect(data, &Data::mod_added, this, &ChartWindow::modify_label);
-    connect(data, &Data::mod_modified, this,&ChartWindow::modify_label);
+    connect(data, &Data::label_modified, this, &ChartWindow::modify_label);
 }
 void ChartWindow::modify_label(){
-    qDebug()<<"111";
     build_map();
-    ui->select_label->clear();
+    int item_count=ui->select_label->count();
+    while(item_count > 2) {
+        ui->select_label->removeItem(item_count - 1);
+        item_count=ui->select_label->count();
+    }
     for(auto i = labels_to_mods.begin();i != labels_to_mods.end(); i++){
         ui->select_label->addItem(i->first);
     }
