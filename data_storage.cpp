@@ -299,7 +299,6 @@ int db_add_record(Record *record) {
     qDebug() << "End adding record, id =" << id;
     return id;
 }
-
 bool db_modify_record(Record *record) {
     qDebug() << "Start modifying record.";
     QSqlQuery query(db);
@@ -326,7 +325,6 @@ bool db_modify_record(Record *record) {
     qDebug() << "End modifying record.";
     return true;
 }
-
 bool db_delete_record(Record *record) {
     qDebug() << "Start deleting record.";
     QSqlQuery query(db);
@@ -430,6 +428,7 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
                     uuid_map[mod_uuid] = mod;
                     data->mods.push_back(mod);
                     emit data->mod_added(mod);
+                    emit data->label_modified(mod);
                 }
                 break;
             }
@@ -444,6 +443,7 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
                     mod->set_type(mod_type);
                     mod->set_formula_text(formula);
                     emit data->mod_modified(mod);
+                    emit data->label_modified(mod);
                     db_modify_mod(data, mod, false);
                 } else {
                     qDebug() << "Error! Can't find uuid.";

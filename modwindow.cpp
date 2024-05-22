@@ -796,6 +796,7 @@ void ModWindow::add_label(Mod *mod, QString label){ //加标签
         data->totallabels.push_back(label);
     mod->labels.push_back(label);
     db_modify_mod(data, mod);
+    emit data->label_modified(mod);
 }
 
 void ModWindow::delete_label(Mod *mod, QString label){ //删除标签
@@ -824,6 +825,7 @@ void ModWindow::delete_label(Mod *mod, QString label){ //删除标签
         memset(ischose,0,sizeof(ischose));
     }
     db_modify_mod(data, mod);
+    emit data->label_modified(mod);
 }
 
 void ModWindow::on_mod_added(Mod *mod) {
