@@ -313,15 +313,17 @@ QChartView* build_linechart_day(std::map<QDate, int> points_per_day){
     QChart *chart = new QChart();
     chart->addSeries(series);
     chart->setTitle("Points By Day");
-    QDateTimeAxis *axisX = new QDateTimeAxis;
-    axisX->setFormat("dd MM yyyy");
-    axisX->setTitleText("日期");
-    QValueAxis *axisY = new QValueAxis;
-    axisY->setTitleText("数值");
-    chart->addAxis(axisX, Qt::AlignBottom);
-    chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisX);
-    series->attachAxis(axisY);
+    if(cnt!=0){
+        QDateTimeAxis *axisX = new QDateTimeAxis;
+        axisX->setFormat("dd MM yyyy");
+        axisX->setTitleText("日期");
+        QValueAxis *axisY = new QValueAxis;
+        axisY->setTitleText("数值");
+        chart->addAxis(axisX, Qt::AlignBottom);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+    }
     QChartView *chartView = new QChartView(chart);
     return chartView;
 }
@@ -374,15 +376,17 @@ QChartView* build_linechart_month(std::map<QDate, int> points_per_day){
     QChart *chart = new QChart();
     chart->addSeries(series);
     chart->setTitle("Points By Month");
-    QDateTimeAxis *axisX = new QDateTimeAxis;
-    axisX->setFormat("MM yyyy");
-    axisX->setTitleText("日期");
-    QValueAxis *axisY = new QValueAxis;
-    axisY->setTitleText("数值");
-    chart->addAxis(axisX, Qt::AlignBottom);
-    chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisX);
-    series->attachAxis(axisY);
+    if(cnt!=0){
+        QDateTimeAxis *axisX = new QDateTimeAxis;
+        axisX->setFormat("MM yyyy");
+        axisX->setTitleText("日期");
+        QValueAxis *axisY = new QValueAxis;
+        axisY->setTitleText("数值");
+        chart->addAxis(axisX, Qt::AlignBottom);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+    }
     QChartView *chartView = new QChartView(chart);
     return chartView;
 }
@@ -432,15 +436,17 @@ QChartView* build_linechart_year(std::map<QDate, int> points_per_day){
     QChart *chart = new QChart();
     chart->addSeries(series);
     chart->setTitle("Points By Year");
-    QDateTimeAxis *axisX = new QDateTimeAxis;
-    axisX->setFormat("yyyy");
-    axisX->setTitleText("日期");
-    QValueAxis *axisY = new QValueAxis;
-    axisY->setTitleText("数值");
-    chart->addAxis(axisX, Qt::AlignBottom);
-    chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisX);
-    series->attachAxis(axisY);
+    if(cnt!=0){
+        QDateTimeAxis *axisX = new QDateTimeAxis;
+        axisX->setFormat("yyyy");
+        axisX->setTitleText("日期");
+        QValueAxis *axisY = new QValueAxis;
+        axisY->setTitleText("数值");
+        chart->addAxis(axisX, Qt::AlignBottom);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+    }
     QChartView *chartView = new QChartView(chart);
     return chartView;
 }
