@@ -15,6 +15,7 @@ public:
 signals:
     void mod_added(Mod *mod);
     void mod_modified(Mod *mod);
+    void label_modified(Mod *mod);
 };
 
 void load_data(Data *data);
