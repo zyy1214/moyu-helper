@@ -14,26 +14,6 @@ enum RECORD_CLASS {
     BY_MOD = 1, DIRECT = 2
 };
 
-/*
-class Mod {
-    int id;
-    bool deleted; // 用户修改模板时，可以选择保留之前的记录不被修改，此时该模板状态为 deleted，不在模板列表里显示
-    std::vector<QString> labels;
-    enum RECORD_TYPE type; // 模板类型
-    int input_num; // 代表该条记录需要几个变量
-    QString name; // 记录显示出来的信息
-    QString name_sum; // 记录同一个模板的记录合并后展示的信息
-    Formula *formula; // 用于计算积分的公式
-public:
-    enum RECORD_TYPE get_type() {
-        return type;
-    }
-    QString get_name();
-    std::vector<QString> get_labels();
-    std::vector<QString> get_variable_names();
-};
-*/
-
 // zyy 负责
 class Record {
     static int current_max_id;
@@ -41,6 +21,7 @@ class Record {
     QUuid uuid; // 用于云端同步标识的 id
     long long created_time; // 记录创建的时间戳
     QDate date; // 该条记录所在的日期
+    int sort_order;
 public:
     int get_id() {
         return id;
@@ -75,6 +56,12 @@ public:
     }
     QDate &get_date() {
         return date;
+    }
+    void set_sort_order(int sort_order) {
+        this->sort_order = sort_order;
+    }
+    int get_sort_order() {
+        return sort_order;
     }
     Record() {}
 };

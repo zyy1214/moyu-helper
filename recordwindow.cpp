@@ -31,6 +31,8 @@ void RecordWindow::init_data() {
     // data->mods.push_back(new Mod(1, QString("做作业"),new Formula(QString("1")), OBTAIN, "做作业"));
     // data->mods.push_back(new Mod(1, QString("测试{x}{y}{z}{w}"),new Formula(QString("(x+y)*(z+w)")), CONSUME, "test"));
 
+    data->total_points = 0;
+    data->last_week_points = 0;
     for (auto mr : data->records) {
         for (auto r : *(mr.second)) {
             int point = r->get_signed_point();
@@ -95,6 +97,10 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     }, [] (QMainWindow *w) {
 
     });
+
+    connect(data, &Data::record_added, this, &RecordWindow::on_record_added);
+    connect(data, &Data::record_modified, this, &RecordWindow::on_record_modified);
+    connect(data, &Data::record_deleted, this, &RecordWindow::on_record_deleted);
 }
 
 RecordWindow::~RecordWindow()
@@ -382,7 +388,7 @@ private slots:
             }
             qDebug() << record;
             record->create_uuid();
-            record->set_id(db_add_record(record));
+            record->set_id(db_add_record(window->data, record));
             MultipleRecord *daily_record = window->data->records[date];
             if (!daily_record) daily_record = new MultipleRecord;
             daily_record->add_record(record);
@@ -410,7 +416,7 @@ private slots:
                     rd->set_point(numberLineEdit->text().toInt());
                 }
             }
-            db_modify_record(record);
+            db_modify_record(window->data, record);
             d_points = record->get_signed_point() - d_points;
             window->data->total_points += d_points;
             if (record->get_date().daysTo(QDate::currentDate()) <= 6) {
@@ -483,7 +489,7 @@ private slots:
         if (mr->size() == 0) {
             window->data->records.erase(record->get_date());
         }
-        db_delete_record(record);
+        db_delete_record(window->data, record);
         window->setup_total_points();
         window->setup_records(); // todo: 需更改
         close();
@@ -740,3 +746,24 @@ void RecordWindow::on_option_by_year_clicked() {
     setup_records();
 }
 
+void RecordWindow::on_record_added(Record *record) {
+    data->total_points += record->get_signed_point();
+    if (record->get_date().daysTo(QDate::currentDate()) <= 6) {
+        data->last_week_points += record->get_signed_point();
+    }
+    setup_total_points();
+    setup_records();
+}
+void RecordWindow::on_record_modified(Record *record) {
+    init_data();
+    setup_total_points();
+    setup_records();
+}
+void RecordWindow::on_record_deleted(Record *record) {
+    data->total_points -= record->get_signed_point();
+    if (record->get_date().daysTo(QDate::currentDate()) <= 6) {
+        data->last_week_points -= record->get_signed_point();
+    }
+    setup_total_points();
+    setup_records();
+}

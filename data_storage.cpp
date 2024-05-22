@@ -178,7 +178,27 @@ void load_data(Data *data) {
         qDebug() << "Error creating table mod_operations:" << query_create.lastError().text();
         return;
     }
-    query_create.exec("CREATE INDEX IF NOT EXISTS user_index ON mods (user)");
+    query_create.exec("CREATE INDEX IF NOT EXISTS user_index ON mod_operations (user)");
+
+
+    QString create_record_operations_query = "CREATE TABLE IF NOT EXISTS record_operations ("
+                                             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                             "uuid TEXT,"
+                                             "user TEXT,"
+                                             "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                                             "operation_type INT,"
+                                             "record_uuid TEXT,"
+                                             "record_type INTEGER,"
+                                             "record_class INTEGER,"
+                                             "point INTEGER,"
+                                             "record_info TEXT,"
+                                             "record_date DATE,"
+                                             "sort_order INTEGER)";
+    if (!query_create.exec(create_record_operations_query)) {
+        qDebug() << "Error creating table record_operations:" << query_create.lastError().text();
+        return;
+    }
+    query_create.exec("CREATE INDEX IF NOT EXISTS user_index ON record_operations (user)");
 
 
     QSqlQuery query(db);
@@ -241,6 +261,8 @@ void load_data(Data *data) {
         enum RECORD_TYPE record_type = query.value("record_type").toInt() == 1 ? OBTAIN : CONSUME;
         int point = query.value("point").toInt();
         QString record_info = query.value("record_info").toString();
+        QString uuid = query.value("uuid").toString();
+        int sort_order = query.value("sort_order").toInt();
 
         if (!last || date != (*last)) {
             if (mr) data->records[*last] = mr;
@@ -262,6 +284,8 @@ void load_data(Data *data) {
         }
         if (record) {
             record->set_id(id);
+            record->set_uuid(uuid);
+            record->set_sort_order(sort_order);
             mr->push_back(record);
         } else {
             qDebug() << "error: record is not initialized!";
@@ -271,10 +295,276 @@ void load_data(Data *data) {
         data->records[*last] = mr;
     }
 
-    sync_mods_data(data);
+    sync_data(data);
 }
 
-int db_add_record(Record *record) {
+void Data::sync_records() {
+    sync_records_data(this);
+    QObject::disconnect(this, &Data::mod_sync_finished, this, &Data::sync_records);
+}
+void sync_data(Data *data) {
+    sync_mods_data(data);
+    QObject::connect(data, &Data::mod_sync_finished, data, &Data::sync_records);
+}
+
+enum RECORD_OPERATION_TYPE {
+    ADD_RECORD = 1, MODIFY_RECORD = 2, DELETE_RECORD = 3
+};
+
+// 合并来自网络的 record 操作记录
+void merge_record_operations(Data *data, QJsonArray &jsonArray) {
+    QSqlQuery query(db);
+
+    QString earliest_time = "9999-99-99 99:99:99";
+    // 将获取到的操作记录存入数据库中
+    for (const QJsonValue &value : jsonArray) {
+        QJsonObject operation = value.toObject();
+        query.prepare("SELECT id FROM record_operations WHERE uuid = :uuid");
+        query.bindValue(":uuid", operation["uuid"].toString());
+        query.exec();
+        int cnt = 0;
+        while (query.next()) {
+            cnt++;
+        }
+        if (cnt != 0) continue;
+
+        query.prepare("INSERT INTO record_operations (uuid, user, time, operation_type, record_uuid, "
+                      "record_type, record_class, point, record_info, record_date, sort_order) "
+                      "VALUES (:uuid, :username, :time, :operation_type, :record_uuid, "
+                      ":record_type, :record_class, :point, :record_info, :record_date, :sort_order)");
+        query.bindValue(":uuid", operation["uuid"].toString());
+        query.bindValue(":username", username);
+        QString time = operation["time"].toString();
+        qDebug() << time;
+        if (time < earliest_time) earliest_time = time;
+        query.bindValue(":time", time);
+        query.bindValue(":operation_type", operation["operation_type"].toInt());
+        query.bindValue(":record_uuid", operation["record_uuid"].toString());
+        query.bindValue(":record_type", operation["record_type"].toInt());
+        query.bindValue(":record_class", operation["record_class"].toInt());
+        query.bindValue(":point", operation["point"].toInt());
+        query.bindValue(":record_info", operation["record_info"].toString());
+        query.bindValue(":record_date", operation["record_date"].toString());
+        query.bindValue(":sort_order", operation["sort_order"].toInt());
+        if (!query.exec()) {
+            qDebug() << "Failed to insert operation:" << query.lastError().text();
+        }
+    }
+
+    std::unordered_map<QString, Record *> uuid_map;
+    for (auto mr : data->records) {
+        for (Record *record : *(mr.second)) {
+            uuid_map[record->get_uuid().toString(QUuid::WithoutBraces)] = record;
+        }
+    }
+    std::unordered_map<QString, Mod *> mod_uuid_map;
+    for (Mod *mod : data->mods) {
+        mod_uuid_map[mod->get_uuid().toString(QUuid::WithoutBraces)] = mod;
+    }
+
+
+    qDebug() << earliest_time;
+    query.prepare("SELECT * FROM record_operations WHERE time >= :earliest_time ORDER BY time ASC");
+    query.bindValue(":earliest_time", earliest_time);
+    if (!query.exec()) {
+        qDebug() << "Failed to get record_operations:" << query.lastError().text();
+    }
+    while (query.next()) {
+        enum RECORD_OPERATION_TYPE operation_type;
+        switch (query.value("operation_type").toInt()) {
+            case 1: operation_type = ADD_RECORD; break;
+            case 2: operation_type = MODIFY_RECORD; break;
+            case 3: operation_type = DELETE_RECORD; break;
+        }
+
+        QString record_info = query.value("record_info").toString();
+        QDate record_date = query.value("record_date").toDate();
+        int sort_order = query.value("sort_order").toInt();
+        QString record_uuid = query.value("record_uuid").toString();
+        enum RECORD_TYPE record_type = query.value("record_type").toInt() == 1 ? OBTAIN : CONSUME;
+        enum RECORD_CLASS record_class = query.value("record_class").toInt() == 1 ? BY_MOD : DIRECT;
+        int point = query.value("point").toInt();
+
+        switch (operation_type) {
+            case ADD_RECORD: {
+                if (uuid_map.find(record_uuid) == uuid_map.end()) {
+                    Record *record = nullptr;
+                    switch (record_class) {
+                        case BY_MOD: {
+                            record = new RecordByMod(nullptr, nullptr, record_date);
+                            record->from_string(mod_uuid_map, record_info);
+                            break;
+                        }
+                        case DIRECT: {
+                            record = new RecordDirect(record_info, record_type, point, record_date);
+                            break;
+                        }
+                    }
+                    record->set_id(db_add_record(data, record, false));
+                    record->set_uuid(record_uuid);
+                    uuid_map[record_uuid] = record;
+                    record->set_sort_order(sort_order);
+                    if (data->records.find(record_date) == data->records.end()) {
+                        data->records[record_date] = new MultipleRecord;
+                    }
+                    data->records[record_date]->add_record(record);
+                    emit data->record_added(record);
+                }
+                break;
+            }
+            case MODIFY_RECORD: {
+                if (uuid_map.find(record_uuid) != uuid_map.end()) {
+                    switch (record_class) {
+                        case BY_MOD: {
+                            RecordByMod *record = dynamic_cast<RecordByMod *>(uuid_map[record_uuid]);
+                            if (!record) {
+                                qDebug() << "Error! record_class don't match.";
+                                continue;
+                            }
+                            record->from_string(mod_uuid_map, record_info);
+                            break;
+                        }
+                        case DIRECT: {
+                            RecordDirect *record = dynamic_cast<RecordDirect *>(uuid_map[record_uuid]);
+                            if (!record) {
+                                qDebug() << "Error! record_class don't match.";
+                                continue;
+                            }
+                            record->set_name(record_info);
+                            record->set_point(point);
+                            record->set_type(record_type);
+                            break;
+                        }
+                    }
+                    Record *record = uuid_map[record_uuid];
+                    record->set_sort_order(sort_order);
+                    record->set_date(record_date);
+                    emit data->record_modified(record);
+                    db_modify_record(data, record, false);
+                } else {
+                    // 可能是已经被删除了
+                    qDebug() << "Can't find uuid.";
+                }
+                break;
+            }
+            case DELETE_RECORD: {
+                if (uuid_map.find(record_uuid) != uuid_map.end()) {
+                    Record *record = uuid_map[record_uuid];
+                    MultipleRecord *mr = data->records[record->get_date()];
+                    for (int i = 0; i < mr->size(); i++) {
+                        if (record->get_id() == (*mr)[i]->get_id()) {
+                            mr->delete_record(i);
+                            break;
+                        }
+                    }
+                    if (mr->size() == 0) {
+                        data->records.erase(record->get_date());
+                    }
+                    emit data->record_deleted(record);
+                    db_delete_record(data, record, false);
+                } else {
+                    // 可能是已经被删除了
+                    qDebug() << "Can't find uuid.";
+                }
+                break;
+            }
+        }
+    }
+}
+
+// 同步 records 数据
+// 请勿单独调用该函数，务必确保调用该函数前调用过 sync_mmods_data
+void sync_records_data(Data *data) {
+    QString token = get_value("token");
+    if (token == "") {
+        // 当前未登录
+        return;
+    }
+    Network *n = new Network(data, "https://geomedraw.com/qt/commit_record_change");
+    n->add_data("token", token);
+    n->add_data("latest_record_operation", get_value("latest_record_operation", true));
+
+    QSqlQuery query(db);
+    query.prepare("SELECT id FROM record_operations WHERE uuid = :uuid");
+    query.bindValue(":uuid", get_value("latest_record_operation", true));
+    int latestOperationId = 0;
+    if (!query.exec() || !query.next()) {
+        qWarning() << "Query Error or Operation not found:" << query.lastError().text();
+    } else {
+        latestOperationId = query.value("id").toInt();
+    }
+    query.prepare("SELECT * FROM record_operations WHERE id > :id");
+    query.bindValue(":id", latestOperationId);
+    if (!query.exec()) {
+        qWarning() << "Query Error:" << query.lastError().text();
+        return;
+    }
+    // 将查询结果转换为 JSON 数组
+    QJsonArray jsonArray;
+    while (query.next()) {
+        QJsonObject jsonObj;
+        jsonObj["uuid"] = query.value("uuid").toString();
+        jsonObj["time"] = query.value("time").toString();
+        jsonObj["operation_type"] = query.value("operation_type").toInt();
+        jsonObj["record_uuid"] = query.value("record_uuid").toString();
+        jsonObj["record_type"] = query.value("record_type").toInt();
+        jsonObj["record_class"] = query.value("record_class").toInt();
+        jsonObj["point"] = query.value("point").toInt();
+        jsonObj["record_info"] = query.value("record_info").toString();
+        jsonObj["record_date"] = query.value("record_date").toString();
+        jsonObj["sort_order"] = query.value("sort_order").toInt();
+        jsonArray.append(jsonObj);
+    }
+    n->add_data("record_operations_data", QJsonDocument(jsonArray).toJson());
+    n->post([=] (void *data, QString reply) {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
+        if (!jsonDoc.isNull()) {
+            QJsonObject jsonObj = jsonDoc.object();
+            bool succeed = jsonObj["succeed"].toBool();
+            if (!succeed) {
+                qDebug() << jsonObj["error_message"].toString();
+                return;
+            }
+            QJsonArray operations = jsonObj["operations"].toArray();
+            merge_record_operations((Data *) data, operations);
+            QString last_uuid = jsonObj["last_uuid"].toString();
+            if (last_uuid != "") {
+                save_value("latest_record_operation", last_uuid, true);
+            }
+        } else {
+            qDebug() << "Failed to parse JSON.";
+        }
+    }, [] (QMainWindow *window) {});
+    return;
+}
+
+void db_save_record_operation(Data *data, Record *record, enum RECORD_OPERATION_TYPE operation_type) {
+    QSqlQuery query(db);
+
+    query.prepare("INSERT INTO record_operations (uuid, user, operation_type, record_uuid, "
+                  "record_type, record_class, point, record_info, record_date, sort_order) "
+                  "VALUES (:uuid, :username, :operation_type, :record_uuid, "
+                  ":record_type, :record_class, :point, :record_info, :record_date, :sort_order)");
+
+    query.bindValue(":uuid", QUuid::createUuid().toString(QUuid::WithoutBraces));
+    query.bindValue(":username", username);
+    query.bindValue(":operation_type", (int) operation_type);
+    query.bindValue(":record_uuid", record->get_uuid().toString(QUuid::WithoutBraces));
+    query.bindValue(":record_type", (int) record->get_type());
+    query.bindValue(":record_class", (int) record->get_class());
+    query.bindValue(":point", record->get_point());
+    query.bindValue(":record_info", record->to_string());
+    query.bindValue(":record_date", record->get_date());
+    query.bindValue(":sort_order", record->get_sort_order());
+
+    if (!query.exec()) {
+        qDebug() << "Error inserting reccord_operation:" << query.lastError().text();
+    }
+
+    sync_data(data);
+}
+
+int db_add_record(Data *data, Record *record, bool record_operation) {
     qDebug() << "Start adding record.";
     QSqlQuery query(db);
 
@@ -297,9 +587,12 @@ int db_add_record(Record *record) {
     }
     int id = query.lastInsertId().toInt();
     qDebug() << "End adding record, id =" << id;
+    if (record_operation) {
+        db_save_record_operation(data, record, ADD_RECORD);
+    }
     return id;
 }
-bool db_modify_record(Record *record) {
+bool db_modify_record(Data *data, Record *record, bool record_operation) {
     qDebug() << "Start modifying record.";
     QSqlQuery query(db);
 
@@ -323,9 +616,12 @@ bool db_modify_record(Record *record) {
         return false;
     }
     qDebug() << "End modifying record.";
+    if (record_operation) {
+        db_save_record_operation(data, record, MODIFY_RECORD);
+    }
     return true;
 }
-bool db_delete_record(Record *record) {
+bool db_delete_record(Data *data, Record *record, bool record_operation) {
     qDebug() << "Start deleting record.";
     QSqlQuery query(db);
 
@@ -337,12 +633,15 @@ bool db_delete_record(Record *record) {
         return false;
     }
     qDebug() << "End deleting record.";
+    if (record_operation) {
+        db_save_record_operation(data, record, DELETE_RECORD);
+    }
     return true;
 }
 
 
 enum MOD_OPERATION_TYPE {
-    ADD = 1, MODIFY = 2
+    ADD_MOD = 1, MODIFY_MOD = 2
 };
 
 bool mods_contains(QString &uuid) {
@@ -384,7 +683,7 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
         query.bindValue(":operation_type", operation["operation_type"].toInt());
         query.bindValue(":mod_uuid", operation["mod_uuid"].toString());
         query.bindValue(":mod_type", operation["mod_type"].toInt());
-        query.bindValue(":deleted", operation["deleted"].toBool());
+        query.bindValue(":deleted", operation["deleted"].toInt() == 1);
         query.bindValue(":name", operation["name"].toString());
         query.bindValue(":content", operation["content"].toString());
         query.bindValue(":name_merge", operation["name_merge"].toString());
@@ -407,7 +706,7 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
         qDebug() << "Failed to get mod_operations:" << query.lastError().text();
     }
     while (query.next()) {
-        enum MOD_OPERATION_TYPE operation_type = query.value("operation_type").toInt() == 1 ? ADD : MODIFY;
+        enum MOD_OPERATION_TYPE operation_type = query.value("operation_type").toInt() == 1 ? ADD_MOD : MODIFY_MOD;
         QString name = query.value("name").toString();
         QString content = query.value("content").toString();
         QString name_merge = query.value("name_merge").toString();
@@ -415,9 +714,9 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
         QString labels = query.value("labels").toString();
         QString mod_uuid = query.value("mod_uuid").toString();
         enum RECORD_TYPE mod_type = query.value("mod_type").toInt() == 1 ? OBTAIN : CONSUME;
-        bool deleted = query.value("deleted").toBool();
+        bool deleted = query.value("deleted").toInt() == 1;
         switch (operation_type) {
-            case ADD: {
+            case ADD_MOD: {
                 if (uuid_map.find(mod_uuid) == uuid_map.end()) {
                     Mod *mod = new Mod(0, content, new Formula(formula), mod_type, name);
                     mod->set_uuid(mod_uuid);
@@ -432,7 +731,7 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
                 }
                 break;
             }
-            case MODIFY: {
+            case MODIFY_MOD: {
                 if (uuid_map.find(mod_uuid) != uuid_map.end()) {
                     Mod *mod = uuid_map[mod_uuid];
                     mod->set_short_name(name);
@@ -489,7 +788,7 @@ void sync_mods_data(Data *data) {
         jsonObj["operation_type"] = query.value("operation_type").toInt();
         jsonObj["mod_uuid"] = query.value("mod_uuid").toString();
         jsonObj["mod_type"] = query.value("mod_type").toInt();
-        jsonObj["deleted"] = query.value("deleted").toBool();
+        jsonObj["deleted"] = query.value("deleted").toInt();
         jsonObj["name"] = query.value("name").toString();
         jsonObj["content"] = query.value("content").toString();
         jsonObj["name_merge"] = query.value("name_merge").toString();
@@ -516,6 +815,7 @@ void sync_mods_data(Data *data) {
         } else {
             qDebug() << "Failed to parse JSON.";
         }
+        emit ((Data *) data)->mod_sync_finished();
     }, [] (QMainWindow *window) {});
     return;
 }
@@ -571,7 +871,7 @@ int db_add_mod(Data *data, Mod *mod, bool record_operation) {
     int id = query.lastInsertId().toInt();
     qDebug() << "End adding mod, id =" << id;
     if (record_operation) {
-        db_save_mod_operation(data, mod, ADD);
+        db_save_mod_operation(data, mod, ADD_MOD);
     }
     return id;
 }
@@ -599,7 +899,7 @@ bool db_modify_mod(Data *data, Mod *mod, bool record_operation) {
     }
     qDebug() << "End modifying mod.";
     if (record_operation) {
-        db_save_mod_operation(data, mod, MODIFY);
+        db_save_mod_operation(data, mod, MODIFY_MOD);
     }
     return true;
 }

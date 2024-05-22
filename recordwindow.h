@@ -38,6 +38,10 @@ private slots:
 
     void on_option_by_year_clicked();
 
+    void on_record_added(Record *record);
+    void on_record_modified(Record *record);
+    void on_record_deleted(Record *record);
+
 private:
     Ui::RecordWindow *ui;
 
