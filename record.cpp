@@ -55,7 +55,28 @@ int RecordByMod::get_point() const {
     return calc(a);
 }
 QString RecordByMod::get_display_name() const {
-    return mod->get_shortname();
+    QString a=mod->get_name();
+    for(int i=0;i<mod->input_num;i++)
+    {
+        int hh=0;
+        while(a.indexOf(mod->variable[i],hh)!=-1)
+        {
+            int pos=a.indexOf(mod->variable[i],hh);
+            int len=(mod->variable[i]).size();
+            if(pos - 1 >= 0 && a[pos-1]!='{')
+            {
+                hh=pos+len;
+                continue;
+            }
+            if(pos + len < a.length() && a[pos+len]!='}')
+            {
+                hh=pos+len;
+                continue;
+            }
+            a.replace(pos-1,len+2,QString::number(inputs[i]));
+        }
+    }
+    return a;
 }
 QString RecordByMod::to_string() const {
     QString result = mod->get_uuid().toString(QUuid::WithoutBraces);
