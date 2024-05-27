@@ -47,6 +47,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         calculate.h
         chartwindow.cpp chartwindow.h chartwindow.ui
         qtchart.h
+        themewindow.h themewindow.cpp themewindow.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET moyu-helper APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

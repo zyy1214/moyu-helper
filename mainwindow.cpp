@@ -25,9 +25,11 @@ MainWindow::MainWindow(QWidget *parent)
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
     cw = new ChartWindow(data, this);
+    tw = new ThemeWindow(this);
     ui->stackedWidget->addWidget(rw);
     ui->stackedWidget->addWidget(mw);
     ui->stackedWidget->addWidget(cw);
+    ui->stackedWidget->addWidget(tw);
     ui->stackedWidget->setCurrentWidget(rw);
     setWindowTitle("摸鱼小助手 - 主页");
 }
@@ -190,5 +192,14 @@ void MainWindow::on_button_chart_clicked()
     ui->button_chart->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
     ui->stackedWidget->setCurrentWidget(cw);
     setWindowTitle("摸鱼小助手 - 统计");
+}
+
+
+void MainWindow::on_button_theme_clicked()
+{
+    clear_page_choice();
+    ui->button_theme->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->stackedWidget->setCurrentWidget(tw);
+    setWindowTitle("摸鱼小助手 - 主题");
 }
 

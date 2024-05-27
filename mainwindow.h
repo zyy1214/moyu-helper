@@ -6,6 +6,7 @@
 #include "recordwindow.h"
 #include "modwindow.h"
 #include "chartwindow.h"
+#include "themewindow.h"
 
 #include "data_storage.h"
 
@@ -30,12 +31,15 @@ private slots:
 
     void on_button_chart_clicked();
 
+    void on_button_theme_clicked();
+
 private:
     Ui::MainWindow *ui;
     Data *data;
     RecordWindow *rw;
     ModWindow *mw;
     ChartWindow *cw;
+    ThemeWindow *tw;
 
     void clear_page_choice();
 };
