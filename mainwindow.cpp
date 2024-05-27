@@ -1,3 +1,4 @@
+#include "focuswindow.h"
 #include "loginwindow.h"
 #include "mainwindow.h"
 #include "recordwindow.h"
@@ -148,7 +149,9 @@ void MainWindow::on_button_menu_clicked()
         dialog->show();
     });
     connect(focus_mode, &QAction::triggered, this, [this] () {
-        show_info("专注模式", "该功能正在开发中，将在未来版本中更新，敬请期待……");
+        //show_info("专注模式", "该功能正在开发中，将在未来版本中更新，敬请期待……");
+        FocusWindow *window = new FocusWindow();
+        window->show();
     });
     connect(action_feedback, &QAction::triggered, this, [this] () {
         show_info("反馈与帮助", "您可以联系 zyy@stu.pku.edu.cn 以反馈问题或获取帮助。");
