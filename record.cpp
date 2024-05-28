@@ -173,6 +173,20 @@ void MultipleRecord::delete_record(int index) {
 void MultipleRecord::modify_record(int index, Record *record) {
 
 }
+int MultipleRecord::get_point_sum() {
+    int sum = 0;
+    for (auto r : *this) {
+        sum += r->get_signed_point();
+    }
+    return sum;
+}
+QString MultipleRecord::get_display_name() {
+    if (empty()) return "";
+    if ((*this)[0]->get_class() == BY_MOD) {
+        return ((RecordByMod *) (*this)[0])->get_mod()->get_shortname();
+    }
+    return (*this)[0]->get_display_name();
+}
 MultipleRecord MultipleRecord::filter(bool (*func) (Record*)) {
 
 }

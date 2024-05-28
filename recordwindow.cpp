@@ -25,12 +25,6 @@
 #include <QScrollBar>
 
 void RecordWindow::init_data() {
-    // data->mods.push_back(new Mod(0, QString("跑步{跑步里程}km"), new Formula(QString("跑步里程")), OBTAIN, "跑步"));
-    // data->mods.push_back(new Mod(1, QString("做谢慧民{题目数量}道题"), new Formula(QString("题目数量/4")), OBTAIN, "做谢慧民"));
-    // data->mods.push_back(new Mod(0, QString("玩原神{游戏时间}分钟（抵扣{抵扣时长}分钟）"), new Formula(QString("max((游戏时间-抵扣时长)/30,0)")), CONSUME, "玩原神"));
-    // data->mods.push_back(new Mod(1, QString("做作业"),new Formula(QString("1")), OBTAIN, "做作业"));
-    // data->mods.push_back(new Mod(1, QString("测试{x}{y}{z}{w}"),new Formula(QString("(x+y)*(z+w)")), CONSUME, "test"));
-
     data->total_points = 0;
     data->last_week_points = 0;
     for (auto mr : data->records) {
@@ -496,6 +490,38 @@ private slots:
     }
 };
 
+class MultipleRecordItem : public QWidget {
+private:
+    RecordWindow *window;
+    MultipleRecord *records;
+public:
+    MultipleRecordItem(RecordWindow *window, MultipleRecord *records, QWidget *parent = nullptr)
+        : window(window), records(records), QWidget(parent) {
+        setStyleSheet("background-color: rgba(255, 255, 255, 100)");
+        QFont font("Microsoft YaHei UI", 18);
+        QSpacerItem *spacer = new QSpacerItem(40, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
+        QLabel *label_name = new QLabel(records->get_display_name());
+        label_name->setFont(font);
+        int point = records->get_point_sum();
+        QLabel *label_point = new QLabel((point > 0 ? "+" : "−") + QString::number(abs(point)));
+        label_point->setFont(font);
+        label_point->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+
+        QHBoxLayout *layout = new QHBoxLayout(this);
+        layout->addItem(spacer);
+        layout->addWidget(label_name);
+        layout->addWidget(label_point);
+        setFixedHeight(50);
+
+        // todo: 实现类似 Android 中 ellipsize=end 的效果
+        //set_text(label_name, record.get_display_name());
+    }
+
+    ~MultipleRecordItem() {
+        delete records;
+    }
+};
+
 class RecordItem : public QWidget {
 private:
     RecordWindow *window;
@@ -621,6 +647,37 @@ public:
 };
 
 
+void RecordWindow::add_mr_items(QLayout *layout, QDate date, int num) {
+    std::map<Mod *, MultipleRecord *> mrs;
+    std::vector<MultipleRecord *> rds;
+    for (int j = 0; j < num; j++) {
+        if (*(data->records).find(date) == *(data->records).end()) {
+            date = date.addDays(1);
+            continue;
+        }
+        for (Record *record : *(data->records)[date]) {
+            if (record->get_class() == BY_MOD) {
+                if (mrs.find(((RecordByMod *) record)->get_mod()) == mrs.end()) {
+                    mrs[((RecordByMod *) record)->get_mod()] = new MultipleRecord;
+                }
+                mrs[((RecordByMod *) record)->get_mod()]->push_back(record);
+            } else {
+                MultipleRecord *mr = new MultipleRecord;
+                mr->push_back(record);
+                rds.push_back(mr);
+            }
+        }
+        date = date.addDays(1);
+    }
+    for (auto p : mrs) {
+        layout->addWidget(new MultipleRecordItem(this, p.second));
+    }
+    for (auto *record : rds) {
+        layout->addWidget(new MultipleRecordItem(this, record));
+    }
+}
+
+
 int display_option = 1; // 1: 天；2: 周；3: 月；4: 年
 
 void RecordWindow::setup_records() {
@@ -644,38 +701,49 @@ void RecordWindow::setup_records() {
             break;
         }
         case 2: {
-            QDate current = QDate::currentDate().addDays(1 - QDate::currentDate().dayOfWeek());
-            layout->addWidget(new WeekItem(current));
+            if (data->records.empty()) break;
+            // QDate current = QDate::currentDate().addDays(1 - QDate::currentDate().dayOfWeek());
+            // layout->addWidget(new WeekItem(current));
+            QDate current = QDate(9999, 12, 31);
             auto i = data->records.begin();
             do {
                 if ((*i).first < current) {
                     current = (*i).first.addDays(1 - (*i).first.dayOfWeek());
                     layout->addWidget(new WeekItem(current));
+                    add_mr_items(layout, current, 7);
                 }
             } while((++i) != data->records.end());
             break;
         }
         case 3: {
-            int y = QDate::currentDate().year(), m = QDate::currentDate().month();
-            layout->addWidget(new MonthItem(y, m));
+            if (data->records.empty()) break;
+            // int y = QDate::currentDate().year(), m = QDate::currentDate().month();
+            // layout->addWidget(new MonthItem(y, m));
+            int y = 9999, m = 12;
             auto i = data->records.begin();
             do {
                 if ((*i).first < QDate{y, m, 1}) {
                     y = (*i).first.year();
                     m = (*i).first.month();
                     layout->addWidget(new MonthItem(y, m));
+                    QDate start(y, m, 1);
+                    add_mr_items(layout, start, start.daysInMonth());
                 }
             } while((++i) != data->records.end());
             break;
         }
         case 4: {
-            int y = QDate::currentDate().year();
-            layout->addWidget(new YearItem(y));
+            if (data->records.empty()) break;
+            // int y = QDate::currentDate().year();
+            // layout->addWidget(new YearItem(y));
+            int y = 9999;
             auto i = data->records.begin();
             do {
                 if ((*i).first < QDate{y, 1, 1}) {
                     y = (*i).first.year();
                     layout->addWidget(new YearItem(y));
+                    QDate start(y, 1, 1);
+                    add_mr_items(layout, start, start.daysInYear());
                 }
             } while((++i) != data->records.end());
             break;

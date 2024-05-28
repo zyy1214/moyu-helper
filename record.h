@@ -124,6 +124,8 @@ public:
     void add_record(Record *record);
     void delete_record(int index);
     void modify_record(int index, Record *record);
+    int get_point_sum();
+    QString get_display_name();
     MultipleRecord filter(bool (*func) (Record*));
 };
 

@@ -22,6 +22,7 @@ public:
     void setup_total_points();
 
     void setup_records();
+    void add_mr_items(QLayout *layout, QDate date, int num);
 
     Data *data;
 
