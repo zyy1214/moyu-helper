@@ -15,6 +15,7 @@
 
 HHOOK g_hKeyboardHook = NULL;
 HWND g_hWnd;
+HWND hh1;
 QTimer *checkTimer = nullptr; // 定义一个全局的定时器指针
 
 
@@ -38,23 +39,29 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     return CallNextHookEx(g_hKeyboardHook, nCode, wParam, lParam);
 }
 
-// // 将窗口移到当前桌面并最大化
-// void bringToFrontAndMaximize() {
-//     // 将窗口带到前台
-//     SetForegroundWindow(g_hWnd);
-//     // 显示并最大化窗口
-//     ShowWindow(g_hWnd, SW_SHOWMAXIMIZED);
-// }
+// 将窗口移到当前桌面并最大化
+void bringToFrontAndMaximize() {
+    // 将窗口带到前台
+    SetForegroundWindow(g_hWnd);
+    // 显示并最大化窗口
+    ShowWindow(g_hWnd, SW_SHOWMAXIMIZED);
+}
 
 // 检查并将窗口移到前台
 void FocusWindow::checkAndBringToFront() {
     // 获取当前活动窗口的句柄
+    hh1 = (HWND)a.winId();
     HWND foregroundWindow = GetForegroundWindow();
+    if(foregroundWindow == hh1){
+        a.close();
+    }
     if (foregroundWindow != g_hWnd) {
         a.close();
-        a.show();
-        a.setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-        a.showFullScreen();
+        if (foregroundWindow != g_hWnd) {
+            a.show();
+            a.setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+            a.showFullScreen();
+        }
     }
 }
 
@@ -71,7 +78,7 @@ FocusWindow::FocusWindow(QWidget *parent)
     // 定时器每100毫秒检查一次窗口位置
     checkTimer = new QTimer(this);
     connect(checkTimer, &QTimer::timeout, this, &FocusWindow::checkAndBringToFront);
-    checkTimer->start(2000); // 每100毫秒检查一次
+    checkTimer->start(2000); // 每2000毫秒检查一次
 
     // 注册低级别键盘钩子，阻止桌面切换键
     g_hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
@@ -197,6 +204,7 @@ FocusWindow::FocusWindow(QWidget *parent)
     QHBoxLayout* layout1=new QHBoxLayout();
     QLabel* hh =new QLabel("请返回专注模式");
     hh->setStyleSheet("font-size: 146px; color: #000000;");
+    hh->setAlignment(Qt::AlignCenter);
     layout1->addWidget(hh);
     QWidget *centralWidget = new QWidget(&a);
     centralWidget->setLayout(layout1);
@@ -245,7 +253,7 @@ FocusWindow::~FocusWindow()
 void FocusWindow::closeEvent(QCloseEvent *event)
 {
     // 暂停定时器以允许用户与消息框交互
-    checkTimer->stop();
+    checkTimer->start(2000);
 
 
     // 禁用窗口关闭事件，只有点击按钮时才能关闭
@@ -256,11 +264,12 @@ void FocusWindow::closeEvent(QCloseEvent *event)
 
     if (resBtn != QMessageBox::Yes) {
         // 用户取消关闭窗口，重新启动定时器
-        checkTimer->start();
+        checkTimer->start(2000);
 
         event->ignore();
     } else {
         a.close();
+        delete checkTimer;
         UnhookWindowsHookEx(g_hKeyboardHook);
         event->accept();
     }
