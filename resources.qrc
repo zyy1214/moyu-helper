@@ -13,6 +13,9 @@
         <file alias="search">resources/images/search.png</file>
         <file alias="tag">resources/images/tag.png</file>
         <file alias="check">resources/images/check.png</file>
+        <file alias="background">resources/images/background1.jpg</file>
+        <file alias="background2">resources/images/background2.jpg</file>
+        <file alias="background3">resources/images/background3.jpg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="icons">resources/fonts/icons.ttf</file>

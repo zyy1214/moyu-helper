@@ -6,6 +6,8 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QDateTime>
+#include "network.h"
+#include <QPainter>
 
 FocusWindow::FocusWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,6 +15,7 @@ FocusWindow::FocusWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //setStyleSheet("QWidget { background-image: url(:/images/background); }");
     setPalette(QPalette(QColor(Qt::white)));
     // 设置窗口属性为无边框且始终保持最大化
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
@@ -29,20 +32,54 @@ FocusWindow::FocusWindow(QWidget *parent)
         {
             setPalette(QPalette(QColor(Qt::white)));
             ui->datelabel->setStyleSheet("font-size: 54px; color: #000000;");
-            ui->timeLabel->setStyleSheet("font-size: 94px; color: #000000;");
-            ui->elapsedTimeLabel->setStyleSheet("font-size: 54px; color: #000000;");
+            ui->timeLabel->setStyleSheet("font-size: 96px; color: #000000;");
+            ui->famous->setStyleSheet("font-size: 36px; color: #000000;");
+            ui->elapsedTimeLabel->setStyleSheet("font-size: 36px; color: #000000;");
             ui->close->setStyleSheet("color: black;");
+            ui->picture->setStyleSheet("color: black;");
+            ui->renew->setStyleSheet("color: black;");
             ui->nightButton->setStyleSheet("color: black;");
         }
         else
         {
             setPalette(QPalette(QColor(Qt::black)));
             ui->datelabel->setStyleSheet("font-size: 54px; color: #ffffff;");
-            ui->timeLabel->setStyleSheet("font-size: 94px; color: #ffffff;");
-            ui->elapsedTimeLabel->setStyleSheet("font-size: 54px; color: #ffffff;");
+            ui->timeLabel->setStyleSheet("font-size: 96px; color: #ffffff;");
+            ui->famous->setStyleSheet("font-size: 36px; color: #ffffff;");
+            ui->elapsedTimeLabel->setStyleSheet("font-size: 36px; color: #ffffff;");
             ui->close->setStyleSheet("color: black;");
+            ui->picture->setStyleSheet("color: black;");
+            ui->renew->setStyleSheet("color: black;");
             ui->nightButton->setStyleSheet("color: black;");
         }
+    });
+
+    ui->picture->setText("picture");
+    connect(ui->picture, &QPushButton::clicked,[=]{
+        picturetype=(picturetype+1)%4;
+        repaint();
+    });
+
+    ui->renew->setText("刷新");
+    connect(ui->renew, &QPushButton::clicked,[=]{
+        Network *n = new Network(this, "https://v1.hitokoto.cn/");
+        n->post([this] (void *w, QString reply) {
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
+            if (!jsonDoc.isNull()) {
+                QJsonObject jsonObj = jsonDoc.object();
+                QString author = jsonObj["from_who"].toString();
+                QString text = "“" + jsonObj["hitokoto"].toString() + "”";
+                FocusWindow *window = (FocusWindow *) w;
+                window->ui->famous->setText(text);
+                // if (author != "") {
+                //     window->ui->famous->setText("——" + author);
+                // }
+            } else {
+                qDebug() << "Failed to parse JSON.";
+            }
+        }, [] (QMainWindow *w) {
+
+                });
     });
 
     // 记录当前时间作为窗口打开时的时间
@@ -54,7 +91,7 @@ FocusWindow::FocusWindow(QWidget *parent)
     ui->datelabel->setStyleSheet("font-size: 54px; color: #000000;");
     // 设置时间标签的属性
     ui->timeLabel->setAlignment(Qt::AlignCenter);
-    ui->timeLabel->setStyleSheet("font-size: 94px; color: #000000;");
+    ui->timeLabel->setStyleSheet("font-size: 96px; color: #000000;");
     // 设置运行时间标签的属性
     ui->elapsedTimeLabel->setAlignment(Qt::AlignCenter);
     ui->elapsedTimeLabel->setStyleSheet("font-size: 54px; color: #000000;");
@@ -72,11 +109,63 @@ FocusWindow::FocusWindow(QWidget *parent)
 
 
 
+    ui->famous->setStyleSheet("font-size: 36px; color: #000000;");
+    Network *n = new Network(this, "https://v1.hitokoto.cn/");
+    n->post([this] (void *w, QString reply) {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
+        if (!jsonDoc.isNull()) {
+            QJsonObject jsonObj = jsonDoc.object();
+            QString author = jsonObj["from_who"].toString();
+            QString text = "“" + jsonObj["hitokoto"].toString() + "”";
+            FocusWindow *window = (FocusWindow *) w;
+            window->ui->famous->setText(text);
+            // if (author != "") {
+            //     window->ui->famous->setText("——" + author);
+            // }
+        } else {
+            qDebug() << "Failed to parse JSON.";
+        }
+    }, [] (QMainWindow *w) {
+
+            });
+
+    //repaint();
+
     // // 创建一个中心部件并设置布局
     // QWidget *centralWidget = new QWidget(this);
     // centralWidget->setLayout(layout);
     // setCentralWidget(centralWidget);
 }
+
+
+void FocusWindow::paintEvent(QPaintEvent *event) {
+    Q_UNUSED(event);
+
+    if(picturetype==1){
+        QPainter painter(this);
+        QPixmap pixmap(":/images/background"); // 加载图片
+        painter.setOpacity(0.5);
+        QRect rect(QPoint((width() - pixmap.width()) / 2, (height() - pixmap.height()) / 2), pixmap.size()); // 计算居中的位置
+        painter.drawPixmap(rect, pixmap); // 在计算出的位置绘制图片
+    }
+    if(picturetype==2){
+        QPainter painter(this);
+        QPixmap pixmap(":/images/background2"); // 加载图片
+        pixmap = pixmap.scaled(this->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        painter.setOpacity(0.5);
+        QRect rect(QPoint((width() - pixmap.width()) / 2, (height() - pixmap.height()) / 2), pixmap.size()); // 计算居中的位置
+        painter.drawPixmap(rect, pixmap); // 在计算出的位置绘制图片
+    }
+    if(picturetype==3){
+        QPainter painter(this);
+        QPixmap pixmap(":/images/background3"); // 加载图片
+        pixmap = pixmap.scaled(this->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        painter.setOpacity(0.5);
+        QRect rect(QPoint((width() - pixmap.width()) / 2, (height() - pixmap.height()) / 2), pixmap.size()); // 计算居中的位置
+        painter.drawPixmap(rect, pixmap); // 在计算出的位置绘制图片
+    }
+}
+
 
 FocusWindow::~FocusWindow()
 {
