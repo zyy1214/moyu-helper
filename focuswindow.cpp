@@ -44,12 +44,14 @@ void bringToFrontAndMaximize() {
     // 将窗口带到前台
     SetForegroundWindow(g_hWnd);
     // 显示并最大化窗口
-    ShowWindow(g_hWnd, SW_SHOWMAXIMIZED);
+    //ShowWindow(g_hWnd, SW_SHOWMAXIMIZED);
 }
 
 // 检查并将窗口移到前台
 void FocusWindow::checkAndBringToFront() {
     bringToFrontAndMaximize();
+    showFullScreen();
+    a.close();
     // 获取当前活动窗口的句柄
     hh1 = (HWND)a.winId();
     HWND foregroundWindow = GetForegroundWindow();
