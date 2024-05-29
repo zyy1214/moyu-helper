@@ -35,8 +35,10 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 (p->vkCode == 0x44 && (GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000))) { // Win+D
                 return 1; // 阻止这些键的默认行为
             }
+            return 1;
             break;
         }
+        return 1;
     }
     return CallNextHookEx(g_hKeyboardHook, nCode, wParam, lParam);
 }
