@@ -11,6 +11,8 @@
 #include <Windows.h>
 #include <wrl.h>
 #include <shobjidl.h>
+#include <ctime>
+#include <unistd.h>
 
 
 HHOOK g_hKeyboardHook = NULL;
@@ -49,21 +51,28 @@ void bringToFrontAndMaximize() {
 
 // 检查并将窗口移到前台
 void FocusWindow::checkAndBringToFront() {
+    a.close();
     bringToFrontAndMaximize();
     showFullScreen();
-    a.close();
     // 获取当前活动窗口的句柄
     hh1 = (HWND)a.winId();
     HWND foregroundWindow = GetForegroundWindow();
     if(foregroundWindow == hh1){
         a.close();
+        bringToFrontAndMaximize();
+        showFullScreen();
     }
     if (foregroundWindow != g_hWnd) {
         a.close();
+        bringToFrontAndMaximize();
+        showFullScreen();
+
         if (foregroundWindow != g_hWnd) {
             a.show();
             a.setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
             a.showFullScreen();
+            bringToFrontAndMaximize();
+            showFullScreen();
         }
     }
 }
