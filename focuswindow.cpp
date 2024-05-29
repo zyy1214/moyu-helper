@@ -49,6 +49,7 @@ void bringToFrontAndMaximize() {
 
 // 检查并将窗口移到前台
 void FocusWindow::checkAndBringToFront() {
+    bringToFrontAndMaximize();
     // 获取当前活动窗口的句柄
     hh1 = (HWND)a.winId();
     HWND foregroundWindow = GetForegroundWindow();
