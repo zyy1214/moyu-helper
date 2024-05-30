@@ -618,6 +618,8 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
         mod_search[++search_count]=i;
     }
     for (Mod *mod : data->mods) {
+        if(mod->is_deleted())
+            continue;
         for (QString &label : mod->labels) {
             if (std::find(data->totallabels.begin(), data->totallabels.end(), label) == data->totallabels.end()) {
                 data->totallabels.push_back(label);
