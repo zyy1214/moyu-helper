@@ -101,7 +101,7 @@ bool ChartWindow::will_build(){
         return 0;
     if(ui->select_graph->currentText()=="-"||ui->select_graph->currentText()=="")
         return 0;
-    if(ui->select_graph->currentText()!="Pie Chart"&&(ui->select_time->currentText()=="-"||ui->select_time->currentText()==""))
+    if(ui->select_graph->currentText()!="饼状图"&&(ui->select_time->currentText()=="-"||ui->select_time->currentText()==""))
         return 0;
     return 1;
 }
@@ -109,7 +109,7 @@ std::map<QDate,int> ChartWindow::get_point_per_day(){
     QDate start_day=ui->date_start->date();
     QDate end_day=ui->date_end->date();
     std::map<QDate,int> point_per_day;
-    if(ui->select_mod->currentText()!="All"){
+    if(ui->select_mod->currentText()!="全部"){
         for(auto mr: data->records){
             if(mr.first>=start_day&&mr.first<=end_day){
                 int temp_point=0;
@@ -119,11 +119,11 @@ std::map<QDate,int> ChartWindow::get_point_per_day(){
                         continue;
                     if(((RecordByMod*)r)->get_mod()->get_shortname()!=ui->select_mod->currentText())
                         continue;
-                    if(ui->select_type->currentText()=="All"){
+                    if(ui->select_type->currentText()=="全部"){
                         temp_point+=r->get_signed_point();
                         is_changed=1;
                     }
-                    else if(ui->select_type->currentText()=="Obtain"){
+                    else if(ui->select_type->currentText()=="获取"){
                         if (r->get_type() != OBTAIN)
                             continue;
                         temp_point+=r->get_point();
@@ -143,17 +143,17 @@ std::map<QDate,int> ChartWindow::get_point_per_day(){
         }
         return point_per_day;
     }
-    if(ui->select_label->currentText()=="All"){
+    if(ui->select_label->currentText()=="全部"){
         for(auto mr: data->records){
             if(mr.first>=start_day&&mr.first<=end_day){
                 int temp_point=0;
                 bool is_changed=0;
                 for (auto r : *(mr.second)) {
-                    if(ui->select_type->currentText()=="All"){
+                    if(ui->select_type->currentText()=="全部"){
                         temp_point+=r->get_signed_point();
                         is_changed=1;
                     }
-                    else if(ui->select_type->currentText()=="Obtain"){
+                    else if(ui->select_type->currentText()=="获取"){
                         if (r->get_type() != OBTAIN)
                             continue;
                         temp_point+=r->get_point();
@@ -182,11 +182,11 @@ std::map<QDate,int> ChartWindow::get_point_per_day(){
                 std::vector<QString> temp_lables=((RecordByMod*)r)->get_mod()->get_labels();
                 if(std::find(temp_lables.begin(),temp_lables.end(),ui->select_label->currentText())==temp_lables.end())
                     continue;
-                if(ui->select_type->currentText()=="All"){
+                if(ui->select_type->currentText()=="全部"){
                     temp_point+=r->get_signed_point();
                     is_changed=1;
                 }
-                else if(ui->select_type->currentText()=="Obtain"){
+                else if(ui->select_type->currentText()=="获取"){
                     if (r->get_type() != OBTAIN)
                         continue;
                     temp_point+=r->get_point();
@@ -217,7 +217,7 @@ std::map<Mod*,int> ChartWindow::get_point_per_mod(){
         if(mr.first>=start_day&&mr.first<=end_day){
             for (auto r : *(mr.second)) {
                 if(r->get_class() != BY_MOD){
-                    if(ui->select_type->currentText()=="Obtain"){
+                    if(ui->select_type->currentText()=="获取"){
                         if (r->get_type() != OBTAIN)
                             continue;
                         else_point+=r->get_point();
@@ -232,8 +232,8 @@ std::map<Mod*,int> ChartWindow::get_point_per_mod(){
                     continue;
                 }
                 std::vector<QString> temp_lables=((RecordByMod*)r)->get_mod()->get_labels();
-                if(ui->select_label->currentText()=="All"){
-                    if(ui->select_type->currentText()=="Obtain"){
+                if(ui->select_label->currentText()=="全部"){
+                    if(ui->select_type->currentText()=="获取"){
                         if (r->get_type() != OBTAIN)
                             continue;
                         if(point_per_mod.find(((RecordByMod*)r)->get_mod())==point_per_mod.end())
@@ -251,7 +251,7 @@ std::map<Mod*,int> ChartWindow::get_point_per_mod(){
                 }
                 if(std::find(temp_lables.begin(),temp_lables.end(),ui->select_label->currentText())==temp_lables.end())
                     continue;
-                if(ui->select_type->currentText()=="Obtain"){
+                if(ui->select_type->currentText()=="获取"){
                     if (r->get_type() != OBTAIN)
                         continue;
                     if(point_per_mod.find(((RecordByMod*)r)->get_mod())==point_per_mod.end())
@@ -281,8 +281,8 @@ void ChartWindow::on_select_label_currentIndexChanged(int index)
     ui->select_mod->clear();
     ui->select_mod->addItem("-");
     if(selected_command!="-")
-        ui->select_mod->addItem("All");
-    if(selected_command=="All"){
+        ui->select_mod->addItem("全部");
+    if(selected_command=="全部"){
         for(int i = 0;i < data->mods.size(); i++){
             ui->select_mod->addItem(data->mods[i]->get_shortname());
         }
@@ -297,7 +297,7 @@ void ChartWindow::on_select_label_currentIndexChanged(int index)
 void ChartWindow::build_graph(){
     if(!will_build())
         return;
-    if(ui->select_graph->currentText()=="Histogram"){
+    if(ui->select_graph->currentText()=="柱状图"){
         if(ui->chart_layout->itemAt(0)){
             QWidget *widget=ui->chart_layout->itemAt(0)->widget();
             ui->chart_layout->removeItem(ui->chart_layout->itemAt(0));
@@ -308,7 +308,7 @@ void ChartWindow::build_graph(){
         chartView->setRenderHint(QPainter::Antialiasing);
         ui->chart_layout->addWidget(chartView);
     }
-    if(ui->select_graph->currentText()=="Pie Chart"){
+    if(ui->select_graph->currentText()=="饼状图"){
         if(ui->chart_layout->itemAt(0)){
             QWidget *widget=ui->chart_layout->itemAt(0)->widget();
             ui->chart_layout->removeItem(ui->chart_layout->itemAt(0));
@@ -316,7 +316,7 @@ void ChartWindow::build_graph(){
         }
         std::map<Mod*,int> point_per_mod=get_point_per_mod();
         QChartView* chartView;
-        if(ui->select_label->currentText()=="All")
+        if(ui->select_label->currentText()=="全部")
             chartView=build_piechart(point_per_mod,else_point,have_else);
         else
             chartView=build_piechart(point_per_mod,else_point,0);
@@ -324,7 +324,7 @@ void ChartWindow::build_graph(){
 
         ui->chart_layout->addWidget(chartView);
     }
-    if(ui->select_graph->currentText()=="Line Chart"){
+    if(ui->select_graph->currentText()=="折线图"){
         if(ui->chart_layout->itemAt(0)){
             QWidget *widget=ui->chart_layout->itemAt(0)->widget();
             ui->chart_layout->removeItem(ui->chart_layout->itemAt(0));
@@ -343,29 +343,29 @@ void ChartWindow::on_select_mod_currentIndexChanged(int index)
     ui->select_graph->clear();
     ui->select_graph->addItem("-");
     if(selected_command!="-"){
-        ui->select_graph->addItem("Histogram");
-        ui->select_graph->addItem("Line Chart");
-        if(selected_command!="All"){
+        ui->select_graph->addItem("柱状图");
+        ui->select_graph->addItem("折线图");
+        if(selected_command!="全部"){
             ui->select_type->clear();
             for(auto mr:data->mods){
                 if(mr->get_shortname()==selected_command){
                     if(mr->get_type()==OBTAIN)
-                        ui->select_type->addItem("Obtain");
+                        ui->select_type->addItem("获取");
                     else
-                        ui->select_type->addItem("Consume");
+                        ui->select_type->addItem("消耗");
                 }
             }
 
         }
     }
-    if(selected_command=="All"&&ui->select_type->currentText()!="All"){
-        ui->select_graph->addItem("Pie Chart");
+    if(selected_command=="全部"&&ui->select_type->currentText()!="全部"){
+        ui->select_graph->addItem("饼状图");
     }
-    if(selected_command=="-"||selected_command=="All"){
+    if(selected_command=="-"||selected_command=="全部"){
         ui->select_type->clear();
-        ui->select_type->addItem("All");
-        ui->select_type->addItem("Obtain");
-        ui->select_type->addItem("Consume");
+        ui->select_type->addItem("全部");
+        ui->select_type->addItem("获取");
+        ui->select_type->addItem("消耗");
     }
     build_graph();
 }
@@ -375,10 +375,10 @@ void ChartWindow::on_select_graph_currentIndexChanged(int index)
     QString selected_command = ui->select_graph->itemText(index);
     ui->select_time->clear();
     ui->select_time->addItem("-");
-    if(selected_command=="Histogram"||selected_command=="Line Chart"){
-        ui->select_time->addItem("Day");
-        ui->select_time->addItem("Month");
-        ui->select_time->addItem("Year");
+    if(selected_command=="柱状图"||selected_command=="折线图"){
+        ui->select_time->addItem("天");
+        ui->select_time->addItem("月");
+        ui->select_time->addItem("年");
     }
     build_graph();
 }
@@ -389,11 +389,11 @@ void ChartWindow::on_select_type_currentIndexChanged(int index)
     ui->select_graph->clear();
     ui->select_graph->addItem("-");
     if(ui->select_mod->currentText()!="-"){
-        ui->select_graph->addItem("Histogram");
-        ui->select_graph->addItem("Line Chart");
+        ui->select_graph->addItem("柱状图");
+        ui->select_graph->addItem("折线图");
     }
-    if(ui->select_mod->currentText()=="All"&&ui->select_type->currentText()!="All"){
-        ui->select_graph->addItem("Pie Chart");
+    if(ui->select_mod->currentText()=="全部"&&ui->select_type->currentText()!="全部"){
+        ui->select_graph->addItem("饼状图");
     }
     build_graph();
 }

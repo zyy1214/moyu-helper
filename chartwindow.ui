@@ -28,7 +28,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Start Time</string>
+           <string>开始时间：</string>
           </property>
          </widget>
         </item>
@@ -51,7 +51,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>End Time</string>
+           <string>结束时间：</string>
           </property>
          </widget>
         </item>
@@ -96,7 +96,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Label</string>
+         <string>标签：</string>
         </property>
        </widget>
       </item>
@@ -109,7 +109,7 @@
         </item>
         <item>
          <property name="text">
-          <string>All</string>
+          <string>全部</string>
          </property>
         </item>
        </widget>
@@ -123,7 +123,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Mod</string>
+         <string>模板：</string>
         </property>
        </widget>
       </item>
@@ -145,7 +145,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Type</string>
+         <string>类型：</string>
         </property>
        </widget>
       </item>
@@ -153,17 +153,17 @@
        <widget class="QComboBox" name="select_type">
         <item>
          <property name="text">
-          <string>All</string>
+          <string>全部</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Consume</string>
+          <string>消耗</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Obtain</string>
+          <string>获取</string>
          </property>
         </item>
        </widget>
@@ -177,7 +177,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Graph</string>
+         <string>图表：</string>
         </property>
        </widget>
       </item>
@@ -199,7 +199,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Time</string>
+         <string>时间：</string>
         </property>
        </widget>
       </item>
@@ -238,7 +238,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

@@ -19,7 +19,7 @@
 #include <QDebug>
 QString placeholder[5]={""," ","  ","   ","    "};
 QChartView* build_histogram_day(std::map<QDate, int> points_per_day){
-    QBarSet *set0 = new QBarSet("Points Per Day");
+    QBarSet *set0 = new QBarSet("积分/每天");
     int cnt=0;
     for(auto mr:points_per_day){
         *set0<<mr.second;
@@ -52,7 +52,7 @@ QChartView* build_histogram_day(std::map<QDate, int> points_per_day){
     return chartView;
 }
 QChartView* build_histogram_month(std::map<QDate, int> points_per_day){
-    QBarSet *set0 = new QBarSet("Points Per Month");
+    QBarSet *set0 = new QBarSet("积分/每月");
     int temp_point=0;
     int temp_month=0,temp_year=0;
     int cnt=0;
@@ -107,7 +107,7 @@ QChartView* build_histogram_month(std::map<QDate, int> points_per_day){
     return chartView;
 }
 QChartView* build_histogram_year(std::map<QDate, int> points_per_day){
-    QBarSet *set0 = new QBarSet("Points Per Year");
+    QBarSet *set0 = new QBarSet("积分/每年");
     int temp_point=0;
     int temp_year=0;
     std::vector<QDate> y_date;
@@ -160,8 +160,8 @@ QChartView* build_histogram_year(std::map<QDate, int> points_per_day){
 }
 QChartView* build_histogram_day_all(std::map<QDate, int> points_per_day){
     QStackedBarSeries *series=new QStackedBarSeries();
-    QBarSet *set0 = new QBarSet("Obtain Points Per Day");
-    QBarSet *set1 = new QBarSet("Consume Points Per Day");
+    QBarSet *set0 = new QBarSet("获取积分/每天");
+    QBarSet *set1 = new QBarSet("消耗积分/每天");
     int cnt=0;
     for(auto mr:points_per_day){
         if(mr.second>=0){
@@ -204,8 +204,8 @@ QChartView* build_histogram_day_all(std::map<QDate, int> points_per_day){
 }
 QChartView* build_histogram_month_all(std::map<QDate, int> points_per_day){
     QStackedBarSeries *series=new QStackedBarSeries();
-    QBarSet *set0 = new QBarSet("Obtain Points Per Month");
-    QBarSet *set1 = new QBarSet("Consume Points Per Month");
+    QBarSet *set0 = new QBarSet("获取积分/每天");
+    QBarSet *set1 = new QBarSet("消耗积分/每天");
     int temp_point=0;
     int temp_month=0,temp_year=0;
     int cnt=0;
@@ -276,8 +276,8 @@ QChartView* build_histogram_month_all(std::map<QDate, int> points_per_day){
 }
 QChartView* build_histogram_year_all(std::map<QDate, int> points_per_day){
     QStackedBarSeries *series=new QStackedBarSeries();
-    QBarSet *set0 = new QBarSet("Obtain Points Per Year");
-    QBarSet *set1 = new QBarSet("Consume Points Per Year");
+    QBarSet *set0 = new QBarSet("获得积分/每天");
+    QBarSet *set1 = new QBarSet("消耗积分/每天");
     int temp_point=0;
     int temp_year=0;
     int cnt=0;
@@ -344,17 +344,17 @@ QChartView* build_histogram_year_all(std::map<QDate, int> points_per_day){
     return chartView;
 }
 QChartView* build_histogram(std::map<QDate, int> points_per_day,QString time,QString type){
-    if(type!="All"){
-        if(time=="Day")
+    if(type!="全部"){
+        if(time=="天")
             return build_histogram_day(points_per_day);
-        else if(time=="Month")
+        else if(time=="月")
             return build_histogram_month(points_per_day);
         else
             return build_histogram_year(points_per_day);
     }
-    if(time=="Day")
+    if(time=="天")
         return build_histogram_day_all(points_per_day);
-    else if(time=="Month")
+    else if(time=="月")
         return build_histogram_month_all(points_per_day);
     else
         return build_histogram_year_all(points_per_day);
@@ -368,7 +368,7 @@ QChartView* build_piechart(std::map<Mod*,int> points_per_mod,int else_point,bool
         *series<<new QPieSlice("其它",else_point);
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Points Per Mod");
+    chart->setTitle("积分/模板");
     chart->setAnimationOptions(QChart::SeriesAnimations);
     QChartView *chartView = new QChartView(chart);
     return chartView;
@@ -393,13 +393,13 @@ QChartView* build_linechart_day(std::map<QDate, int> points_per_day){
     }
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Points By Day");
+    chart->setTitle("积分/每天");
     if(cnt!=0){
         QDateTimeAxis *axisX = new QDateTimeAxis;
         axisX->setFormat("dd MM yyyy");
         axisX->setTitleText("日期");
         QValueAxis *axisY = new QValueAxis;
-        axisY->setTitleText("数值");
+        axisY->setTitleText("积分");
         chart->addAxis(axisX, Qt::AlignBottom);
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisX);
@@ -456,13 +456,13 @@ QChartView* build_linechart_month(std::map<QDate, int> points_per_day){
     }
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Points By Month");
+    chart->setTitle("积分/每月");
     if(cnt!=0){
         QDateTimeAxis *axisX = new QDateTimeAxis;
         axisX->setFormat("MM yyyy");
         axisX->setTitleText("日期");
         QValueAxis *axisY = new QValueAxis;
-        axisY->setTitleText("数值");
+        axisY->setTitleText("积分");
         chart->addAxis(axisX, Qt::AlignBottom);
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisX);
@@ -516,13 +516,13 @@ QChartView* build_linechart_year(std::map<QDate, int> points_per_day){
     }
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Points By Year");
+    chart->setTitle("积分/每年");
     if(cnt!=0){
         QDateTimeAxis *axisX = new QDateTimeAxis;
         axisX->setFormat("yyyy");
         axisX->setTitleText("日期");
         QValueAxis *axisY = new QValueAxis;
-        axisY->setTitleText("数值");
+        axisY->setTitleText("积分");
         chart->addAxis(axisX, Qt::AlignBottom);
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisX);
@@ -532,9 +532,9 @@ QChartView* build_linechart_year(std::map<QDate, int> points_per_day){
     return chartView;
 }
 QChartView* build_linechart(std::map<QDate, int> points_per_day,QString time){
-    if(time=="Day")
+    if(time=="天")
         return build_linechart_day(points_per_day);
-    else if(time=="Month")
+    else if(time=="月")
         return build_linechart_month(points_per_day);
     else
         return build_linechart_year(points_per_day);
