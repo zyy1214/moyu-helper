@@ -191,37 +191,6 @@ private:
 };
 
 
-class Warning_Dialog : public QDialog {
-
-public:
-    Warning_Dialog(QWidget *parent = nullptr) : QDialog(parent) {
-
-        QFont font("Microsoft YaHei UI", 12);//字体
-
-
-        setWindowTitle(QString("添加模板"));
-        setFixedSize(200, 100);
-
-
-        // 创建文本输入框
-        QLabel *label_name=new QLabel("请检查模板内容输入");
-        label_name->setFont(font);
-        //ok，cancel按钮
-        QPushButton *okButton = new QPushButton("确定");
-
-        QVBoxLayout *layout = new QVBoxLayout;
-        layout->addWidget(label_name);
-        layout->addWidget(okButton);
-        setLayout(layout);
-
-        // 连接确定按钮的点击事件
-        connect(okButton, &QPushButton::clicked, [=]() {
-            close();
-        });
-    }
-};
-
-
 //添加对话框
 class AddDialog : public QDialog {
 
@@ -310,8 +279,7 @@ public:
             }
             else
             {
-                Warning_Dialog dialog;
-                dialog.exec();
+                show_warning("添加模板", "请检查模板内容输入。");
             }
             delete mod;
         });
@@ -439,8 +407,7 @@ public:
             }
             else
             {
-                Warning_Dialog dialog;
-                dialog.exec();
+                show_warning("添加模板", "请检查模板内容输入。");
             }
             delete aaa;
         });

@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QString>
+#include <QStyle>
 #include <unordered_map>
 
 #include "uitools.h"
@@ -65,21 +66,83 @@ QPushButton *create_icon_button(QString icon_name, int size) {
     return button;
 }
 
+class InfoDialog : public QDialog {
+public:
+    InfoDialog(QString title, QString content, int dialog_type, QWidget *parent = nullptr)
+        : QDialog(parent) {
+
+        setWindowTitle(title);
+        // setWindowIcon(QIcon());
+
+        // Qt::WindowFlags flags = windowFlags();
+        // flags &= ~Qt::WindowTitleHint;
+        // flags |= Qt::CustomizeWindowHint;
+        // setWindowFlags(flags);
+
+        setFixedWidth(400);
+
+        setPalette(QPalette(QColor(Qt::white)));
+
+        QHBoxLayout *titleLayout = new QHBoxLayout();
+        QLabel *titleLabel = new QLabel(title, this);
+        titleLabel->setWordWrap(true);
+        titleLabel->setStyleSheet("font-weight: bold; font-size: 24px;");
+        titleLayout->addSpacing(25);
+        titleLayout->addWidget(titleLabel);
+        titleLayout->addSpacing(25);
+
+        QHBoxLayout *textLayout = new QHBoxLayout();
+        textLayout->setAlignment(Qt::AlignTop);
+        QLabel *iconLabel = new QLabel("", this);
+        iconLabel->setPixmap(style()->standardPixmap(dialog_type == 1 ? QStyle::SP_MessageBoxInformation : QStyle::SP_MessageBoxWarning)
+                                 .scaled(36, 36, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        iconLabel->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+        QLabel *textLabel = new QLabel(content, this);
+        textLabel->setWordWrap(true);
+        textLabel->setStyleSheet("font-size: 18px;");
+        textLayout->addSpacing(25);
+        textLayout->addWidget(iconLabel);
+        textLayout->addSpacing(20);
+        textLayout->addWidget(textLabel);
+        textLayout->addSpacing(25);
+
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->addSpacing(10);
+        layout->addItem(titleLayout);
+        layout->addSpacing(15);
+        layout->addItem(textLayout);
+        layout->addSpacing(30);
+
+        // 添加确定和取消按钮
+        QHBoxLayout *buttonLayout = new QHBoxLayout();
+        QPushButton *okButton = new QPushButton("确定", this);
+        okButton->setStyleSheet("color: black; font-size: 14px;"
+                                "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+
+        buttonLayout->setAlignment(Qt::AlignRight);
+        buttonLayout->addWidget(okButton);
+        buttonLayout->addSpacing(25);
+
+        layout->addLayout(buttonLayout);
+        layout->addSpacing(20);
+
+
+        connect(okButton, &QPushButton::clicked, this, &QDialog::close);
+
+        setLayout(layout);
+    }
+};
+
 void show_warning(QString title, QString content) {
-    QMessageBox::warning(nullptr, title, content, QMessageBox::Ok);
+    // QMessageBox::warning(nullptr, title, content, QMessageBox::Ok);
+    InfoDialog *dialog = new InfoDialog(title, content, 2);
+    dialog->exec();
 }
 void show_info(QString title, QString content) {
-    QMessageBox::information(nullptr, title, content, QMessageBox::Ok);
-    // QMessageBox infoBox;
-    // infoBox.setWindowTitle(title);
-    // infoBox.setText(content);
-    // infoBox.setIcon(QMessageBox::Information);
-    // infoBox.setStyleSheet("QLabel { font-size: 16px; }");
-    // QAbstractButton *okButton = infoBox.button(QMessageBox::Ok);
-    // if (okButton) {
-    //     okButton->setText("确定");
-    // }
-    // infoBox.exec();
+    // QMessageBox::information(nullptr, title, content, QMessageBox::Ok);
+    InfoDialog *dialog = new InfoDialog(title, content, 1);
+    dialog->exec();
 }
 
 QString get_elliptic_text(const QString &text, const QFont &font, int maxWidth) {

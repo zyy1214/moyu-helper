@@ -124,7 +124,7 @@ public:
         setWindowTitle(record ? "修改记录" : "添加记录");
         //setFixedSize(300, 240);
 
-        setStyleSheet("background-color: white;");
+        setPalette(QPalette(QColor(Qt::white)));
 
         QFont font("Microsoft YaHei UI", 12);
 
@@ -285,13 +285,20 @@ public:
         // 添加确定和取消按钮
         QHBoxLayout *buttonLayout = new QHBoxLayout();
         QPushButton *okButton = new QPushButton("确定", this);
-        okButton->setFont(font);
+        okButton->setStyleSheet("color: black; font-size: 14px;"
+                                "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         QPushButton *cancelButton = new QPushButton("取消", this);
-        cancelButton->setFont(font);
+        cancelButton->setStyleSheet("color: black; font-size: 14px;"
+                                    "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+        buttonLayout->setAlignment(Qt::AlignRight);
         buttonLayout->addWidget(cancelButton);
+        buttonLayout->addSpacing(8);
         buttonLayout->addWidget(okButton);
-
+        buttonLayout->addSpacing(15);
         buttonLayout->setContentsMargins(0, 5, 0, 5);
+
         layout->addLayout(buttonLayout);
 
         // 连接按钮的信号和槽
@@ -423,73 +430,6 @@ private slots:
     }
 };
 
-class DeleteRecordDialog : public QDialog {
-private:
-    Record *record;
-    RecordWindow *window;
-public:
-    DeleteRecordDialog(RecordWindow *window, Record *record, QWidget *parent = nullptr)
-        : window(window), record(record), QDialog(parent) {
-        //qDebug() << window;
-        setWindowTitle("删除记录");
-        setFixedSize(300, 120);
-
-        setStyleSheet("background-color: white;");
-
-        QFont font("Microsoft YaHei UI", 12);
-
-        // 添加文本输入框和标签
-        QLabel *textLabel = new QLabel("确定删除该条记录吗？", this);
-        textLabel->setFont(font);
-
-
-        // 布局管理器
-        QVBoxLayout *layout = new QVBoxLayout(this);
-        layout->addWidget(textLabel);
-
-        // 添加确定和取消按钮
-        QHBoxLayout *buttonLayout = new QHBoxLayout();
-        QPushButton *okButton = new QPushButton("确定", this);
-        okButton->setFont(font);
-        QPushButton *cancelButton = new QPushButton("取消", this);
-        cancelButton->setFont(font);
-        buttonLayout->addWidget(cancelButton);
-        buttonLayout->addWidget(okButton);
-        layout->addLayout(buttonLayout);
-
-        // 连接按钮的信号和槽
-        connect(okButton, &QPushButton::clicked, this, &DeleteRecordDialog::onOKButtonClicked);
-        connect(cancelButton, &QPushButton::clicked, this, &QDialog::close);
-
-        setLayout(layout);
-    }
-    ~DeleteRecordDialog() {
-        qDebug() << "DeleteRecordDialog deleted";
-    }
-private slots:
-    void onOKButtonClicked() {
-        MultipleRecord *mr = window->data->records[record->get_date()];
-        for (int i = 0; i < mr->size(); i++) {
-            if (record->get_id() == (*mr)[i]->get_id()) {
-                mr->delete_record(i);
-                int d_points = record->get_signed_point();
-                window->data->total_points -= d_points;
-                if (record->get_date().daysTo(QDate::currentDate()) <= 6) {
-                    window->data->last_week_points -= d_points;
-                }
-                break;
-            }
-        }
-        if (mr->size() == 0) {
-            window->data->records.erase(record->get_date());
-        }
-        db_delete_record(window->data, record);
-        window->setup_total_points();
-        window->setup_records(); // todo: 需更改
-        close();
-    }
-};
-
 class MultipleRecordItem : public QWidget {
 private:
     RecordWindow *window;
@@ -526,25 +466,44 @@ class RecordItem : public QWidget {
 private:
     RecordWindow *window;
 public:
-    RecordItem(RecordWindow *window, Record &record, QWidget *parent = nullptr)
+    RecordItem(RecordWindow *window, Record *record, QWidget *parent = nullptr)
         : window(window), QWidget(parent) {
         //qDebug() << "RecordItem created" << window << record.get_point() << this;
         setStyleSheet("background-color: rgba(255, 255, 255, 100)");
         QFont font("Microsoft YaHei UI", 18);
         QSpacerItem *spacer = new QSpacerItem(40, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
-        QLabel *label_name = new QLabel(record.get_display_name());
+        QLabel *label_name = new QLabel(record->get_display_name());
         label_name->setFont(font);
-        QLabel *label_point = new QLabel((record.get_type() == RECORD_TYPE::OBTAIN ? "+" : "−") + QString::number(record.get_point()));
+        QLabel *label_point = new QLabel((record->get_type() == RECORD_TYPE::OBTAIN ? "+" : "−") + QString::number(record->get_point()));
         label_point->setFont(font);
         label_point->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         QSpacerItem *spacer1 = new QSpacerItem(20, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
-        QPushButton *button_edit = create_icon_button("edit", 32, [&, window] () {
-            EditRecordDialog *dialog = new EditRecordDialog(window, &record);
+        QPushButton *button_edit = create_icon_button("edit", 32, [&, window, record] () {
+            EditRecordDialog *dialog = new EditRecordDialog(window, record);
             dialog->exec();
         });
-        QPushButton *button_delete = create_icon_button("delete", 32, [&, window] () {
-            DeleteRecordDialog *dialog = new DeleteRecordDialog(window, &record);
-            dialog->exec();
+        QPushButton *button_delete = create_icon_button("delete", 32, [&, window, record] () {
+            show_confirm(window, "删除记录", "确定删除该条记录吗？", [=] (QMainWindow *w) {
+                RecordWindow *window = (RecordWindow *) w;
+                MultipleRecord *mr = window->data->records[record->get_date()];
+                for (int i = 0; i < mr->size(); i++) {
+                    if (record->get_id() == (*mr)[i]->get_id()) {
+                        mr->delete_record(i);
+                        int d_points = record->get_signed_point();
+                        window->data->total_points -= d_points;
+                        if (record->get_date().daysTo(QDate::currentDate()) <= 6) {
+                            window->data->last_week_points -= d_points;
+                        }
+                        break;
+                    }
+                }
+                if (mr->size() == 0) {
+                    window->data->records.erase(record->get_date());
+                }
+                db_delete_record(window->data, record);
+                window->setup_total_points();
+                window->setup_records(); // todo: 需更改
+            });
         });
 
         QHBoxLayout *layout = new QHBoxLayout(this);
@@ -693,7 +652,7 @@ void RecordWindow::setup_records() {
                 //i++;
                 for (auto &record : *date.second) {
                     //qDebug() << "here";
-                    auto *item = new RecordItem(this, *record);
+                    auto *item = new RecordItem(this, record);
                     layout->addWidget(item);
                     //i++;
                 }
