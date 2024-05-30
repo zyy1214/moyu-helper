@@ -33,9 +33,9 @@ public:
     int search_count=0;
     int temp_count=0;
     int mod_cnt=0;
-    int temp_search[200] = {};
-    int mod_search[200]={};
-    bool ischose[1000]; //是否选择这个标签
+    int temp_search[500] = {};
+    int mod_search[500]={};
+    bool ischose[2000]; //是否选择这个标签
 
 private:
     Ui::ModWindow *ui;

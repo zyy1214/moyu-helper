@@ -51,7 +51,7 @@
        <widget class="QPushButton" name="button_record">
         <property name="font">
          <font>
-          <pointsize>24</pointsize>
+          <pointsize>18</pointsize>
          </font>
         </property>
         <property name="styleSheet">
@@ -99,6 +99,11 @@
       </item>
       <item>
        <widget class="QPushButton" name="button_chart">
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
         <property name="styleSheet">
          <string notr="true">border: none; outline: none; padding: 5;</string>
         </property>
@@ -157,6 +162,11 @@
       </item>
       <item>
        <widget class="QPushButton" name="button_menu">
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
         <property name="styleSheet">
          <string notr="true">border: none; outline: none; padding: 5;</string>
         </property>

@@ -43,7 +43,7 @@ private:
     Mod *idd;
     QVBoxLayout* mainLayout;
     void setupUI() {
-        QFont font("consolos", 16);//字体
+        QFont font("Microsoft YaHei UI", 16);//字体
         delete mainLayout;
         mainLayout = new QVBoxLayout(this);
         QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -169,7 +169,7 @@ private:
     }
 
     void hideDialogAfterDelay() {
-        hideTimer.start(1500);
+        hideTimer.start(1000);
     }
 
     void cancelHideDialog() {
@@ -196,7 +196,7 @@ class Warning_Dialog : public QDialog {
 public:
     Warning_Dialog(QWidget *parent = nullptr) : QDialog(parent) {
 
-        QFont font("consolos", 12);//字体
+        QFont font("Microsoft YaHei UI", 12);//字体
 
 
         setWindowTitle(QString("添加模板"));
@@ -230,16 +230,16 @@ public:
     AddDialog(ModWindow *window, QWidget *parent = nullptr)
         : window(window), QDialog(parent) {
 
-        QFont font("consolos", 12);//字体
+        QFont font("Microsoft YaHei UI", 12);//字体
 
 
         setWindowTitle(QString("添加模板"));
         setFixedSize(500, 300);
 
         // 创建Radio button组
-        QRadioButton *consumeButton = new QRadioButton("花费");
+        QRadioButton *consumeButton = new QRadioButton("消耗");
         consumeButton->setFont(font);
-        QRadioButton *obtainButton = new QRadioButton("获得");
+        QRadioButton *obtainButton = new QRadioButton("获取");
         obtainButton->setFont(font);
         obtainButton->setChecked(true);
 
@@ -332,7 +332,7 @@ public:
     ChangeDialog(ModWindow *window, Mod* x,QWidget *parent = nullptr)
         : window(window), before_mod(x), QDialog(parent) {
 
-        QFont font("consolos", 12);//字体
+        QFont font("Microsoft YaHei UI", 12);//字体
 
 
         setWindowTitle(QString("添加模板"));
@@ -358,9 +358,9 @@ public:
 
 
         // 创建Radio button组
-        QRadioButton *consumeButton = new QRadioButton("花费");
+        QRadioButton *consumeButton = new QRadioButton("消耗");
         consumeButton->setFont(font);
-        QRadioButton *obtainButton = new QRadioButton("获得");
+        QRadioButton *obtainButton = new QRadioButton("获取");
         obtainButton->setFont(font);
         if(x->type==1)
             obtainButton->setChecked(true);
@@ -464,7 +464,7 @@ public:
     Tags_shearch_Dialog(ModWindow *window, QWidget *parent = nullptr)
         : window(window), QDialog(parent) {
 
-        QFont font("consolos", 18);//字体
+        QFont font("Microsoft YaHei UI", 18);//字体
 
         setWindowTitle(QString("选择标签"));
 
@@ -498,7 +498,7 @@ public:
                         hh->setStyleSheet("color: white; background-color: rgba(0, 255, 255, 188); border-radius: 10px");
                     hh->setFont(font);
                     connect(hh, &QPushButton::clicked,[=](){
-                        window->ischose[i+j]=(! window->ischose[i+j]);
+                        window->ischose[i+j]=(! (window->ischose[i+j]));
                         if(window->ischose[i+j]==0)
                             hh->setStyleSheet("color: white; background-color: rgba(0, 0, 255, 188); border-radius: 10px");
                         else
@@ -529,12 +529,12 @@ private:
 
 void ModWindow::setup_mods() {
     QWidget *scrollWidget = new QWidget;
-    scrollWidget->setStyleSheet("background-color: white;");
+    scrollWidget->setStyleSheet("background-color: white;"); 
     QVBoxLayout *layout = new QVBoxLayout;
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->setSpacing(20);
-    QFont font("consolos", 20);//字体
-    QFont font1("consolos", 14);//字体
+    QFont font("Microsoft YaHei UI", 18);//字体
+    QFont font1("Microsoft YaHei UI", 14);//字体
 
 
     //列出所有模板:
@@ -547,17 +547,17 @@ void ModWindow::setup_mods() {
             continue;
         QHBoxLayout *temp=new QHBoxLayout; //居中
 
-        //获得与花费
+        //获取与消耗
         QLabel *mod_type;
         if(x->type==1)
         {
-            mod_type=new QLabel("获得");
-            mod_type->setStyleSheet("color: black; background-color: rgba(0, 255, 0, 188); border-radius: 10px");
+            mod_type=new QLabel("获取");
+            mod_type->setStyleSheet("color: #0080FF; background-color: rgba(0, 47, 167, 50); border-radius: 12px");
         }
         else
         {
-            mod_type=new QLabel("花费");
-            mod_type->setStyleSheet("color: white; background-color: rgba(255, 0, 0, 188); border-radius: 10px");
+            mod_type=new QLabel("消耗");
+            mod_type->setStyleSheet("color: #FF0000; background-color: rgba(255, 0, 0, 50); border-radius: 12px");
         }
         mod_type->setAlignment(Qt::AlignCenter);
         mod_type->setFont(font1);
@@ -569,17 +569,20 @@ void ModWindow::setup_mods() {
         shortname_label->setAlignment(Qt::AlignCenter);
         shortname_label->setFixedWidth(200);
         QLabel *name_label=new QLabel(x->get_name());
-        name_label->setAlignment(Qt::AlignCenter);
-        name_label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Maximum);
-        name_label->setFixedWidth(300);
+        //name_label->setAlignment(Qt::AlignCenter);
+        //name_label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Maximum);
+        //name_label->setFixedWidth(300);
 
         //QLabel *fun_label=new QLabel(x->get_fun());
         //fun_label->setAlignment(Qt::AlignCenter);
 
         //删除更改按钮
         QPushButton *delete_button=create_icon_button("delete", 24,[=](){
-            delete_mod(x);
-            setup_mods();
+            show_confirm(this, "删除模版", "确认删除模版吗？删除后，之前的记录不会受到影响。", [=] (QMainWindow *w) {
+                ModWindow *window = dynamic_cast<ModWindow *>(w);
+                window->delete_mod(x);
+                window->setup_mods();
+            });
         });
         QPushButton *changeButton = create_icon_button("edit",24,[=]{
             ChangeDialog dialog(this, x);
@@ -626,14 +629,14 @@ void ModWindow::setup_mods() {
     scrollWidget->setLayout(layout);
     QScrollArea *scrollArea = ui->scrollArea;
     scrollArea->setWidget(scrollWidget);  // 将QWidget设置为滚动区域的内部窗口
-    scrollArea->setWidgetResizable(true); //取消边界框
+    scrollArea->setFrameStyle(QFrame::NoFrame);
 }
 
 
 ModWindow::ModWindow(Data *data, QWidget *parent)
     : data(data), QMainWindow(parent), ui(new Ui::ModWindow)
 {
-    QFont font("consolos", 14);//字体
+    QFont font("Microsoft YaHei UI", 14);//字体
     // add_mod(QString("学习数学分析{x}分钟"),new Formula(QString("x^2")), OBTAIN,"学习高代");
     // add_mod(QString("学习高等代数{x}分钟"),new Formula(QString("2*x")), OBTAIN,"学习数分");
     // add_mod(QString("玩第五人格{x}分钟"),new Formula(QString("x+1")), CONSUME,"第五人格");
@@ -654,6 +657,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
             }
         }
     }
+    memset(ischose,0, sizeof(ischose));
 
     //添加模板
     QPushButton *addButton = create_icon_button("plus",40,[=]{
