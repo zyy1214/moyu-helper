@@ -1,12 +1,19 @@
+#include <QCloseEvent>
 #include <QCoreApplication>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
+#include <QDialog>
+#include <QLabel>
+#include <QProgressBar>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QThread>
+#include <QTimer>
+#include <QVBoxLayout>
 
 #include "record.h"
 #include "data_storage.h"
@@ -298,6 +305,61 @@ void load_data(Data *data) {
     sync_data(data);
 }
 
+class LoadingDialog : public QDialog {
+    //Q_OBJECT
+
+public:
+    LoadingDialog(QWidget *parent = nullptr) : QDialog(parent) {
+        setWindowTitle("同步数据中");
+
+        Qt::WindowFlags flags = windowFlags();
+        flags &= ~Qt::WindowTitleHint;
+        flags |= Qt::CustomizeWindowHint;
+        setWindowFlags(flags);
+
+        setPalette(QPalette(QColor(Qt::white)));
+
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->setAlignment(Qt::AlignCenter);
+        layout->setContentsMargins(30, 20, 0, 20);
+        QLabel *label = new QLabel("同步数据中，请稍后……", this);
+        label->setStyleSheet("font-size: 16px;");
+        QProgressBar *progressBar = new QProgressBar(this);
+        progressBar->setFixedWidth(300);
+
+        progressBar->setRange(0, 0);
+
+        layout->addWidget(progressBar);
+        layout->addSpacing(15);
+        layout->addWidget(label);
+
+        setLayout(layout);
+        //setFixedSize(250, 300); // 固定窗口大小
+    }
+protected:
+    void closeEvent(QCloseEvent *event) override {
+        event->ignore(); // 忽略关闭事件
+    }
+};
+LoadingDialog *loadingDialog;
+QTimer *timer;
+void finish_load() {
+    try {
+        if (loadingDialog) {
+            loadingDialog->close();
+            delete loadingDialog;
+            loadingDialog = nullptr;
+        }
+        if (timer) {
+            timer->stop();
+        }
+    }
+    catch (std::exception e) {
+        qDebug() << e.what();
+    }
+}
+
+
 void Data::sync_records() {
     sync_records_data(this);
     QObject::disconnect(this, &Data::mod_sync_finished, this, &Data::sync_records);
@@ -305,6 +367,18 @@ void Data::sync_records() {
 void sync_data(Data *data) {
     sync_mods_data(data);
     QObject::connect(data, &Data::mod_sync_finished, data, &Data::sync_records);
+
+    //QThread workerThread;
+    timer = new QTimer();
+
+    //workerThread.start();
+    timer->start(300);
+
+    QObject::connect(timer, &QTimer::timeout, [=] () {
+        loadingDialog = new LoadingDialog();
+        loadingDialog->exec();
+    });
+
 }
 
 enum RECORD_OPERATION_TYPE {
@@ -478,6 +552,7 @@ void sync_records_data(Data *data) {
     QString token = get_value("token");
     if (token == "") {
         // 当前未登录
+        finish_load();
         return;
     }
     Network *n = new Network(data, "https://geomedraw.com/qt/commit_record_change");
@@ -497,6 +572,7 @@ void sync_records_data(Data *data) {
     query.bindValue(":id", latestOperationId);
     if (!query.exec()) {
         qWarning() << "Query Error:" << query.lastError().text();
+        finish_load();
         return;
     }
     // 将查询结果转换为 JSON 数组
@@ -523,6 +599,7 @@ void sync_records_data(Data *data) {
             bool succeed = jsonObj["succeed"].toBool();
             if (!succeed) {
                 qDebug() << jsonObj["error_message"].toString();
+                finish_load();
                 return;
             }
             QJsonArray operations = jsonObj["operations"].toArray();
@@ -534,7 +611,10 @@ void sync_records_data(Data *data) {
         } else {
             qDebug() << "Failed to parse JSON.";
         }
-    }, [] (QMainWindow *window) {});
+        finish_load();
+    }, [] (QMainWindow *window) {
+        finish_load();
+    });
     return;
 }
 
