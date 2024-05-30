@@ -16,7 +16,26 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Maximum</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>25</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
@@ -33,21 +52,21 @@
       <item>
        <widget class="QPushButton" name="renew">
         <property name="text">
-         <string>PushButton</string>
+         <string>刷新</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="picture">
         <property name="text">
-         <string>PushButton</string>
+         <string>切换图片</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="nightButton">
         <property name="text">
-         <string>PushButton</string>
+         <string>深色模式</string>
         </property>
        </widget>
       </item>
@@ -63,6 +82,22 @@
          <string>退出</string>
         </property>
        </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Maximum</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </item>
@@ -133,7 +168,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

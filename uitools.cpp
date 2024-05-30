@@ -7,6 +7,8 @@
 #include <QString>
 #include <unordered_map>
 
+#include "uitools.h"
+
 std::unordered_map<QString, QIcon *> icons;
 QIcon *get_icon(QString name) {
     auto it = icons.find(name);
@@ -27,14 +29,17 @@ void init_icon_map() {
     if (!icon_map_inited) {
         icon_map["delete"] = "D";
         icon_map["edit"] = "E";
+        icon_map["image"] = "I";
+        icon_map["quit"] = "Q";
+        icon_map["refresh"] = "R";
+        icon_map["dark"] = "d";
+        icon_map["light"] = "l";
         icon_map_inited = true;
     }
 }
 
-QPushButton *create_icon_button(QString icon_name, int size) {
+void setup_icon_button(QPushButton *button, QString icon_name, int size, QString color) {
     init_icon_map();
-
-    QPushButton *button = new QPushButton();
 
     if (icon_map.find(icon_name) != icon_map.end()) {
         int fontId = QFontDatabase::addApplicationFont(":/fonts/icons");
@@ -44,14 +49,19 @@ QPushButton *create_icon_button(QString icon_name, int size) {
         button->setText(icon_map[icon_name]);
         button->setFont(customFont);
         button->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
-        button->setStyleSheet("QPushButton { border: none; outline: none; }");
-        return button;
+        button->setStyleSheet("QPushButton { border: none; outline: none; color: " + color + "; }");
+        return;
     }
 
     button->setIcon(*get_icon(":/images/" + icon_name));
     button->setIconSize(QSize(size, size));
     button->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
     button->setStyleSheet("QPushButton { border: none; outline: none; }");
+}
+
+QPushButton *create_icon_button(QString icon_name, int size) {
+    QPushButton *button = new QPushButton();
+    setup_icon_button(button, icon_name, size);
     return button;
 }
 
@@ -60,6 +70,16 @@ void show_warning(QString title, QString content) {
 }
 void show_info(QString title, QString content) {
     QMessageBox::information(nullptr, title, content, QMessageBox::Ok);
+    // QMessageBox infoBox;
+    // infoBox.setWindowTitle(title);
+    // infoBox.setText(content);
+    // infoBox.setIcon(QMessageBox::Information);
+    // infoBox.setStyleSheet("QLabel { font-size: 16px; }");
+    // QAbstractButton *okButton = infoBox.button(QMessageBox::Ok);
+    // if (okButton) {
+    //     okButton->setText("确定");
+    // }
+    // infoBox.exec();
 }
 
 QString get_elliptic_text(const QString &text, const QFont &font, int maxWidth) {

@@ -9,6 +9,7 @@
 #include <QString>
 
 QIcon *get_icon(QString name);
+void setup_icon_button(QPushButton *button, QString icon_name, int size, QString color = "#000000");
 QPushButton *create_icon_button(QString icon_name, int size);
 
 template<class F>

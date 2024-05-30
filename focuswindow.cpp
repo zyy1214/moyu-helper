@@ -6,13 +6,15 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QDateTime>
-#include "network.h"
 #include <QPainter>
 #include <Windows.h>
 #include <wrl.h>
 #include <shobjidl.h>
 #include <ctime>
 #include <unistd.h>
+
+#include "network.h"
+#include "uitools.h"
 
 
 HHOOK g_hKeyboardHook = NULL;
@@ -104,46 +106,47 @@ FocusWindow::FocusWindow(QWidget *parent)
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     showFullScreen();
 
+    int icon_size = 48;
+
     // 创建一个按钮用于关闭窗口
-    ui->close->setText("close");
+    setup_icon_button(ui->close, "quit", icon_size);
     connect(ui->close, &QPushButton::clicked, this, &QWidget::close);
 
-    ui->nightButton->setText("night");
-    connect(ui->nightButton,&QPushButton::clicked, [=](){
-        isnight=1-isnight;
-        if(isnight==0)
+    setup_icon_button(ui->nightButton, "dark", icon_size * 0.95);
+    connect(ui->nightButton, &QPushButton::clicked, [=](){
+        is_night = !is_night;
+        if(!is_night)
         {
             setPalette(QPalette(QColor(Qt::white)));
             ui->datelabel->setStyleSheet("font-size: 54px; color: #000000;");
             ui->timeLabel->setStyleSheet("font-size: 96px; color: #000000;");
             ui->famous->setStyleSheet("font-size: 36px; color: #000000;");
             ui->elapsedTimeLabel->setStyleSheet("font-size: 36px; color: #000000;");
-            ui->close->setStyleSheet("color: black;");
-            ui->picture->setStyleSheet("color: black;");
-            ui->renew->setStyleSheet("color: black;");
-            ui->nightButton->setStyleSheet("color: black;");
+            setup_icon_button(ui->close, "quit", icon_size);
+            setup_icon_button(ui->picture, "image", icon_size);
+            setup_icon_button(ui->renew, "refresh", icon_size * 1.15);
+            setup_icon_button(ui->nightButton, "dark", icon_size * 0.95);
         }
-        else
-        {
+        else {
             setPalette(QPalette(QColor(Qt::black)));
             ui->datelabel->setStyleSheet("font-size: 54px; color: #ffffff;");
             ui->timeLabel->setStyleSheet("font-size: 96px; color: #ffffff;");
             ui->famous->setStyleSheet("font-size: 36px; color: #ffffff;");
             ui->elapsedTimeLabel->setStyleSheet("font-size: 36px; color: #ffffff;");
-            ui->close->setStyleSheet("color: black;");
-            ui->picture->setStyleSheet("color: black;");
-            ui->renew->setStyleSheet("color: black;");
-            ui->nightButton->setStyleSheet("color: black;");
+            setup_icon_button(ui->close, "quit", icon_size, "white");
+            setup_icon_button(ui->picture, "image", icon_size, "white");
+            setup_icon_button(ui->renew, "refresh", icon_size * 1.15, "white");
+            setup_icon_button(ui->nightButton, "light", icon_size * 0.95, "white");
         }
     });
 
-    ui->picture->setText("picture");
+    setup_icon_button(ui->picture, "image", icon_size);
     connect(ui->picture, &QPushButton::clicked,[=]{
         picturetype=(picturetype+1)%4;
         repaint();
     });
 
-    ui->renew->setText("刷新");
+    setup_icon_button(ui->renew, "refresh", icon_size * 1.15);
     connect(ui->renew, &QPushButton::clicked,[=]{
         Network *n = new Network(this, "https://v1.hitokoto.cn/");
         n->post([this] (void *w, QString reply) {

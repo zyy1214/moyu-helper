@@ -18,7 +18,7 @@ class FocusWindow : public QMainWindow
 public:
     FocusWindow(QWidget *parent = nullptr);
     ~FocusWindow();
-    int isnight=0;
+    bool is_night=0;
 protected:
     void closeEvent(QCloseEvent *event) override; // 声明 closeEvent 方法
     void paintEvent(QPaintEvent *event) override;
