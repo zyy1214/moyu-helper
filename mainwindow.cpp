@@ -14,6 +14,7 @@
 #include <QPalette>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QWheelEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -56,21 +57,43 @@ private slots:
 private:
     void setupUi();
 
+    void wheelEvent(QWheelEvent *event);
+
     QStackedWidget *pagesWidget;
     QPushButton *accountButton;
     QPushButton *interfaceButton;
     QMainWindow *window;
+
+    void cancel_button_selection() {
+        accountButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: black; }");
+        interfaceButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: black; }");
+    }
+    void set_button_selection(int index) {
+        cancel_button_selection();
+        QPushButton *button = index == 0 ? accountButton : interfaceButton;
+        button->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: #1770E4; }");
+    }
+    void set_page_selection(int index) {
+        pagesWidget->setCurrentIndex(index);
+        set_button_selection(index);
+    }
 };
 
 void SettingsDialog::setupUi()
 {
+    setPalette(QPalette(QColor(Qt::white)));
+    setFixedSize(500, 300);
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
 
     QVBoxLayout *buttonsLayout = new QVBoxLayout;
-    accountButton = new QPushButton(tr("账号设置"));
-    interfaceButton = new QPushButton(tr("界面设置"));
+    accountButton = new QPushButton("账号设置");
+    interfaceButton = new QPushButton("界面设置");
+    set_button_selection(0);
+    buttonsLayout->addSpacing(20);
     buttonsLayout->addWidget(accountButton);
+    buttonsLayout->addSpacing(10);
     buttonsLayout->addWidget(interfaceButton);
+    buttonsLayout->setAlignment(Qt::AlignTop);
 
     QWidget *scrollWidget = new QWidget;
     QVBoxLayout *scrollLayout = new QVBoxLayout(scrollWidget);
@@ -79,11 +102,16 @@ void SettingsDialog::setupUi()
 
     QWidget *accountPage = new QWidget;
     QLabel *accountLabel = new QLabel(get_value("username"));
+    accountLabel->setStyleSheet("font-size: 24px");
     QVBoxLayout *accountPageLayout = new QVBoxLayout(accountPage);
+    accountPageLayout->setAlignment(Qt::AlignTop);
     accountPageLayout->addWidget(accountLabel);
+    accountPageLayout->addSpacing(15);
 
-    QPushButton *logoutButton = new QPushButton(tr("退出登录"));
-    logoutButton->setStyleSheet("color: red;");
+    QPushButton *logoutButton = new QPushButton("退出登录");
+    logoutButton->setStyleSheet("color: red; font-size: 14px;"
+                                "padding-left: 15px; padding-right: 15px; padding-top: 6px; padding-bottom: 6px;");
+    logoutButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
     accountPageLayout->addWidget(logoutButton);
 
     connect(logoutButton, &QPushButton::clicked, [=] () {
@@ -101,8 +129,9 @@ void SettingsDialog::setupUi()
     pagesWidget->addWidget(accountPage);
 
     QWidget *interfacePage = new QWidget;
-    QLabel *interfaceLabel = new QLabel(tr("Interface Settings Page"));
+    QLabel *interfaceLabel = new QLabel("暂无任何可设置项。");
     QVBoxLayout *interfacePageLayout = new QVBoxLayout(interfacePage);
+    interfacePageLayout->setAlignment(Qt::AlignTop);
     interfacePageLayout->addWidget(interfaceLabel);
     pagesWidget->addWidget(interfacePage);
 
@@ -111,7 +140,9 @@ void SettingsDialog::setupUi()
     connect(accountButton, &QPushButton::clicked, this, &SettingsDialog::changePage);
     connect(interfaceButton, &QPushButton::clicked, this, &SettingsDialog::changePage);
 
+    mainLayout->addSpacing(20);
     mainLayout->addLayout(buttonsLayout);
+    mainLayout->addSpacing(20);
     mainLayout->addWidget(scrollWidget);
 
     setWindowTitle("设置");
@@ -119,10 +150,26 @@ void SettingsDialog::setupUi()
 
 void SettingsDialog::changePage()
 {
-    if (sender() == accountButton)
-        pagesWidget->setCurrentIndex(0);
-    else if (sender() == interfaceButton)
-        pagesWidget->setCurrentIndex(1);
+    if (sender() == accountButton) {
+        set_page_selection(0);
+    }
+    else if (sender() == interfaceButton) {
+        set_page_selection(1);
+    }
+}
+
+void SettingsDialog::wheelEvent(QWheelEvent *event)
+{
+    if (event->angleDelta().y() > 0) {
+        int new_index = pagesWidget->currentIndex() - 1;
+        if (new_index < 0) return;
+        set_page_selection(new_index);
+    } else {
+        int new_index = pagesWidget->currentIndex() + 1;
+        if (new_index >= pagesWidget->count()) return;
+        set_page_selection(new_index);
+    }
+    event->accept();
 }
 
 void MainWindow::on_button_menu_clicked()
