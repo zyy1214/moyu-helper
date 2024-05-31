@@ -474,10 +474,10 @@ void merge_record_operations(Data *data, QJsonArray &jsonArray) {
                             break;
                         }
                     }
-                    record->set_id(db_add_record(data, record, false));
                     record->set_uuid(record_uuid);
-                    uuid_map[record_uuid] = record;
                     record->set_sort_order(sort_order);
+                    record->set_id(db_add_record(data, record, false));
+                    uuid_map[record_uuid] = record;
                     if (data->records.find(record_date) == data->records.end()) {
                         data->records[record_date] = new MultipleRecord;
                     }
@@ -802,8 +802,8 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
                     mod->set_uuid(mod_uuid);
                     mod->set_name_merge(name_merge);
                     mod->set_labels_string(labels);
-                    mod->set_id(db_add_mod(data, mod, false));
                     mod->set_deleted(deleted);
+                    mod->set_id(db_add_mod(data, mod, false));
                     uuid_map[mod_uuid] = mod;
                     data->mods.push_back(mod);
                     emit data->mod_added(mod);
