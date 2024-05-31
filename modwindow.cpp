@@ -496,7 +496,7 @@ private:
 
 void ModWindow::setup_mods() {
     QWidget *scrollWidget = new QWidget;
-    scrollWidget->setStyleSheet("background-color: white;"); 
+    scrollWidget->setStyleSheet("background-color: white;");
     QVBoxLayout *layout = new QVBoxLayout;
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->setSpacing(20);
@@ -618,8 +618,6 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
         mod_search[++search_count]=i;
     }
     for (Mod *mod : data->mods) {
-        if(mod->is_deleted())
-            continue;
         for (QString &label : mod->labels) {
             if (std::find(data->totallabels.begin(), data->totallabels.end(), label) == data->totallabels.end()) {
                 data->totallabels.push_back(label);
@@ -808,5 +806,20 @@ void ModWindow::on_mod_added(Mod *mod) {
 }
 
 void ModWindow::on_mod_modified(Mod *mod) {
+    search_count = 0;
+    mod_cnt=data->mods.size();
+    for(int i=0;i<data->mods.size();i++)
+    {
+        mod_search[++search_count]=i;
+    }
+    for (Mod *mod : data->mods) {
+        for (QString &label : mod->labels) {
+            if (std::find(data->totallabels.begin(), data->totallabels.end(), label) == data->totallabels.end()) {
+                data->totallabels.push_back(label);
+            }
+        }
+    }
+    memset(ischose,0, sizeof(ischose));
+
     setup_mods();
 }
