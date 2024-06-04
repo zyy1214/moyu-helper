@@ -96,6 +96,7 @@ public:
         return result;
     }
     void set_labels_string(QString labels_string) {
+        labels.clear();
         QStringList list = labels_string.split('\n');
         for (const QString &s : list) {
             if (s != "") {
