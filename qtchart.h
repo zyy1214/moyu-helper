@@ -17,6 +17,7 @@
 #include "record.h"
 #include "mod.h"
 #include <QDebug>
+#include <QFont>
 QString placeholder[5]={""," ","  ","   ","    "};
 QChartView* build_histogram_day(std::map<QDate, int> points_per_day){
     QBarSet *set0 = new QBarSet("积分/每天");

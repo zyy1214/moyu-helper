@@ -9,57 +9,6 @@
 #include <QDebug>
 int total_points = 0;
 int last_week_points = 0;
-//std::map<QDate, MultipleRecord *, std::greater<QDate>> records;
-//std::vector<Mod *> mods;
-
-//Ui::ChartWindow *ui;
-void init_data() {
-    // mods.push_back(new Mod({"学习"},"背单词",RECORD_TYPE::OBTAIN));
-    // mods.push_back(new Mod({"学习","运动"},"打篮球",RECORD_TYPE::OBTAIN));
-    // mods.push_back(new Mod({"运动"},"睡觉", RECORD_TYPE::CONSUME));
-    // mods.push_back(new Mod({"玩游戏"},"玩原神", RECORD_TYPE::CONSUME));
-    // mods.push_back(new Mod({"运动","玩游戏"},"FIFA", RECORD_TYPE::CONSUME));
-    // MultipleRecord *mr1 = new MultipleRecord();
-    // QDate date{2024, 5, 3};
-    // mr1->push_back(new RecordDirect("跑步5km", RECORD_TYPE::OBTAIN, 50, date));
-    // mr1->push_back(new RecordDirect("练习引体向上 20 个", RECORD_TYPE::OBTAIN, 20, date));
-    // mr1->push_back(new RecordDirect("摸鱼 1 小时", RECORD_TYPE::CONSUME, 25, date));
-    // mr1->push_back(new RecordByMod(mods[0],239));
-    // mr1->push_back(new RecordByMod(mods[4],40));
-    // mr1->push_back(new RecordByMod(mods[2],21));
-    // records[date] = mr1;
-    // MultipleRecord *mr2 = new MultipleRecord;
-    // date = {2024, 5, 1};
-    // mr2->push_back(new RecordDirect("充值小月卡", RECORD_TYPE::CONSUME, 300, date));
-    // mr2->push_back(new RecordDirect("跑步10km", RECORD_TYPE::OBTAIN, 100, date));
-    // mr2->push_back(new RecordDirect("图书馆自习 2 小时", RECORD_TYPE::OBTAIN, 30, date));
-    // mr2->push_back(new RecordByMod(mods[1],199));
-    // mr2->push_back(new RecordByMod(mods[3],96));
-    // records[date] = mr2;
-    // MultipleRecord *mr3 = new MultipleRecord;
-    // date = {2024, 4, 30};
-    // mr3->push_back(new RecordDirect("买东西", RECORD_TYPE::CONSUME, 37, date));
-    // mr3->push_back(new RecordDirect("跑步5km", RECORD_TYPE::OBTAIN, 50, date));
-    // mr3->push_back(new RecordDirect("专注学习 3 小时", RECORD_TYPE::OBTAIN, 45, date));
-    // mr3->push_back(new RecordDirect("刷谢慧民20道题", RECORD_TYPE::OBTAIN, 50, date));
-    // mr3->push_back(new RecordByMod(mods[2],35));
-    // mr3->push_back(new RecordByMod(mods[3],75));
-    // records[{2024, 4, 30}] = mr3;
-    // records[{2024, 4, 29}] = mr3;
-    // records[{2024, 4, 28}] = mr3;
-    // records[{2024, 4, 27}] = mr3;
-    // records[{2024, 4, 26}] = mr3;
-    // records[{2024, 4, 25}] = mr3;
-    // for (auto mr : records) {
-    //     for (auto r : *(mr.second)) {
-    //         int point = r->get_signed_point();
-    //         total_points += point;
-    //         if (mr.first.daysTo(QDate::currentDate()) <= 6) {
-    //             last_week_points += point;
-    //         }
-    //     }
-    // }
-}
 std::map<QString,std::list<Mod *> > labels_to_mods;
 void ChartWindow::build_map(){
     labels_to_mods.clear();
@@ -74,7 +23,6 @@ ChartWindow::ChartWindow(Data *data, QWidget *parent)
     : data(data), QMainWindow(parent)
     , ui(new Ui::ChartWindow)
 {
-    init_data();
     ui->setupUi(this);
     ui->date_end->setDate(QDate::currentDate());
     build_map();
