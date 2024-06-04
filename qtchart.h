@@ -14,11 +14,21 @@
 #include <Qtcharts/QStackedBarSeries>
 #include <QDateTime>
 #include <bits/stdc++.h>
-#include "record.h"
 #include "mod.h"
 #include <QDebug>
 #include <QFont>
 QString placeholder[5]={""," ","  ","   ","    "};
+void setChartFontSize(QChart *chart,int pointsize){
+    QFont font;
+    font.setPointSize(pointsize);
+    QList<QAbstractAxis*> axes =chart->axes();
+    for(QAbstractAxis *axis: axes){
+        axis->setLabelsFont(font);
+        axis->setTitleFont(font);
+    }
+    QLegend *legend=chart->legend();
+    legend->setFont(font);
+}
 QChartView* build_histogram_day(std::map<QDate, int> points_per_day){
     QBarSet *set0 = new QBarSet("积分/每天");
     int cnt=0;
@@ -49,6 +59,7 @@ QChartView* build_histogram_day(std::map<QDate, int> points_per_day){
     QValueAxis *axisY = new QValueAxis();
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
+    setChartFontSize(chart,12);
     QChartView* chartView = new QChartView(chart);
     return chartView;
 }
@@ -104,6 +115,7 @@ QChartView* build_histogram_month(std::map<QDate, int> points_per_day){
     QValueAxis *axisY = new QValueAxis();
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
+    setChartFontSize(chart,12);
     QChartView* chartView = new QChartView(chart);
     return chartView;
 }
@@ -156,6 +168,7 @@ QChartView* build_histogram_year(std::map<QDate, int> points_per_day){
     QValueAxis *axisY = new QValueAxis();
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
+    setChartFontSize(chart,12);
     QChartView* chartView = new QChartView(chart);
     return chartView;
 }
@@ -200,6 +213,7 @@ QChartView* build_histogram_day_all(std::map<QDate, int> points_per_day){
     QValueAxis *axisY = new QValueAxis();
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
+    setChartFontSize(chart,12);
     QChartView* chartView = new QChartView(chart);
     return chartView;
 }
@@ -272,6 +286,7 @@ QChartView* build_histogram_month_all(std::map<QDate, int> points_per_day){
     QValueAxis *axisY = new QValueAxis();
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
+    setChartFontSize(chart,12);
     QChartView* chartView = new QChartView(chart);
     return chartView;
 }
@@ -341,6 +356,7 @@ QChartView* build_histogram_year_all(std::map<QDate, int> points_per_day){
     QValueAxis *axisY = new QValueAxis();
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
+    setChartFontSize(chart,12);
     QChartView* chartView = new QChartView(chart);
     return chartView;
 }
@@ -371,6 +387,7 @@ QChartView* build_piechart(std::map<Mod*,int> points_per_mod,int else_point,bool
     chart->addSeries(series);
     chart->setTitle("积分/模板");
     chart->setAnimationOptions(QChart::SeriesAnimations);
+    setChartFontSize(chart,12);
     QChartView *chartView = new QChartView(chart);
     return chartView;
 }
@@ -406,6 +423,7 @@ QChartView* build_linechart_day(std::map<QDate, int> points_per_day){
         series->attachAxis(axisX);
         series->attachAxis(axisY);
     }
+    setChartFontSize(chart,12);
     QChartView *chartView = new QChartView(chart);
     return chartView;
 }
@@ -469,6 +487,7 @@ QChartView* build_linechart_month(std::map<QDate, int> points_per_day){
         series->attachAxis(axisX);
         series->attachAxis(axisY);
     }
+    setChartFontSize(chart,12);
     QChartView *chartView = new QChartView(chart);
     return chartView;
 }
@@ -529,6 +548,7 @@ QChartView* build_linechart_year(std::map<QDate, int> points_per_day){
         series->attachAxis(axisX);
         series->attachAxis(axisY);
     }
+    setChartFontSize(chart,12);
     QChartView *chartView = new QChartView(chart);
     return chartView;
 }
