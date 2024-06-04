@@ -21,6 +21,7 @@ QString placeholder[5]={""," ","  ","   ","    "};
 void setChartFontSize(QChart *chart,int pointsize){
     QFont font;
     font.setPointSize(pointsize);
+    chart->setTitleFont(font);
     QList<QAbstractAxis*> axes =chart->axes();
     for(QAbstractAxis *axis: axes){
         axis->setLabelsFont(font);
