@@ -73,8 +73,8 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     }
     on_option_by_day_pressed();
     setup_records();
-    Network *n = new Network(this, "https://v1.hitokoto.cn/");
-    n->post([] (void *w, QString reply) {
+    Network *n = new Network(this, "https://v1.hitokoto.cn?c=d&c=i&c=k");
+    n->get([] (void *w, QString reply) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
         if (!jsonDoc.isNull()) {
             QJsonObject jsonObj = jsonDoc.object();

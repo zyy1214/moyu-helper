@@ -148,7 +148,7 @@ FocusWindow::FocusWindow(QWidget *parent)
 
     setup_icon_button(ui->renew, "refresh", icon_size * 1.15);
     connect(ui->renew, &QPushButton::clicked,[=]{
-        Network *n = new Network(this, "https://v1.hitokoto.cn/");
+        Network *n = new Network(this, "https://v1.hitokoto.cn?c=d&c=i&c=k");
         n->post([this] (void *w, QString reply) {
             QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
             if (!jsonDoc.isNull()) {
