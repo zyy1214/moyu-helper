@@ -31,7 +31,7 @@ public:
         : window(window), f(f), QDialog(parent) {
 
         setWindowTitle(title);
-        // setWindowIcon(QIcon());
+        setWindowIcon(style()->standardIcon(QStyle::SP_MessageBoxQuestion));
 
         // Qt::WindowFlags flags = windowFlags();
         // flags &= ~Qt::WindowTitleHint;

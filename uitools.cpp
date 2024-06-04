@@ -72,7 +72,8 @@ public:
         : QDialog(parent) {
 
         setWindowTitle(title);
-        setWindowIcon(dialog_type == 1 ? QMessageBox::standardIcon(QMessageBox::Information) : QMessageBox::standardIcon(QMessageBox::Warning));
+        setWindowIcon(dialog_type == 1 ? style()->standardIcon(QStyle::SP_MessageBoxInformation)
+                                       : style()->standardIcon(QStyle::SP_MessageBoxWarning));
 
         // Qt::WindowFlags flags = windowFlags();
         // flags &= ~Qt::WindowTitleHint;
