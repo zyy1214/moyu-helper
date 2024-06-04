@@ -201,9 +201,11 @@ public:
 
         QFont font("Microsoft YaHei UI", 12);//字体
 
+        setPalette(QPalette(QColor(Qt::white)));
+
 
         setWindowTitle(QString("添加模板"));
-        setFixedSize(500, 300);
+        setFixedSize(450, 300);
 
         // 创建Radio button组
         QRadioButton *consumeButton = new QRadioButton("消耗");
@@ -243,23 +245,40 @@ public:
         input_formula->addWidget(label_formula);
         input_formula->addWidget(lineEdit_formula);
 
-        //ok，cancel按钮
-        QPushButton *okButton = new QPushButton("确定");
-        QPushButton *cancelButton = new QPushButton("取消");
-        QHBoxLayout *ok_cancel_button=new QHBoxLayout;
-        ok_cancel_button->addWidget(cancelButton);
-        ok_cancel_button->addItem(new QSpacerItem(20, 20, QSizePolicy::Fixed, QSizePolicy::Minimum));
-        ok_cancel_button->addWidget(okButton);
+        // 添加确定和取消按钮
+        QHBoxLayout *buttonLayout = new QHBoxLayout();
+        QPushButton *okButton = new QPushButton("确定", this);
+        okButton->setStyleSheet("color: black; font-size: 14px;"
+                                "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+        QPushButton *cancelButton = new QPushButton("取消", this);
+        cancelButton->setStyleSheet("color: black; font-size: 14px;"
+                                    "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+        buttonLayout->setAlignment(Qt::AlignRight);
+        buttonLayout->addWidget(cancelButton);
+        buttonLayout->addSpacing(8);
+        buttonLayout->addWidget(okButton);
+        buttonLayout->addSpacing(8);
+        buttonLayout->setContentsMargins(0, 5, 0, 5);
 
 
 
+        QHBoxLayout *reallayout = new QHBoxLayout;
         QVBoxLayout *layout = new QVBoxLayout;
         layout->addLayout(buttonlayout);
         layout->addLayout(input_shortname);
         layout->addLayout(input_name);
         layout->addLayout(input_formula);
-        layout->addLayout(ok_cancel_button);
-        setLayout(layout);
+        layout->addSpacing(10);
+        layout->addLayout(buttonLayout);
+
+
+        reallayout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Minimum));
+        reallayout->addLayout(layout);
+        reallayout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Minimum));
+
+        setLayout(reallayout);
 
         // 连接确定按钮的点击事件
         connect(okButton, &QPushButton::clicked, [=]() {
@@ -300,18 +319,22 @@ public:
     ChangeDialog(ModWindow *window, Mod* x,QWidget *parent = nullptr)
         : window(window), before_mod(x), QDialog(parent) {
 
+        setPalette(QPalette(QColor(Qt::white)));
+
         QFont font("Microsoft YaHei UI", 12);//字体
 
 
         setWindowTitle(QString("添加模板"));
-        setFixedSize(500, 300);
+        setFixedSize(460, 350);
 
 
         // 创建Radio button组
         QRadioButton *yeschangeButton = new QRadioButton("是");
+        yeschangeButton->setFont(font);
         yeschangeButton->setChecked(true);
         QRadioButton *nochangeButton = new QRadioButton("否");
-        QLabel *label1=new QLabel("是否更新之前的记录");
+        nochangeButton->setFont(font);
+        QLabel *label1=new QLabel("是否更新之前的记录：");
         label1->setFont(font);
 
         // 将Radio button添加到按钮组
@@ -370,24 +393,40 @@ public:
         input_formula->addWidget(label_formula);
         input_formula->addWidget(lineEdit_formula);
 
-        //ok，cancel按钮
-        QPushButton *okButton = new QPushButton("确定");
-        QPushButton *cancelButton = new QPushButton("取消");
-        QHBoxLayout *ok_cancel_button=new QHBoxLayout;
-        ok_cancel_button->addWidget(cancelButton);
-        ok_cancel_button->addItem(new QSpacerItem(20, 20, QSizePolicy::Fixed, QSizePolicy::Minimum));
-        ok_cancel_button->addWidget(okButton);
+        // 添加确定和取消按钮
+        QHBoxLayout *buttonLayout = new QHBoxLayout();
+        QPushButton *okButton = new QPushButton("确定", this);
+        okButton->setStyleSheet("color: black; font-size: 14px;"
+                                "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+        QPushButton *cancelButton = new QPushButton("取消", this);
+        cancelButton->setStyleSheet("color: black; font-size: 14px;"
+                                    "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+        buttonLayout->setAlignment(Qt::AlignRight);
+        buttonLayout->addWidget(cancelButton);
+        buttonLayout->addSpacing(8);
+        buttonLayout->addWidget(okButton);
+        buttonLayout->addSpacing(8);
+        buttonLayout->setContentsMargins(0, 5, 0, 5);
 
 
 
+        QHBoxLayout *reallayout = new QHBoxLayout;
         QVBoxLayout *layout = new QVBoxLayout;
         layout->addLayout(buttonlayout1);
         layout->addLayout(buttonlayout);
         layout->addLayout(input_shortname);
         layout->addLayout(input_name);
         layout->addLayout(input_formula);
-        layout->addLayout(ok_cancel_button);
-        setLayout(layout);
+        layout->addSpacing(10);
+        layout->addLayout(buttonLayout);
+
+        reallayout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Minimum));
+        reallayout->addLayout(layout);
+        reallayout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Minimum));
+
+        setLayout(reallayout);
 
         // 连接确定按钮的点击事件
         connect(okButton, &QPushButton::clicked, [=]() {
@@ -447,11 +486,11 @@ public:
         scrollArea->setWidget(new QWidget());
         scrollArea->widget()->setLayout(labelsLayout);
 
-        qDebug()<< window->data->totallabels.size();
+        //qDebug()<< window->data->totallabels.size();
 
         for(int i=0;i<window->data->totallabels.size();i+=4)
         {
-            qDebug()<<window->data->totallabels[i];
+            //qDebug()<<window->data->totallabels[i];
             QHBoxLayout *linelayout=new QHBoxLayout;
             for(int j=0;j<=3;j++)
             {
@@ -496,7 +535,7 @@ private:
 
 void ModWindow::setup_mods() {
     QWidget *scrollWidget = new QWidget;
-    scrollWidget->setStyleSheet("background-color: white;");
+    scrollWidget->setStyleSheet("background-color: white;"); 
     QVBoxLayout *layout = new QVBoxLayout;
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->setSpacing(20);
@@ -544,7 +583,7 @@ void ModWindow::setup_mods() {
         //fun_label->setAlignment(Qt::AlignCenter);
 
         //删除更改按钮
-        QPushButton *delete_button=create_icon_button("delete", 24,[=](){
+        QPushButton *delete_button=create_icon_button("delete", 26,[=](){
             show_confirm(this, "删除模版", "确认删除模版吗？删除后，之前的记录不会受到影响。", [=] (QMainWindow *w) {
                 ModWindow *window = dynamic_cast<ModWindow *>(w);
                 window->delete_mod(x);
@@ -618,6 +657,8 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
         mod_search[++search_count]=i;
     }
     for (Mod *mod : data->mods) {
+        if(mod->is_deleted())
+            continue;
         for (QString &label : mod->labels) {
             if (std::find(data->totallabels.begin(), data->totallabels.end(), label) == data->totallabels.end()) {
                 data->totallabels.push_back(label);
@@ -632,13 +673,31 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
         dialog.exec();
         setup_mods();
     });
+
+
     QLineEdit *lineEdit_search_string = new QLineEdit();
     lineEdit_search_string->setFont(font);
-    QPushButton *tagsButton = create_icon_button("tag",34,[=]{
+
+
+    lineEdit_search_string->setPlaceholderText("请输入搜索内容、选择标签后点击搜索按钮");
+
+    QString textEditStyle = "QLineEdit { border: 1px solid gray; border-radius: 17px; "
+                            "padding-left: 10px; padding-right: 10px; padding-top: 5px; padding-bottom: 5px; }"
+                            "QLineEdit:focus { border-color: #add8e6; }";
+    lineEdit_search_string->setStyleSheet(textEditStyle);
+
+    QPushButton *tagsButton = create_icon_button("tag",32,[=]{
         Tags_shearch_Dialog dialog(this);
         dialog.exec();
     });
-    QPushButton *searchButton = create_icon_button("search",38,[=]{
+
+    QVBoxLayout *picture1=new QVBoxLayout();
+    picture1->addSpacing(4);
+    picture1->addWidget(tagsButton);
+    picture1->addSpacing(4);
+
+
+    QPushButton *searchButton = create_icon_button("search",36,[=]{
         std::vector<QString> b;
         for(int i=0;i<data->totallabels.size();i++)
             if(ischose[i])
@@ -646,9 +705,17 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
         search(lineEdit_search_string->text(),b);
         setup_mods();
     });
+    QVBoxLayout *picture2=new QVBoxLayout();
+    picture2->addSpacing(3);
+    picture2->addWidget(searchButton);
+    picture2->addSpacing(2);
+
+
     ui->horizontalLayout_2->addWidget(lineEdit_search_string);
-    ui->horizontalLayout_2->addWidget(tagsButton);
-    ui->horizontalLayout_2->addWidget(searchButton);
+    ui->horizontalLayout_2->addSpacing(5);
+    ui->horizontalLayout_2->addLayout(picture1);
+    ui->horizontalLayout_2->addSpacing(5);
+    ui->horizontalLayout_2->addLayout(picture2);
     ui->horizontalLayout_2->addWidget(addButton);
     std::vector<QString> b;
     search("",b);
@@ -806,20 +873,5 @@ void ModWindow::on_mod_added(Mod *mod) {
 }
 
 void ModWindow::on_mod_modified(Mod *mod) {
-    search_count = 0;
-    mod_cnt=data->mods.size();
-    for(int i=0;i<data->mods.size();i++)
-    {
-        mod_search[++search_count]=i;
-    }
-    for (Mod *mod : data->mods) {
-        for (QString &label : mod->labels) {
-            if (std::find(data->totallabels.begin(), data->totallabels.end(), label) == data->totallabels.end()) {
-                data->totallabels.push_back(label);
-            }
-        }
-    }
-    memset(ischose,0, sizeof(ischose));
-
     setup_mods();
 }
