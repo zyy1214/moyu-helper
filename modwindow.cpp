@@ -88,6 +88,7 @@ private:
             QHBoxLayout *addd= new QHBoxLayout;
             QLineEdit *add_name= new QLineEdit();
             add_name->setFont(font);
+
             QPushButton *addButton = create_icon_button("check",24,[=]{
                 flag=0;
                 QString addtag=add_name->text();
@@ -97,6 +98,19 @@ private:
                 }
                 setupUI();
             });
+
+            //回车添加tags
+            connect(add_name, &QLineEdit::returnPressed, this, [=](){
+                flag=0;
+                QString addtag=add_name->text();
+                if(addtag!=""&& std::find((aa->labels).begin(),(aa->labels).end(),addtag)==(aa->labels).end())
+                {
+                    window->add_label(aa, addtag);
+                }
+                setupUI();
+            });
+
+
             addd->addWidget(add_name);
             addd->addWidget(addButton);
             labelsLayout->addLayout(addd);
@@ -696,7 +710,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     picture1->addWidget(tagsButton);
     picture1->addSpacing(4);
 
-
+    //搜索按钮
     QPushButton *searchButton = create_icon_button("search",36,[=]{
         std::vector<QString> b;
         for(int i=0;i<data->totallabels.size();i++)
@@ -705,6 +719,17 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
         search(lineEdit_search_string->text(),b);
         setup_mods();
     });
+
+    // 回车搜索
+    connect(lineEdit_search_string, &QLineEdit::returnPressed, this, [=](){
+        std::vector<QString> b;
+        for(int i=0;i<data->totallabels.size();i++)
+            if(ischose[i])
+                b.push_back(data->totallabels[i]);
+        search(lineEdit_search_string->text(),b);
+        setup_mods();
+    });
+
     QVBoxLayout *picture2=new QVBoxLayout();
     picture2->addSpacing(3);
     picture2->addWidget(searchButton);
