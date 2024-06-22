@@ -695,6 +695,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     : data(data), QMainWindow(parent), ui(new Ui::ModWindow)
 {
     QFont font("Microsoft YaHei UI", 14);//字体
+
     ui->setupUi(this);
 
     //添加模板
