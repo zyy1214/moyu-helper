@@ -27,25 +27,41 @@
 #include <QScrollArea>
 #include <QLabel>
 
+class MyLineEdit : public QLineEdit {
+protected:
+    void keyPressEvent(QKeyEvent *e) override {
+        // 检查按下的键是否是 Enter 键
+        if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+            // 处理 Enter 键
+            QLineEdit::returnPressed();
+            return ;
+        } else {
+            // 对于其他按键，调用父类的 keyPressEvent
+            QLineEdit::keyPressEvent(e);
+        }
+    }
+};
+
+
 class tags_dialog : public QDialog { //标签dialog
 public:
     ModWindow *window;
     tags_dialog(ModWindow *window, Mod *id,QWidget *parent = nullptr)
-        :window(window), idd(id) ,QDialog(parent) {
+        :window(window), aa(id) ,QDialog(parent) {
         setWindowTitle("Label Dialog");
-        mainLayout = new QVBoxLayout(this);
         setupUI();
     }
 
 
 private:
     bool flag=0;
-    Mod *idd;
-    QVBoxLayout* mainLayout;
+    Mod *aa;
     void setupUI() {
+        qDebug()<<"3"<<aa->labels;
         QFont font("Microsoft YaHei UI", 16);//字体
-        delete mainLayout;
-        mainLayout = new QVBoxLayout(this);
+        delete layout();
+        QVBoxLayout* mainLayout = new QVBoxLayout();
+        setLayout(mainLayout);
         QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
         QVBoxLayout* labelsLayout = new QVBoxLayout();
         QScrollArea* scrollArea = new QScrollArea();
@@ -58,7 +74,6 @@ private:
         scrollArea->setWidget(new QWidget());
         scrollArea->widget()->setLayout(labelsLayout);
 
-        Mod* aa=idd;
 
         for (int i = 0; i < (aa->labels).size(); i++) {
             QHBoxLayout *label_layout=new QHBoxLayout;
@@ -86,7 +101,7 @@ private:
         else
         {
             QHBoxLayout *addd= new QHBoxLayout;
-            QLineEdit *add_name= new QLineEdit();
+            MyLineEdit *add_name= new MyLineEdit();
             add_name->setFont(font);
 
             QPushButton *addButton = create_icon_button("check",24,[=]{
@@ -100,14 +115,18 @@ private:
             });
 
             //回车添加tags
-            connect(add_name, &QLineEdit::returnPressed, this, [=](){
+            disconnect(add_name, &QLineEdit::returnPressed, nullptr, nullptr);
+            //disconnect(add_name, &QLineEdit::keyPressEvent,nullptr,nullptr);
+            connect(add_name, &QLineEdit::returnPressed,this, [this,add_name](){
                 flag=0;
                 QString addtag=add_name->text();
                 if(addtag!=""&& std::find((aa->labels).begin(),(aa->labels).end(),addtag)==(aa->labels).end())
                 {
                     window->add_label(aa, addtag);
                 }
+                qDebug()<<"1"<<aa->labels;
                 setupUI();
+                qDebug()<<"2"<<aa->labels;
             });
 
 
