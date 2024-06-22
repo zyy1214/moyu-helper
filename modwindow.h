@@ -40,10 +40,12 @@ public:
 private:
     Ui::ModWindow *ui;
 
+    void init_mods();
     void setup_mods();
 
 private slots:
     void on_mod_added(Mod *mod);
     void on_mod_modified(Mod *mod);
+    void on_all_mod_changed();
 };
 #endif // MODWINDOW_H

@@ -36,6 +36,11 @@ void RecordWindow::init_data() {
             }
         }
     }
+    if (!data->records.empty()) {
+        ui->date_selector->setDateRange((*data->records.rbegin()).first, (*data->records.begin()).first);
+    } else {
+        ui->date_selector->setDateRange(QDate::currentDate(), QDate::currentDate());
+    }
 }
 
 void RecordWindow::setup_total_points() {
@@ -59,18 +64,13 @@ void RecordWindow::setup_total_points() {
 RecordWindow::RecordWindow(Data *data, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::RecordWindow), data(data)
 {
-    init_data();
     ui->setupUi(this);
+    init_data();
     setup_total_points();
     ui->record_list->setFrameStyle(QFrame::NoFrame);
     ui->record_list->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->record_list_area->setFrameStyle(QFrame::NoFrame);
     ui->record_list_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    if (!data->records.empty()) {
-        ui->date_selector->setDateRange((*data->records.rbegin()).first, (*data->records.begin()).first);
-    } else {
-        ui->date_selector->setDateRange(QDate::currentDate(), QDate::currentDate());
-    }
     on_option_by_day_pressed();
     setup_records();
     Network *n = new Network(this, "https://v1.hitokoto.cn?c=d&c=i&c=k");
@@ -95,6 +95,7 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     connect(data, &Data::record_added, this, &RecordWindow::on_record_added);
     connect(data, &Data::record_modified, this, &RecordWindow::on_record_modified);
     connect(data, &Data::record_deleted, this, &RecordWindow::on_record_deleted);
+    connect(data, &Data::all_record_changed, this, &RecordWindow::on_all_record_changed);
 }
 
 RecordWindow::~RecordWindow()
@@ -791,6 +792,11 @@ void RecordWindow::on_record_deleted(Record *record) {
     if (record->get_date().daysTo(QDate::currentDate()) <= 6) {
         data->last_week_points -= record->get_signed_point();
     }
+    setup_total_points();
+    setup_records();
+}
+void RecordWindow::on_all_record_changed() {
+    init_data();
     setup_total_points();
     setup_records();
 }

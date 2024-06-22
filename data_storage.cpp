@@ -482,7 +482,7 @@ void merge_record_operations(Data *data, QJsonArray &jsonArray) {
                         data->records[record_date] = new MultipleRecord;
                     }
                     data->records[record_date]->add_record(record);
-                    emit data->record_added(record);
+                    // emit data->record_added(record);
                 }
                 break;
             }
@@ -513,7 +513,7 @@ void merge_record_operations(Data *data, QJsonArray &jsonArray) {
                     Record *record = uuid_map[record_uuid];
                     record->set_sort_order(sort_order);
                     record->set_date(record_date);
-                    emit data->record_modified(record);
+                    // emit data->record_modified(record);
                     db_modify_record(data, record, false);
                 } else {
                     // 可能是已经被删除了
@@ -534,7 +534,7 @@ void merge_record_operations(Data *data, QJsonArray &jsonArray) {
                     if (mr->size() == 0) {
                         data->records.erase(record->get_date());
                     }
-                    emit data->record_deleted(record);
+                    // emit data->record_deleted(record);
                     db_delete_record(data, record, false);
                 } else {
                     // 可能是已经被删除了
@@ -544,6 +544,7 @@ void merge_record_operations(Data *data, QJsonArray &jsonArray) {
             }
         }
     }
+    emit data->all_record_changed();
 }
 
 // 同步 records 数据
@@ -806,8 +807,8 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
                     mod->set_id(db_add_mod(data, mod, false));
                     uuid_map[mod_uuid] = mod;
                     data->mods.push_back(mod);
-                    emit data->mod_added(mod);
-                    emit data->label_modified(mod);
+                    // emit data->mod_added(mod);
+                    // emit data->label_modified(mod);
                 }
                 break;
             }
@@ -821,8 +822,8 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
                     mod->set_labels_string(labels);
                     mod->set_type(mod_type);
                     mod->set_formula_text(formula);
-                    emit data->mod_modified(mod);
-                    emit data->label_modified(mod);
+                    // emit data->mod_modified(mod);
+                    // emit data->label_modified(mod);
                     db_modify_mod(data, mod, false);
                 } else {
                     qDebug() << "Error! Can't find uuid.";
@@ -831,6 +832,7 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
             }
         }
     }
+    emit data->all_mod_changed();
 }
 
 // 同步模板数据

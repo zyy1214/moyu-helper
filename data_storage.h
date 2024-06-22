@@ -15,10 +15,12 @@ public:
 signals:
     void mod_added(Mod *mod);
     void mod_modified(Mod *mod);
+    void all_mod_changed();
     void label_modified(Mod *mod);
     void record_added(Record *record);
     void record_modified(Record *record);
     void record_deleted(Record *record);
+    void all_record_changed();
 
     void mod_sync_finished();
 

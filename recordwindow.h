@@ -42,6 +42,7 @@ private slots:
     void on_record_added(Record *record);
     void on_record_modified(Record *record);
     void on_record_deleted(Record *record);
+    void on_all_record_changed();
 
 private:
     Ui::RecordWindow *ui;

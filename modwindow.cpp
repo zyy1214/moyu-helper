@@ -455,7 +455,7 @@ public:
             if(aaa->name_legal())
             {
                 window->change_mod(before_mod,text_name,new Formula(text_formula),
-                                button_type == 1 ? OBTAIN : CONSUME, change_type == 1 ? 1 : 0,text_shortname);
+                                   button_type == 1 ? OBTAIN : CONSUME, change_type == 1 ? 1 : 0,text_shortname);
                 close();
             }
             else
@@ -549,7 +549,7 @@ private:
 
 void ModWindow::setup_mods() {
     QWidget *scrollWidget = new QWidget;
-    scrollWidget->setStyleSheet("background-color: white;"); 
+    scrollWidget->setStyleSheet("background-color: white;");
     QVBoxLayout *layout = new QVBoxLayout;
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->setSpacing(20);
@@ -652,19 +652,7 @@ void ModWindow::setup_mods() {
     scrollArea->setFrameStyle(QFrame::NoFrame);
 }
 
-
-ModWindow::ModWindow(Data *data, QWidget *parent)
-    : data(data), QMainWindow(parent), ui(new Ui::ModWindow)
-{
-    QFont font("Microsoft YaHei UI", 14);//字体
-    // add_mod(QString("学习数学分析{x}分钟"),new Formula(QString("x^2")), OBTAIN,"学习高代");
-    // add_mod(QString("学习高等代数{x}分钟"),new Formula(QString("2*x")), OBTAIN,"学习数分");
-    // add_mod(QString("玩第五人格{x}分钟"),new Formula(QString("x+1")), CONSUME,"第五人格");
-    // add_mod(QString("玩原神{x}分钟"),new Formula(QString("x/2")), CONSUME,"原神");
-    // add_mod(QString("跑步{x}分钟，速度{y}"),new Formula(QString("10*x/y")), OBTAIN,"跑步锻炼");
-
-    ui->setupUi(this);
-
+void ModWindow::init_mods() {
     mod_cnt=data->mods.size();
     for(int i=0;i<data->mods.size();i++)
     {
@@ -680,6 +668,15 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
         }
     }
     memset(ischose,0, sizeof(ischose));
+    std::vector<QString> b;
+    search("",b);
+}
+
+ModWindow::ModWindow(Data *data, QWidget *parent)
+    : data(data), QMainWindow(parent), ui(new Ui::ModWindow)
+{
+    QFont font("Microsoft YaHei UI", 14);//字体
+    ui->setupUi(this);
 
     //添加模板
     QPushButton *addButton = create_icon_button("plus",40,[=]{
@@ -742,8 +739,6 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     ui->horizontalLayout_2->addSpacing(5);
     ui->horizontalLayout_2->addLayout(picture2);
     ui->horizontalLayout_2->addWidget(addButton);
-    std::vector<QString> b;
-    search("",b);
 
     // todo: 读入的 mods 中包含标签时，搜索标签功能失效
 
@@ -751,6 +746,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
 
     connect(data, &Data::mod_added, this, &ModWindow::on_mod_added);
     connect(data, &Data::mod_modified, this, &ModWindow::on_mod_modified);
+    connect(data, &Data::all_mod_changed, this, &ModWindow::on_all_mod_changed);
 }
 
 
@@ -898,5 +894,10 @@ void ModWindow::on_mod_added(Mod *mod) {
 }
 
 void ModWindow::on_mod_modified(Mod *mod) {
+    setup_mods();
+}
+
+void ModWindow::on_all_mod_changed() {
+    init_mods();
     setup_mods();
 }
