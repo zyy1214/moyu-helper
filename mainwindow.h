@@ -22,6 +22,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    Data *data;
+
 private slots:
     void on_button_menu_clicked();
 
@@ -35,7 +37,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Data *data;
     RecordWindow *rw;
     ModWindow *mw;
     ChartWindow *cw;

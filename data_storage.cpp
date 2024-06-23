@@ -83,7 +83,7 @@ void save_value(QString key, QString value, bool user_specific) {
     }
     kv_cache[key] = value;
 }
-QString get_value(QString key, bool user_specific) {
+QString get_value(QString key, bool user_specific, QString default_value) {
     init_db_kv();
     if (user_specific) {
         key += "__" + get_value("userid");
@@ -96,7 +96,7 @@ QString get_value(QString key, bool user_specific) {
     query.bindValue(":key", key);
     if (!query.exec()) {
         qDebug() << "Failed to execute query:" << query.lastError().text();
-        return "";
+        return default_value;
     }
     if (query.next()) {
         QString retrievedValue = query.value(0).toString();
@@ -105,9 +105,9 @@ QString get_value(QString key, bool user_specific) {
         return retrievedValue;
     } else {
         qDebug() << "Key" << key << "not found in the database.";
-        kv_cache[key] = "";
+        kv_cache[key] = default_value;
     }
-    return "";
+    return default_value;
 }
 
 QSqlDatabase db;
@@ -556,7 +556,7 @@ void sync_records_data(Data *data) {
         finish_load();
         return;
     }
-    Network *n = new Network(data, "https://geomedraw.com/qt/commit_record_change");
+    Network *n = new Network("https://geomedraw.com/qt/commit_record_change");
     n->add_data("token", token);
     n->add_data("latest_record_operation", get_value("latest_record_operation", true));
 
@@ -844,7 +844,7 @@ void sync_mods_data(Data *data) {
         // 当前未登录
         return;
     }
-    Network *n = new Network(data, "https://geomedraw.com/qt/commit_mod_change");
+    Network *n = new Network("https://geomedraw.com/qt/commit_mod_change");
     n->add_data("token", token);
     n->add_data("latest_mod_operation", get_value("latest_mod_operation", true));
 
@@ -1001,4 +1001,54 @@ bool db_delete_mod(Data *data, Mod *mod, bool record_operation) {
     }
     qDebug() << "End deleting mod.";
     return true;
+}
+
+
+class settings_item {
+public:
+    QString key, value, date;
+    settings_item(QString key, QString default_value)
+        : key(key), value(get_value(key, true, default_value)), date(get_value(key + "_time", true, "1970-01-01")) {}
+    settings_item(QString key, QString value, QString date)
+        : key(key), value(value), date(date) {}
+};
+
+void sync_settings(Data *data) {
+    Network *n = new Network("https://geomedraw.com/qt/commit_settings_change");
+    n->add_data("token", get_value("token"));
+
+    QVector<settings_item> dataArray = {{"data_unit", "1"}};
+    QJsonArray jsonArray;
+    for (const settings_item &item : dataArray) {
+        QJsonObject jsonObject;
+        jsonObject["key"] = item.key;
+        jsonObject["value"] = item.value;
+        jsonObject["date"] = item.date;
+        jsonArray.append(jsonObject);
+    }
+    QJsonDocument jsonDoc(jsonArray);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Indented);
+
+    n->add_data("settings", jsonString);
+    n->post();
+    QObject::connect(n, &Network::succeeded, [=] (QString reply) {
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
+        if (!jsonDoc.isNull()) {
+            QJsonObject jsonObj = jsonDoc.object();
+            bool succeed = jsonObj["succeed"].toBool();
+            if (!succeed) {
+                qDebug() << jsonObj["error_message"].toString();
+                return;
+            }
+            QJsonArray settings = jsonObj["settings"].toArray();
+            for (const QJsonValue &value : settings) {
+                QJsonObject jo = value.toObject();
+                save_value(jo["key"].toString(), jo["value"].toString(), true);
+                save_value(jo["key"].toString() + "_time", jo["date"].toString(), true);
+            }
+            emit data->settings_changed();
+        } else {
+            qDebug() << "Failed to parse JSON.";
+        }
+    });
 }

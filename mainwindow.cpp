@@ -8,6 +8,7 @@
 #include "network.h"
 #include "uitools.h"
 
+#include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QListWidgetItem>
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     setPalette(QPalette(QColor(Qt::white)));
     data = new Data();
     load_data(data);
+    sync_settings(data);
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
     cw = new ChartWindow(data, this);
@@ -115,7 +117,7 @@ public:
                 return;
             }
             confirm_layout->setEnabled(false);
-            Network *n = new Network(window, "https://geomedraw.com/qt/modify_password");
+            Network *n = new Network("https://geomedraw.com/qt/modify_password");
             n->add_data("username", get_value("username"));
             n->add_data("original_password", original_password_edit->text());
             n->add_data("new_password", new_password_edit->text());
@@ -216,6 +218,27 @@ void SettingsDialog::setupUi()
     accountPageLayout->setAlignment(Qt::AlignTop);
     accountPageLayout->addWidget(accountLabel);
     accountPageLayout->addSpacing(15);
+
+    QHBoxLayout *data_unit_layout = new QHBoxLayout(accountPage);
+    QLabel *data_unit_label = new QLabel("数据单位：", accountPage);
+    data_unit_label->setStyleSheet("font-size: 14px");
+    QComboBox *data_unit_combo = new QComboBox(accountPage);
+    data_unit_combo->addItems({"1", "0.1", "0.01"});
+    data_unit_combo->setCurrentText(get_value("data_unit", true, "1"));
+    QFont font = data_unit_combo->font();
+    font.setPixelSize(14);
+    data_unit_combo->setFont(font);
+    data_unit_layout->addWidget(data_unit_label);
+    data_unit_layout->addSpacing(5);
+    data_unit_layout->addWidget(data_unit_combo);
+    accountPageLayout->addItem(data_unit_layout);
+    accountPageLayout->addSpacing(10);
+    connect(data_unit_combo, &QComboBox::currentIndexChanged, [=] (int index) {
+        save_value("data_unit", data_unit_combo->currentText(), true);
+        save_value("data_unit_time", QTime::currentTime().toString(), true);
+        sync_settings(((MainWindow *) window)->data);
+        emit ((MainWindow *) window)->data->settings_changed();
+    });
 
     QPushButton *modify_password_button = create_standard_button("修改密码", 14);
     accountPageLayout->addWidget(modify_password_button);

@@ -18,7 +18,6 @@ class RecordWindow : public QMainWindow
 public:
     RecordWindow(Data *data, QWidget *parent = nullptr);
     ~RecordWindow();
-
     void setup_total_points();
 
     void setup_records();

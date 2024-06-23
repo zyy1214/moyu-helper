@@ -24,6 +24,8 @@ signals:
 
     void mod_sync_finished();
 
+    void settings_changed();
+
 public slots:
     void sync_records();
 };
@@ -38,10 +40,12 @@ bool db_modify_mod(Data *data, Mod *mod, bool record_operation = true);
 bool db_delete_mod(Data *data, Mod *mod, bool record_operation = true);
 
 void save_value(QString key, QString value, bool user_specific = false);
-QString get_value(QString key, bool user_specific = false);
+QString get_value(QString key, bool user_specific = false, QString default_value = "");
 
 void sync_data(Data *data);
 void sync_mods_data(Data *data);
 void sync_records_data(Data *data);
+
+void sync_settings(Data *data);
 
 #endif // DATA_STORAGE_H

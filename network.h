@@ -16,16 +16,13 @@ class Network : public QObject
 {
     Q_OBJECT
 private:
-    QMainWindow *window;
     QNetworkRequest *request;
     QUrlQuery *query_data;
     QNetworkAccessManager *manager;
     QNetworkReply *reply;
-    Data *data;
 
 public:
-    Network(QMainWindow *window, QString url);
-    Network(Data *data, QString url);
+    Network(QString url);
     void add_data(QString key, QString value);
 
     void finished();

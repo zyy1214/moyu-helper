@@ -219,7 +219,7 @@ void LoginWindow::login_clicked() {
         return;
     }
     loginButton->setEnabled(false);
-    Network *n = new Network(this, "https://geomedraw.com/qt/login"); // todo: 内存泄漏？
+    Network *n = new Network("https://geomedraw.com/qt/login"); // todo: 内存泄漏？
     n->add_data("username", usernameEdit->text());
     n->add_data("password", passwordEdit->text());
     save_value("username", usernameEdit->text());
@@ -267,7 +267,7 @@ void LoginWindow::register_clicked() {
         return;
     }
     registerButton->setEnabled(false);
-    Network *n = new Network(this, "https://geomedraw.com/qt/register"); // todo: 内存泄漏？
+    Network *n = new Network("https://geomedraw.com/qt/register"); // todo: 内存泄漏？
     //QString username = registerUsernameEdit->text();
     //QString password = registerPasswordEdit->text();
     n->add_data("username", registerUsernameEdit->text());

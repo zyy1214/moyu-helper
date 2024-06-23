@@ -43,19 +43,31 @@ void RecordWindow::init_data() {
     }
 }
 
+QString point_to_string(int point, bool use_add = false) {
+    QString prefix = "";
+    if (point < 0) prefix = "−";
+    else if (use_add) prefix = "+";
+    int point_abs = abs(point);
+    if (get_value("data_unit", true, "1") == "1") {
+        return prefix + QString::number(point_abs);
+    } else if (get_value("data_unit", true, "1") == "0.1") {
+        return prefix + QString::number(point_abs * 0.1, 'f', 1);
+    } else {
+        return prefix + QString::number(point_abs * 0.01, 'f', 2);
+    }
+}
+
 void RecordWindow::setup_total_points() {
+    ui->info_total_points->setText(point_to_string(data->total_points));
+    ui->last_week_total_points->setText(point_to_string(data->last_week_points, true));
     if (data->total_points >= 0) {
-        ui->info_total_points->setText(QString::number(data->total_points));
         ui->info_total_points->setStyleSheet("color: rgb(23, 112, 228)");
     } else {
-        ui->info_total_points->setText("−" + QString::number(-data->total_points));
         ui->info_total_points->setStyleSheet("color: rgb(204, 0, 0)");
     }
-    if (data->last_week_points >= 0) {
-        ui->last_week_total_points->setText("+" + QString::number(data->last_week_points));
+    if (data->last_week_points >= 0) { 
         ui->last_week_total_points->setStyleSheet("color: rgb(23, 112, 228)");
     } else {
-        ui->last_week_total_points->setText("−" + QString::number(-data->last_week_points));
         ui->last_week_total_points->setStyleSheet("color: rgb(204, 0, 0)");
     }
 }
@@ -73,7 +85,7 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     ui->record_list_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     on_option_by_day_pressed();
     setup_records();
-    Network *n = new Network(this, "https://v1.hitokoto.cn?c=d&c=i&c=k");
+    Network *n = new Network("https://v1.hitokoto.cn?c=d&c=i&c=k");
     n->get();
     connect(n, &Network::succeeded, [=] (QString reply) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
@@ -94,6 +106,10 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     connect(data, &Data::record_modified, this, &RecordWindow::on_record_modified);
     connect(data, &Data::record_deleted, this, &RecordWindow::on_record_deleted);
     connect(data, &Data::all_record_changed, this, &RecordWindow::on_all_record_changed);
+    connect(data, &Data::settings_changed, [=] () {
+        setup_total_points();
+        setup_records();
+    });
 }
 
 RecordWindow::~RecordWindow()
@@ -442,7 +458,7 @@ public:
         QLabel *label_name = new QLabel(records->get_display_name());
         label_name->setFont(font);
         int point = records->get_point_sum();
-        QLabel *label_point = new QLabel((point > 0 ? "+" : "−") + QString::number(abs(point)));
+        QLabel *label_point = new QLabel((point > 0 ? "+" : "−") + point_to_string(abs(point)));
         label_point->setFont(font);
         label_point->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
 
@@ -473,7 +489,7 @@ public:
         QSpacerItem *spacer = new QSpacerItem(40, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
         QLabel *label_name = new QLabel(record->get_display_name());
         label_name->setFont(font);
-        QLabel *label_point = new QLabel((record->get_type() == RECORD_TYPE::OBTAIN ? "+" : "−") + QString::number(record->get_point()));
+        QLabel *label_point = new QLabel((record->get_type() == RECORD_TYPE::OBTAIN ? "+" : "−") + point_to_string(record->get_point()));
         label_point->setFont(font);
         label_point->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         QSpacerItem *spacer1 = new QSpacerItem(20, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
