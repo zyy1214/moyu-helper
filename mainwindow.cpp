@@ -81,13 +81,13 @@ public:
         inputLayoutV->addWidget(original_password_edit);
 
         new_password_edit = new QLineEdit(this);
-        new_password_edit->setPlaceholderText("请输入密码");
+        new_password_edit->setPlaceholderText("请输入新密码");
         new_password_edit->setEchoMode(QLineEdit::Password);
         new_password_edit->setFont(editFont);
         inputLayoutV->addWidget(new_password_edit);
 
         confirm_password_edit = new QLineEdit(this);
-        confirm_password_edit->setPlaceholderText("请再次输入密码");
+        confirm_password_edit->setPlaceholderText("请再次输入新密码");
         confirm_password_edit->setEchoMode(QLineEdit::Password);
         confirm_password_edit->setFont(editFont);
         inputLayoutV->addWidget(confirm_password_edit);
