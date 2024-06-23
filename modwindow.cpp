@@ -617,11 +617,12 @@ void ModWindow::setup_mods() {
 
         //删除更改按钮
         QPushButton *delete_button=create_icon_button("delete", 26,[=](){
-            show_confirm(this, "删除模版", "确认删除模版吗？删除后，之前的记录不会受到影响。", [=] (QMainWindow *w) {
-                ModWindow *window = dynamic_cast<ModWindow *>(w);
-                window->delete_mod(x);
-                window->setup_mods();
+            ConfirmDialog *confirmDialog = new ConfirmDialog(this, "删除模版", "确认删除模版吗？删除后，之前的记录不会受到影响。");
+            connect(confirmDialog, &ConfirmDialog::confirmed, [=] () {
+                delete_mod(x);
+                setup_mods();
             });
+            confirmDialog->show();
         });
         QPushButton *changeButton = create_icon_button("edit",24,[=]{
             ChangeDialog dialog(this, x);

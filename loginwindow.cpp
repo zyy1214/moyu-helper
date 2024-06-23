@@ -224,11 +224,11 @@ void LoginWindow::login_clicked() {
     n->add_data("password", passwordEdit->text());
     save_value("username", usernameEdit->text());
     save_value("password", passwordEdit->text());
-    n->post([=] (void *w, QString reply) {
-        LoginWindow *window = (LoginWindow *) w;
+    n->post();
+    connect(n, &Network::succeeded, [=] (QString reply) {
         if (reply == "") {
             show_warning("登录失败", "用户名或密码错误，请检查输入的信息。");
-            window->loginButton->setEnabled(true);
+            loginButton->setEnabled(true);
         } else {
             QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
             if (!jsonDoc.isNull()) {
@@ -239,18 +239,17 @@ void LoginWindow::login_clicked() {
                 save_value("userid", userid);
                 MainWindow *mainWindow = new MainWindow();
                 mainWindow->show();
-                window->close();
+                close();
             } else {
                 qDebug() << "Failed to parse JSON.";
                 show_warning("网络错误", "网络连接失败。");
-                LoginWindow *window = (LoginWindow *) w;
-                window->loginButton->setEnabled(true);
+                loginButton->setEnabled(true);
             }
         }
-    }, [=] (QMainWindow *w) {
+    });
+    connect(n, &Network::failed, [=] () {
         show_warning("网络错误", "网络连接失败。");
-        LoginWindow *window = (LoginWindow *) w;
-        window->loginButton->setEnabled(true);
+        loginButton->setEnabled(true);
     });
 }
 
@@ -273,21 +272,21 @@ void LoginWindow::register_clicked() {
     //QString password = registerPasswordEdit->text();
     n->add_data("username", registerUsernameEdit->text());
     n->add_data("password", registerPasswordEdit->text());
-    n->post([=] (void *w, QString reply) {
-        LoginWindow *window = (LoginWindow *) w;
+    n->post();
+    connect(n, &Network::succeeded, [=] (QString reply) {
         if (reply != "true") {
             show_warning("注册失败", reply);
-            window->registerButton->setEnabled(true);
+            registerButton->setEnabled(true);
         } else {
             show_info("注册成功", "注册成功！");
-            window->usernameEdit->setText(window->registerUsernameEdit->text());
-            window->passwordEdit->setText(window->registerPasswordEdit->text());
-            window->stackedWidget->setCurrentIndex(0);
+            usernameEdit->setText(registerUsernameEdit->text());
+            passwordEdit->setText(registerPasswordEdit->text());
+            stackedWidget->setCurrentIndex(0);
         }
-    }, [=] (QMainWindow *w) {
+    });
+    connect(n, &Network::failed, [=] () {
         show_warning("网络错误", "网络连接失败。");
-        LoginWindow *window = (LoginWindow *) w;
-        window->registerButton->setEnabled(true);
+        registerButton->setEnabled(true);
     });
 }
 

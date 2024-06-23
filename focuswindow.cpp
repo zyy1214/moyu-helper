@@ -149,23 +149,21 @@ FocusWindow::FocusWindow(QWidget *parent)
     setup_icon_button(ui->renew, "refresh", icon_size * 1.15);
     connect(ui->renew, &QPushButton::clicked,[=]{
         Network *n = new Network(this, "https://v1.hitokoto.cn?c=d&c=i&c=k");
-        n->post([this] (void *w, QString reply) {
+        n->post();
+        connect(n, &Network::succeeded, [this] (QString reply) {
             QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
             if (!jsonDoc.isNull()) {
                 QJsonObject jsonObj = jsonDoc.object();
                 QString author = jsonObj["from_who"].toString();
                 QString text = "“" + jsonObj["hitokoto"].toString() + "”";
-                FocusWindow *window = (FocusWindow *) w;
-                window->ui->famous->setText(text);
+                ui->famous->setText(text);
                 // if (author != "") {
                 //     window->ui->famous->setText("——" + author);
                 // }
             } else {
                 qDebug() << "Failed to parse JSON.";
             }
-        }, [] (QMainWindow *w) {
-
-                });
+        });
     });
 
     // 记录当前时间作为窗口打开时的时间
@@ -197,23 +195,21 @@ FocusWindow::FocusWindow(QWidget *parent)
 
     ui->famous->setStyleSheet("font-size: 36px; color: #000000;");
     Network *n = new Network(this, "https://v1.hitokoto.cn/");
-    n->post([this] (void *w, QString reply) {
+    n->post();
+    connect(n, &Network::succeeded, [this] (QString reply) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
         if (!jsonDoc.isNull()) {
             QJsonObject jsonObj = jsonDoc.object();
             QString author = jsonObj["from_who"].toString();
             QString text = "“" + jsonObj["hitokoto"].toString() + "”";
-            FocusWindow *window = (FocusWindow *) w;
-            window->ui->famous->setText(text);
+            ui->famous->setText(text);
             // if (author != "") {
             //     window->ui->famous->setText("——" + author);
             // }
         } else {
             qDebug() << "Failed to parse JSON.";
         }
-    }, [] (QMainWindow *w) {
-
-            });
+    });
 
     //repaint();
 

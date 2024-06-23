@@ -34,14 +34,16 @@ WelcomeWindow::WelcomeWindow(QWidget *parent)
         Network *n = new Network(this, "https://geomedraw.com/qt/verify_token");
         n->add_data("username", get_value("username"));
         n->add_data("token", get_value("token"));
-        n->post([=] (void *window, QString reply) {
+        n->post();
+        connect(n, &Network::succeeded, [=] (QString reply) {
             if (reply == "true") {
-                ((WelcomeWindow *) window)->open_record_window();
+                open_record_window();
             } else {
-                ((WelcomeWindow *) window)->open_login_window();
+                open_login_window();
             }
-        }, [=] (QMainWindow *window) {
-            ((WelcomeWindow *) window)->open_login_window();
+        });
+        connect(n, &Network::failed, [=] () {
+            open_login_window();
         });
     }
 }

@@ -74,22 +74,20 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     on_option_by_day_pressed();
     setup_records();
     Network *n = new Network(this, "https://v1.hitokoto.cn?c=d&c=i&c=k");
-    n->get([] (void *w, QString reply) {
+    n->get();
+    connect(n, &Network::succeeded, [=] (QString reply) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
         if (!jsonDoc.isNull()) {
             QJsonObject jsonObj = jsonDoc.object();
             QString author = jsonObj["from_who"].toString();
             QString text = "    “" + jsonObj["hitokoto"].toString() + "”";
-            RecordWindow *window = (RecordWindow *) w;
-            window->ui->quotation->setText(text);
+            ui->quotation->setText(text);
             if (author != "") {
-                window->ui->quotation_author->setText("——" + author);
+                ui->quotation_author->setText("——" + author);
             }
         } else {
             qDebug() << "Failed to parse JSON.";
         }
-    }, [] (QMainWindow *w) {
-
     });
 
     connect(data, &Data::record_added, this, &RecordWindow::on_record_added);
@@ -484,8 +482,8 @@ public:
             dialog->exec();
         });
         QPushButton *button_delete = create_icon_button("delete", 32, [&, window, record] () {
-            show_confirm(window, "删除记录", "确定删除该条记录吗？", [=] (QMainWindow *w) {
-                RecordWindow *window = (RecordWindow *) w;
+            ConfirmDialog *confirmDialog = new ConfirmDialog(window, "删除记录", "确定删除该条记录吗？");
+            connect(confirmDialog, &ConfirmDialog::confirmed, [=] () {
                 MultipleRecord *mr = window->data->records[record->get_date()];
                 for (int i = 0; i < mr->size(); i++) {
                     if (record->get_id() == (*mr)[i]->get_id()) {
@@ -505,6 +503,7 @@ public:
                 window->setup_total_points();
                 window->setup_records(); // todo: 需更改
             });
+            confirmDialog->show();
         });
 
         QHBoxLayout *layout = new QHBoxLayout(this);

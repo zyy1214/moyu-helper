@@ -5,6 +5,7 @@
 #include "ui_mainwindow.h"
 
 #include "data_storage.h"
+#include "network.h"
 #include "uitools.h"
 
 #include <QDialog>
@@ -40,6 +41,114 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+class ModifyPasswordDialog : public QDialog {
+public:
+    ModifyPasswordDialog(QWidget *parent, QMainWindow *window)
+        : QDialog(parent), window(window)
+    {
+        setWindowTitle("修改密码");
+        setPalette(QPalette(QColor(Qt::white)));
+        setFixedWidth(320);
+        QVBoxLayout *modify_password_layout = new QVBoxLayout(this);
+        setLayout(modify_password_layout);
+        modify_password_layout->setAlignment(Qt::AlignCenter);
+        // modify_password_layout->setContentsMargins(30, 0, 30, 0);
+
+        modify_password_layout->addSpacing(30);
+
+        QHBoxLayout *titleLayout = new QHBoxLayout();
+        QLabel *titleLabel = new QLabel("修改密码", this);
+        titleLabel->setWordWrap(true);
+        titleLabel->setStyleSheet("font-weight: bold; font-size: 24px;");
+        titleLayout->addSpacing(25);
+        titleLayout->addWidget(titleLabel);
+        titleLayout->addSpacing(25);
+        modify_password_layout->addItem(titleLayout);
+        modify_password_layout->addSpacing(25);
+
+        QHBoxLayout *inputLayoutH = new QHBoxLayout(this);
+
+        QVBoxLayout *inputLayoutV = new QVBoxLayout(this);
+        original_password_edit = new QLineEdit(this);
+        original_password_edit->setPlaceholderText("请输入原密码");
+        original_password_edit->setEchoMode(QLineEdit::Password);
+        QFont editFont = original_password_edit->font();
+        editFont.setPointSize(14);
+        original_password_edit->setFont(editFont);
+        inputLayoutV->addWidget(original_password_edit);
+
+        new_password_edit = new QLineEdit(this);
+        new_password_edit->setPlaceholderText("请输入密码");
+        new_password_edit->setEchoMode(QLineEdit::Password);
+        new_password_edit->setFont(editFont);
+        inputLayoutV->addWidget(new_password_edit);
+
+        confirm_password_edit = new QLineEdit(this);
+        confirm_password_edit->setPlaceholderText("请再次输入密码");
+        confirm_password_edit->setEchoMode(QLineEdit::Password);
+        confirm_password_edit->setFont(editFont);
+        inputLayoutV->addWidget(confirm_password_edit);
+
+        inputLayoutV->setSpacing(8);
+
+        inputLayoutH->addSpacing(25);
+        inputLayoutH->addItem(inputLayoutV);
+        inputLayoutH->addSpacing(25);
+
+        modify_password_layout->addItem(inputLayoutH);
+
+        modify_password_layout->addSpacing(30);
+
+        confirm_layout = new ConfirmLayout(this);
+        modify_password_layout->addItem(confirm_layout);
+        modify_password_layout->addSpacing(35);
+
+        connect(confirm_layout, &ConfirmLayout::canceled, this, &QDialog::close);
+        connect(confirm_layout, &ConfirmLayout::confirmed, this, [=] () {
+            if (new_password_edit->text().length() < 6) {
+                show_warning("修改密码失败", "密码长度至少为6位。");
+                return;
+            }
+            if (new_password_edit->text() != confirm_password_edit->text()) {
+                show_warning("修改密码失败", "请确保两次输入的密码内容一致。");
+                return;
+            }
+            confirm_layout->setEnabled(false);
+            Network *n = new Network(window, "https://geomedraw.com/qt/modify_password");
+            n->add_data("username", get_value("username"));
+            n->add_data("original_password", original_password_edit->text());
+            n->add_data("new_password", new_password_edit->text());
+            n->post();
+            connect(n, &Network::succeeded, [=] (QString reply) {
+                if (reply != "true") {
+                    show_warning("修改密码失败", reply);
+                    confirm_layout->setEnabled(true);
+                } else {
+                    close();
+                    show_info("修改密码成功", "修改密码成功。");
+                }
+            });
+            connect(n, &Network::failed, [=] () {
+                show_warning("网络错误", "网络连接失败。");
+            });
+        });
+
+        QString textEditStyle = "QLineEdit { border: 1px solid gray; border-radius: 5px; "
+                                "padding-left: 10px; padding-right: 10px; padding-top: 5px; padding-bottom: 5px; }"
+                                "QLineEdit:focus { border-color: #add8e6; }";
+        original_password_edit->setStyleSheet(textEditStyle);
+        new_password_edit->setStyleSheet(textEditStyle);
+        confirm_password_edit->setStyleSheet(textEditStyle);
+    }
+
+private:
+    QMainWindow *window;
+    QLineEdit *original_password_edit;
+    QLineEdit *new_password_edit;
+    QLineEdit *confirm_password_edit;
+    ConfirmLayout *confirm_layout;
+};
 
 class SettingsDialog : public QDialog
 {
@@ -108,6 +217,14 @@ void SettingsDialog::setupUi()
     accountPageLayout->addWidget(accountLabel);
     accountPageLayout->addSpacing(15);
 
+    QPushButton *modify_password_button = create_standard_button("修改密码", 14);
+    accountPageLayout->addWidget(modify_password_button);
+    accountPageLayout->addSpacing(5);
+    connect(modify_password_button, &QPushButton::clicked, [=] () {
+        ModifyPasswordDialog *dialog = new ModifyPasswordDialog(nullptr, window);
+        dialog->show();
+    });
+
     QPushButton *logoutButton = new QPushButton("退出登录");
     logoutButton->setStyleSheet("color: red; font-size: 14px;"
                                 "padding-left: 15px; padding-right: 15px; padding-top: 6px; padding-bottom: 6px;");
@@ -115,7 +232,8 @@ void SettingsDialog::setupUi()
     accountPageLayout->addWidget(logoutButton);
 
     connect(logoutButton, &QPushButton::clicked, [=] () {
-        show_confirm(window, "退出登录", "退出登录后需联网重新登录，方能继续使用软件。", [=] (QMainWindow *window) {
+        ConfirmDialog *confirmDialog = new ConfirmDialog(window, "退出登录", "退出登录后需联网重新登录，方能继续使用软件。");
+        connect(confirmDialog, &ConfirmDialog::confirmed, [=] () {
             this->close();
             save_value("username", "");
             save_value("password", "");
@@ -124,6 +242,7 @@ void SettingsDialog::setupUi()
             lw->show();
             window->close();
         });
+        confirmDialog->show();
     });
 
     pagesWidget->addWidget(accountPage);

@@ -593,7 +593,8 @@ void sync_records_data(Data *data) {
         jsonArray.append(jsonObj);
     }
     n->add_data("record_operations_data", QJsonDocument(jsonArray).toJson());
-    n->post([=] (void *data, QString reply) {
+    n->post();
+    QObject::connect(n, &Network::succeeded, [=] (QString reply) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
         if (!jsonDoc.isNull()) {
             QJsonObject jsonObj = jsonDoc.object();
@@ -613,7 +614,8 @@ void sync_records_data(Data *data) {
             qDebug() << "Failed to parse JSON.";
         }
         finish_load();
-    }, [] (QMainWindow *window) {
+    });
+    QObject::connect(n, &Network::failed, [=] () {
         finish_load();
     });
     return;
@@ -879,7 +881,8 @@ void sync_mods_data(Data *data) {
         jsonArray.append(jsonObj);
     }
     n->add_data("mod_operations_data", QJsonDocument(jsonArray).toJson());
-    n->post([=] (void *data, QString reply) {
+    n->post();
+    QObject::connect(n, &Network::succeeded, [=] (QString reply) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(reply.toUtf8());
         if (!jsonDoc.isNull()) {
             QJsonObject jsonObj = jsonDoc.object();
@@ -898,7 +901,7 @@ void sync_mods_data(Data *data) {
             qDebug() << "Failed to parse JSON.";
         }
         emit ((Data *) data)->mod_sync_finished();
-    }, [] (QMainWindow *window) {});
+    });
     return;
 }
 

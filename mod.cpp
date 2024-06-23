@@ -27,6 +27,7 @@ int Formula::what_type(QString a)
         return 3; //这两个比较特殊
     if(a=="!")
         return 1;
+    return 0;
 }
 
 

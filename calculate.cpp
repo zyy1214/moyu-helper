@@ -79,6 +79,7 @@ double cul(QString a,double b){
             return 0;
         return -1;
     }
+    return 0;
 }
 double cul(double a,QString b,double c)
 {
@@ -130,6 +131,7 @@ double cul(double a,QString b,double c)
             y=1;
         return  double(x|y);
     }
+    return 0;
 }
 bool check_pair(QString a)//判断是否是二元运算
 {
