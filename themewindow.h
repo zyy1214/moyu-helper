@@ -2,7 +2,6 @@
 #define THEMEWINDOW_H
 
 #include <QMainWindow>
-
 namespace Ui {
 class ThemeWindow;
 }
@@ -10,9 +9,10 @@ class ThemeWindow;
 class ThemeWindow : public QMainWindow
 {
     Q_OBJECT
+    QMainWindow* mainwindow;
 
 public:
-    explicit ThemeWindow(QWidget *parent = nullptr);
+    explicit ThemeWindow(QMainWindow* mainwindow,QWidget *parent = nullptr);
     ~ThemeWindow();
 
 private slots:

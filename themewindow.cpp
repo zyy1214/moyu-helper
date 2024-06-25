@@ -1,11 +1,12 @@
 #include "themewindow.h"
 #include "ui_themewindow.h"
+#include "mainwindow.h"
 #include <QPushButton>
 #include <QDebug>
 #include <QFile>
-ThemeWindow::ThemeWindow(QWidget *parent)
+ThemeWindow::ThemeWindow(QMainWindow* mainwindow,QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::ThemeWindow)
+    , ui(new Ui::ThemeWindow),mainwindow(mainwindow)
 {
     ui->setupUi(this);
     ui->themebutton1->setStyleSheet("QPushButton {"
@@ -26,7 +27,7 @@ ThemeWindow::~ThemeWindow()
 
 void ThemeWindow::on_themebutton1_clicked()
 {
-    this->setStyleSheet("QMainWindow {"
+    mainwindow->setStyleSheet("QMainWindow {"
                         "background-image: url(:/images/theme);"
                         "background-repeat: no-repeat;"
                         "background-position: center;"
@@ -36,7 +37,7 @@ void ThemeWindow::on_themebutton1_clicked()
 
 void ThemeWindow::on_themebutton2_clicked()
 {
-    this->setStyleSheet("QMainWindow {"
+    mainwindow->setStyleSheet("QMainWindow {"
                         "background-image: url(:/images/theme2);"
                         "background-repeat: no-repeat;"
                         "background-position: center;"
@@ -46,7 +47,7 @@ void ThemeWindow::on_themebutton2_clicked()
 
 void ThemeWindow::on_themebutton3_clicked()
 {
-    this->setStyleSheet("QMainWindow {"
+    mainwindow->setStyleSheet("QMainWindow {"
                         "background-image: url(:/images/theme3);"
                         "background-repeat: no-repeat;"
                         "background-position: center;"
@@ -56,7 +57,7 @@ void ThemeWindow::on_themebutton3_clicked()
 
 void ThemeWindow::on_themebutton4_clicked()
 {
-    this->setStyleSheet("QMainWindow {"
+    mainwindow->setStyleSheet("QMainWindow {"
                         "background-image: none;"
                         "}");
 }
