@@ -16,6 +16,9 @@
         <file alias="background2">resources/images/background2.jpg</file>
         <file alias="background3">resources/images/background3.jpg</file>
         <file alias="tag">resources/images/tag-outline.png</file>
+        <file alias="theme">resources/images/theme1.jpg</file>
+        <file alias="theme2">resources/images/theme2.jpg</file>
+        <file alias="theme3">resources/images/theme3.jpg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="icons">resources/fonts/icons.ttf</file>
