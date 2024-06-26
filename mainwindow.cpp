@@ -36,6 +36,32 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->addWidget(cw);
     ui->stackedWidget->addWidget(tw);
     ui->stackedWidget->setCurrentWidget(rw);
+    if(get_value("backgroundpic")=="0"){
+        this->setStyleSheet("QMainWindow {"
+                                  "background-image: none;"
+                                  "}");
+    }
+    else if(get_value("backgroundpic")=='1'){
+        this->setStyleSheet("QMainWindow {"
+                                  "background-image: url(:/images/theme);"
+                                  "background-repeat: no-repeat;"
+                                  "background-position: center;"
+                                  "}");
+    }
+    else if(get_value("backgroundpic")=='2'){
+        this->setStyleSheet("QMainWindow {"
+                            "background-image: url(:/images/theme2);"
+                            "background-repeat: no-repeat;"
+                            "background-position: center;"
+                            "}");
+    }
+    else if(get_value("backgroundpic")=='3'){
+        this->setStyleSheet("QMainWindow {"
+                            "background-image: url(:/images/theme3);"
+                            "background-repeat: no-repeat;"
+                            "background-position: center;"
+                            "}");
+    }
     setWindowTitle("摸鱼小助手 - 主页");
 }
 

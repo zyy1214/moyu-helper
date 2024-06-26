@@ -1,6 +1,7 @@
 #include "themewindow.h"
 #include "ui_themewindow.h"
 #include "mainwindow.h"
+#include "data_storage.h"
 #include <QPushButton>
 #include <QDebug>
 #include <QFile>
@@ -32,6 +33,7 @@ void ThemeWindow::on_themebutton1_clicked()
                         "background-repeat: no-repeat;"
                         "background-position: center;"
                         "}");
+    save_value("backgroundpic","1");
 }
 
 
@@ -42,6 +44,7 @@ void ThemeWindow::on_themebutton2_clicked()
                         "background-repeat: no-repeat;"
                         "background-position: center;"
                         "}");
+    save_value("backgroundpic","2");
 }
 
 
@@ -52,6 +55,7 @@ void ThemeWindow::on_themebutton3_clicked()
                         "background-repeat: no-repeat;"
                         "background-position: center;"
                         "}");
+    save_value("backgroundpic","3");
 }
 
 
@@ -60,5 +64,6 @@ void ThemeWindow::on_themebutton4_clicked()
     mainwindow->setStyleSheet("QMainWindow {"
                         "background-image: none;"
                         "}");
+    save_value("backgroundpic","0");
 }
 
