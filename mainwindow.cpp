@@ -172,16 +172,16 @@ private:
 
     QStackedWidget *pagesWidget;
     QPushButton *accountButton;
-    QPushButton *interfaceButton;
+    QPushButton *overallButton;
     QMainWindow *window;
 
     void cancel_button_selection() {
         accountButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: black; }");
-        interfaceButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: black; }");
+        overallButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: black; }");
     }
     void set_button_selection(int index) {
         cancel_button_selection();
-        QPushButton *button = index == 0 ? accountButton : interfaceButton;
+        QPushButton *button = index == 0 ? accountButton : overallButton;
         button->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: #1770E4; }");
     }
     void set_page_selection(int index) {
@@ -198,12 +198,12 @@ void SettingsDialog::setupUi()
 
     QVBoxLayout *buttonsLayout = new QVBoxLayout;
     accountButton = new QPushButton("账号设置");
-    interfaceButton = new QPushButton("界面设置");
+    overallButton = new QPushButton("全局设置");
     set_button_selection(0);
     buttonsLayout->addSpacing(20);
     buttonsLayout->addWidget(accountButton);
     buttonsLayout->addSpacing(10);
-    buttonsLayout->addWidget(interfaceButton);
+    buttonsLayout->addWidget(overallButton);
     buttonsLayout->setAlignment(Qt::AlignTop);
 
     QWidget *scrollWidget = new QWidget;
@@ -218,27 +218,6 @@ void SettingsDialog::setupUi()
     accountPageLayout->setAlignment(Qt::AlignTop);
     accountPageLayout->addWidget(accountLabel);
     accountPageLayout->addSpacing(15);
-
-    QHBoxLayout *data_unit_layout = new QHBoxLayout(accountPage);
-    QLabel *data_unit_label = new QLabel("数据单位：", accountPage);
-    data_unit_label->setStyleSheet("font-size: 14px");
-    QComboBox *data_unit_combo = new QComboBox(accountPage);
-    data_unit_combo->addItems({"1", "0.1", "0.01"});
-    data_unit_combo->setCurrentText(get_value("data_unit", true, "1"));
-    QFont font = data_unit_combo->font();
-    font.setPixelSize(14);
-    data_unit_combo->setFont(font);
-    data_unit_layout->addWidget(data_unit_label);
-    data_unit_layout->addSpacing(5);
-    data_unit_layout->addWidget(data_unit_combo);
-    accountPageLayout->addItem(data_unit_layout);
-    accountPageLayout->addSpacing(10);
-    connect(data_unit_combo, &QComboBox::currentIndexChanged, [=] (int index) {
-        save_value("data_unit", data_unit_combo->currentText(), true);
-        save_value("data_unit_time", QTime::currentTime().toString(), true);
-        sync_settings(((MainWindow *) window)->data);
-        emit ((MainWindow *) window)->data->settings_changed();
-    });
 
     QPushButton *modify_password_button = create_standard_button("修改密码", 14);
     accountPageLayout->addWidget(modify_password_button);
@@ -270,17 +249,39 @@ void SettingsDialog::setupUi()
 
     pagesWidget->addWidget(accountPage);
 
-    QWidget *interfacePage = new QWidget;
-    QLabel *interfaceLabel = new QLabel("暂无任何可设置项。");
-    QVBoxLayout *interfacePageLayout = new QVBoxLayout(interfacePage);
-    interfacePageLayout->setAlignment(Qt::AlignTop);
-    interfacePageLayout->addWidget(interfaceLabel);
-    pagesWidget->addWidget(interfacePage);
+    QWidget *overallPage = new QWidget;
+    QVBoxLayout *overallPageLayout = new QVBoxLayout(overallPage);
+    overallPageLayout->setAlignment(Qt::AlignTop);
+
+    QHBoxLayout *data_unit_layout = new QHBoxLayout(overallPage);
+    QLabel *data_unit_label = new QLabel("数据单位：", overallPage);
+    data_unit_label->setStyleSheet("font-size: 14px");
+    QComboBox *data_unit_combo = new QComboBox(overallPage);
+    data_unit_combo->addItems({"1", "0.1", "0.01"});
+    data_unit_combo->setCurrentText(get_value("data_unit", true, "1"));
+    QFont font = data_unit_combo->font();
+    font.setPixelSize(14);
+    data_unit_combo->setFont(font);
+    data_unit_layout->addWidget(data_unit_label);
+    data_unit_layout->addSpacing(5);
+    data_unit_layout->addWidget(data_unit_combo);
+    QSpacerItem *spacer = new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+    data_unit_layout->addSpacerItem(spacer);
+    overallPageLayout->addItem(data_unit_layout);
+    overallPageLayout->addSpacing(10);
+    connect(data_unit_combo, &QComboBox::currentIndexChanged, [=] (int index) {
+        save_value("data_unit", data_unit_combo->currentText(), true);
+        save_value("data_unit_time", QTime::currentTime().toString(), true);
+        sync_settings(((MainWindow *) window)->data);
+        emit ((MainWindow *) window)->data->settings_changed();
+    });
+
+    pagesWidget->addWidget(overallPage);
 
     scrollLayout->addWidget(pagesWidget);
 
     connect(accountButton, &QPushButton::clicked, this, &SettingsDialog::changePage);
-    connect(interfaceButton, &QPushButton::clicked, this, &SettingsDialog::changePage);
+    connect(overallButton, &QPushButton::clicked, this, &SettingsDialog::changePage);
 
     mainLayout->addSpacing(20);
     mainLayout->addLayout(buttonsLayout);
@@ -295,7 +296,7 @@ void SettingsDialog::changePage()
     if (sender() == accountButton) {
         set_page_selection(0);
     }
-    else if (sender() == interfaceButton) {
+    else if (sender() == overallButton) {
         set_page_selection(1);
     }
 }
