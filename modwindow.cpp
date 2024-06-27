@@ -568,7 +568,8 @@ private:
 
 void ModWindow::setup_mods() {
     QWidget *scrollWidget = new QWidget;
-    scrollWidget->setStyleSheet("background-color: white;");
+    scrollWidget->setStyleSheet("background: transparent;");
+    scrollWidget->setAttribute(Qt::WA_TranslucentBackground);
     QVBoxLayout *layout = new QVBoxLayout;
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->setSpacing(20);
@@ -658,7 +659,6 @@ void ModWindow::setup_mods() {
         QSpacerItem *rightSpacer = new QSpacerItem(20, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
         temp->addItem(rightSpacer);
 
-        QFontMetrics fontMetrics(name_label->font());
         QString strDes = QFontMetrics(name_label->font()).elidedText(x->get_name(), Qt::ElideRight, name_label->width());
         name_label->setText(strDes);
 
@@ -668,8 +668,10 @@ void ModWindow::setup_mods() {
 
     scrollWidget->setLayout(layout);
     QScrollArea *scrollArea = ui->scrollArea;
-    scrollArea->setWidget(scrollWidget);  // 将QWidget设置为滚动区域的内部窗口
+    scrollArea->setWidget(scrollWidget);
     scrollArea->setFrameStyle(QFrame::NoFrame);
+    scrollArea->setStyleSheet("background: transparent;");
+    scrollArea->setAttribute(Qt::WA_TranslucentBackground);
 }
 
 void ModWindow::init_mods() {
@@ -713,7 +715,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
 
     lineEdit_search_string->setPlaceholderText("请输入搜索内容、选择标签后点击搜索按钮");
 
-    QString textEditStyle = "QLineEdit { border: 1px solid gray; border-radius: 17px; "
+    QString textEditStyle = "QLineEdit {background: transparent; border: 1px solid gray; border-radius: 17px; "
                             "padding-left: 10px; padding-right: 10px; padding-top: 5px; padding-bottom: 5px; }"
                             "QLineEdit:focus { border-color: #add8e6; }";
     lineEdit_search_string->setStyleSheet(textEditStyle);

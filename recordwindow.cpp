@@ -81,8 +81,12 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
     setup_total_points();
     ui->record_list->setFrameStyle(QFrame::NoFrame);
     ui->record_list->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->record_list->setAttribute(Qt::WA_TranslucentBackground);
+    ui->record_list->setStyleSheet("background: transparent;");
     ui->record_list_area->setFrameStyle(QFrame::NoFrame);
     ui->record_list_area->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->record_list_area->setAttribute(Qt::WA_TranslucentBackground);
+    ui->record_list_area->setStyleSheet("background: transparent;");
     on_option_by_day_pressed();
     setup_records();
     Network *n = new Network("https://v1.hitokoto.cn?c=d&c=i&c=k");
@@ -137,7 +141,7 @@ public:
         : window(window), record(record), QDialog(parent) {
         qDebug() << record;
         setWindowTitle(record ? "修改记录" : "添加记录");
-        //setFixedSize(300, 240);
+        // setFixedSize(300, 240);
 
         setPalette(QPalette(QColor(Qt::white)));
 
@@ -452,7 +456,7 @@ private:
 public:
     MultipleRecordItem(RecordWindow *window, MultipleRecord *records, QWidget *parent = nullptr)
         : window(window), records(records), QWidget(parent) {
-        setStyleSheet("background-color: rgba(255, 255, 255, 100)");
+        // setStyleSheet("background-color: rgba(255, 255, 255, 100)");
         QFont font("Microsoft YaHei UI", 18);
         QSpacerItem *spacer = new QSpacerItem(40, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
         QLabel *label_name = new QLabel(records->get_display_name());
@@ -483,8 +487,8 @@ private:
 public:
     RecordItem(RecordWindow *window, Record *record, QWidget *parent = nullptr)
         : window(window), QWidget(parent) {
-        //qDebug() << "RecordItem created" << window << record.get_point() << this;
-        setStyleSheet("background-color: rgba(255, 255, 255, 100)");
+        // qDebug() << "RecordItem created" << window << record.get_point() << this;
+        // setStyleSheet("background-color: rgba(255, 255, 255, 100)");
         QFont font("Microsoft YaHei UI", 18);
         QSpacerItem *spacer = new QSpacerItem(40, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
         QLabel *label_name = new QLabel(record->get_display_name());
@@ -532,7 +536,7 @@ public:
         setFixedHeight(50);
 
         // todo: 实现类似 Android 中 ellipsize=end 的效果
-        //set_text(label_name, record.get_display_name());
+        // set_text(label_name, record.get_display_name());
     }
     RecordItem (const RecordItem &ri) {
         //qDebug() << "RecordItem copy constructor called";
@@ -547,7 +551,7 @@ public:
 class DateItem : public QWidget {
 public:
     DateItem(const QDate &date, QWidget *parent = nullptr) : QWidget(parent) {
-        setStyleSheet("background-color: rgba(255, 255, 255, 100)");
+        // setStyleSheet("background-color: rgba(255, 255, 255, 100)");
         QFont font("Microsoft YaHei UI", 18);
         font.setBold(true);
         QSpacerItem *spacer = new QSpacerItem(25, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -567,7 +571,7 @@ public:
 class WeekItem : public QWidget {
 public:
     WeekItem(const QDate &date, QWidget *parent = nullptr) : QWidget(parent) {
-        setStyleSheet("background-color: rgba(255, 255, 255, 100)");
+        // setStyleSheet("background-color: rgba(255, 255, 255, 100)");
         QFont font("Microsoft YaHei UI", 18);
         font.setBold(true);
         QSpacerItem *spacer = new QSpacerItem(25, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -588,7 +592,7 @@ public:
 class MonthItem : public QWidget {
 public:
     MonthItem(int y, int m, QWidget *parent = nullptr) : QWidget(parent) {
-        setStyleSheet("background-color: rgba(255, 255, 255, 100)");
+        // setStyleSheet("background-color: rgba(255, 255, 255, 100)");
         QFont font("Microsoft YaHei UI", 18);
         font.setBold(true);
         QSpacerItem *spacer = new QSpacerItem(25, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -606,7 +610,7 @@ public:
 class YearItem : public QWidget {
 public:
     YearItem(int y, QWidget *parent = nullptr) : QWidget(parent) {
-        setStyleSheet("background-color: rgba(255, 255, 255, 100)");
+        // setStyleSheet("background-color: rgba(255, 255, 255, 100)");
         QFont font("Microsoft YaHei UI", 18);
         font.setBold(true);
         QSpacerItem *spacer = new QSpacerItem(25, 0, QSizePolicy::Minimum, QSizePolicy::Minimum);

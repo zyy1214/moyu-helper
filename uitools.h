@@ -30,8 +30,11 @@ public:
     ConfirmDialog(QMainWindow *window, QString title, QString content, QWidget *parent = nullptr);
 signals:
     void confirmed();
+    void canceled();
 private slots:
     void onOKButtonClicked();
+protected:
+    void closeEvent(QCloseEvent *event) override;
 };
 
 void show_warning(QString title, QString content);

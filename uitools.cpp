@@ -104,6 +104,10 @@ ConfirmDialog::ConfirmDialog(QMainWindow *window, QString title, QString content
     setLayout(layout);
 }
 
+void ConfirmDialog::closeEvent(QCloseEvent *event) {
+    emit canceled();
+}
+
 void ConfirmDialog::onOKButtonClicked() {
     emit confirmed();
     close();
