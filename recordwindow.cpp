@@ -392,7 +392,7 @@ private slots:
         double *inputs = get_inputs();
         RecordByMod record(selected_mod, inputs, QDate::currentDate());
         preview_result_label->setText((record.get_type() == OBTAIN ? "将获取 " : "将消耗 ")
-                                      + QString::number(record.get_point()) + " 分");
+                                      + point_to_string(record.get_point()) + " 分");
         delete[] inputs;
     }
 

@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setIcon(QIcon(":/images/icon"));
     QMenu *menu = new QMenu(this);
-    QAction *restoreAction = new QAction("恢复窗口", this);
+    QAction *restoreAction = new QAction("显示窗口", this);
     QAction *quitAction = new QAction("退出", this);
 
     connect(restoreAction, &QAction::triggered, this, &MainWindow::showNormal);
