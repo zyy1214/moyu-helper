@@ -37,9 +37,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->addWidget(tw);
     ui->stackedWidget->setCurrentWidget(rw);
     setWindowTitle("摸鱼小助手 - 主页");
+    setWindowIcon(QIcon(":/images/icon"));
 
     trayIcon = new QSystemTrayIcon(this);
-    trayIcon->setIcon(QIcon(":/images/background"));
+    trayIcon->setIcon(QIcon(":/images/icon"));
     QMenu *menu = new QMenu(this);
     QAction *restoreAction = new QAction("恢复窗口", this);
     QAction *quitAction = new QAction("退出", this);

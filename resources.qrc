@@ -19,6 +19,7 @@
         <file alias="theme">resources/images/theme1.jpg</file>
         <file alias="theme2">resources/images/theme2.jpg</file>
         <file alias="theme3">resources/images/theme3.jpg</file>
+        <file alias="icon">resources/images/icon.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file alias="icons">resources/fonts/icons.ttf</file>

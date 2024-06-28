@@ -22,6 +22,7 @@ LoginWindow::LoginWindow(QWidget *parent)
     centralWidget->setStyleSheet("background-color: white;"); // 设置背景颜色为白色
 
     setWindowTitle("摸鱼小助手 - 登录");
+    setWindowIcon(QIcon(":/images/icon"));
 
     // 禁止用户调整窗口大小
     setFixedSize(350, 450);
