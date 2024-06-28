@@ -17,6 +17,8 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QWheelEvent>
+#include <QButtonGroup>
+#include <QRadioButton>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -206,6 +208,298 @@ private:
     }
 };
 
+class FocusDialog : public QDialog {
+
+public:
+    FocusDialog(QWidget *parent = nullptr)
+        : QDialog(parent) {
+
+        setPalette(QPalette(QColor(Qt::white)));
+        QFont font("Microsoft YaHei UI", 12);//字体
+
+        setWindowTitle(QString("添加模板"));
+        setFixedSize(350, 200);
+        flag=0;
+        QRadioButton *normalButton = new QRadioButton("普通模式");
+        normalButton->setFont(font);
+        QRadioButton *countdownButton = new QRadioButton("倒计时模式");
+        countdownButton->setFont(font);
+        if(flag==0)
+            normalButton->setChecked(true);
+        else
+            countdownButton->setChecked(true);
+
+        // 将Radio button添加到按钮组
+        buttonGroup.addButton(countdownButton);
+        buttonGroup.addButton(normalButton);
+
+        QHBoxLayout *buttonlayout=new QHBoxLayout;
+        buttonlayout->addWidget(normalButton);
+        buttonlayout->addWidget(countdownButton);
+
+        QHBoxLayout *reallayout = new QHBoxLayout;
+        QVBoxLayout *layout = new QVBoxLayout;
+        layout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Fixed));
+        layout->addLayout(buttonlayout);
+        QIntValidator *validator = new QIntValidator(0, INT_MAX); // 0 到 INT_MAX 的整数
+
+        // 创建文本输入框
+        QLabel *guide=new QLabel("倒计时：");
+        guide->setFont(font);
+        QLabel *label_hour=new QLabel("小时");
+        label_hour->setFont(font);
+        QLabel *label_min=new QLabel("分钟");
+        label_min->setFont(font);
+        QLabel *label_second=new QLabel("秒");
+        label_second->setFont(font);
+        QLineEdit *lineEdit_hour = new QLineEdit();
+        lineEdit_hour->setFont(font);
+        lineEdit_hour->setValidator(validator);
+        QLineEdit *lineEdit_min = new QLineEdit();
+        lineEdit_min->setFont(font);
+        lineEdit_min->setValidator(validator);
+        QLineEdit *lineEdit_second=new QLineEdit();
+        lineEdit_second->setFont(font);
+        lineEdit_second->setValidator(validator);
+        QHBoxLayout *input=new QHBoxLayout;
+        input->addWidget(guide);
+        input->addWidget(lineEdit_hour);
+        input->addWidget(label_hour);
+        input->addWidget(lineEdit_min);
+        input->addWidget(label_min);
+        input->addWidget(lineEdit_second);
+        input->addWidget(label_second);
+
+        // 添加确定和取消按钮
+        QHBoxLayout *buttonLayout = new QHBoxLayout();
+        QPushButton *okButton = new QPushButton("确定", this);
+        okButton->setStyleSheet("color: black; font-size: 14px;"
+                                "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+        QPushButton *cancelButton = new QPushButton("取消", this);
+        cancelButton->setStyleSheet("color: black; font-size: 14px;"
+                                    "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+        cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+        buttonLayout->setAlignment(Qt::AlignRight);
+        buttonLayout->addWidget(cancelButton);
+        buttonLayout->addSpacing(8);
+        buttonLayout->addWidget(okButton);
+        buttonLayout->addSpacing(8);
+        buttonLayout->setContentsMargins(0, 5, 0, 5);
+        // 连接确定按钮的点击事件
+        connect(okButton, &QPushButton::clicked, [=]() {
+            if(flag==1)
+            {
+                ConfirmDialog *confirm = new ConfirmDialog(nullptr, "开启专注模式", "确认开启专注模式吗？开启后，在倒计时结束前，您将无法退出专注模式。");
+                connect(confirm, &ConfirmDialog::confirmed, [=] () {
+                    close();
+                    int min = lineEdit_min->text().toInt();
+                    int hour = lineEdit_hour->text().toInt();
+                    int second = lineEdit_second->text().toInt();
+                    int hh=3600*hour+60*min+second;
+                    FocusWindow *focus = new FocusWindow(1,hh);
+                    focus->show();
+                });
+                confirm->exec();
+            }
+            else
+            {
+                FocusWindow *focus = new FocusWindow(0);
+                focus->show();
+                close();
+            }
+        });
+        connect(cancelButton, &QPushButton::clicked,[=](){
+            close();
+        });
+        QSpacerItem *spacer=new QSpacerItem(30, 100, QSizePolicy::Fixed, QSizePolicy::Expanding);
+        layout->addItem(spacer);
+        layout->addLayout(input);
+        layout->addSpacing(10);
+        layout->addLayout(buttonLayout);
+
+
+        guide->hide();
+        lineEdit_hour->hide();
+        lineEdit_min->hide();
+        lineEdit_second->hide();
+        label_second->hide();
+        label_min->hide();
+        label_hour->hide();
+
+
+        connect(normalButton,&QRadioButton::toggled,[=](){
+            flag=0;
+            guide->hide();
+            lineEdit_hour->hide();
+            lineEdit_min->hide();
+            lineEdit_second->hide();
+            label_second->hide();
+            label_min->hide();
+            label_hour->hide();
+
+        });
+        connect(countdownButton,&QRadioButton::toggled,[=](){
+            flag=1;
+            guide->show();
+            lineEdit_hour->show();
+            lineEdit_min->show();
+            lineEdit_second->show();
+            label_second->show();
+            label_min->show();
+            label_hour->show();
+        });
+
+        reallayout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Minimum));
+        reallayout->addLayout(layout);
+        reallayout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Minimum));
+
+        setLayout(reallayout);
+    }
+    // void setupui(){
+    //     QFont font("Microsoft YaHei UI", 12);//字体
+
+    //     // 创建Radio button组
+    //     QRadioButton *normalButton = new QRadioButton("普通模式");
+    //     normalButton->setFont(font);
+    //     QRadioButton *countdownButton = new QRadioButton("倒计时模式");
+    //     countdownButton->setFont(font);
+    //     if(flag==0)
+    //         normalButton->setChecked(true);
+    //     else
+    //         countdownButton->setChecked(true);
+    //     connect(normalButton,&QRadioButton::toggled,[=](){
+    //         flag=0;
+    //         setupui();
+    //     });
+    //     connect(countdownButton,&QRadioButton::toggled,[=](){
+    //         flag=1;
+    //         setupui();
+    //     });
+
+    //     // 将Radio button添加到按钮组
+    //     buttonGroup.addButton(countdownButton);
+    //     buttonGroup.addButton(normalButton);
+
+    //     QHBoxLayout *buttonlayout=new QHBoxLayout;
+    //     buttonlayout->addWidget(normalButton);
+    //     buttonlayout->addWidget(countdownButton);
+
+    //     QHBoxLayout *reallayout = new QHBoxLayout;
+    //     QVBoxLayout *layout = new QVBoxLayout;
+    //     layout->addLayout(buttonlayout);
+    //     if(flag==1)
+    //     {
+
+    //         QIntValidator *validator = new QIntValidator(0, INT_MAX); // 0 到 INT_MAX 的整数
+
+    //         // 创建文本输入框
+    //             QLabel *guide=new QLabel("倒计时：");
+    //         QLabel *label_hour=new QLabel("小时");
+    //         label_hour->setFont(font);
+    //         QLabel *label_min=new QLabel("分钟");
+    //         label_min->setFont(font);
+    //         QLabel *label_second=new QLabel("秒");
+    //         label_second->setFont(font);
+    //         QLineEdit *lineEdit_hour = new QLineEdit();
+    //         lineEdit_hour->setFont(font);
+    //         lineEdit_hour->setValidator(validator);
+    //         QLineEdit *lineEdit_min = new QLineEdit();
+    //         lineEdit_min->setFont(font);
+    //         lineEdit_min->setValidator(validator);
+    //         QLineEdit *lineEdit_second=new QLineEdit();
+    //         lineEdit_second->setFont(font);
+    //         lineEdit_second->setValidator(validator);
+    //         QHBoxLayout *input=new QHBoxLayout;
+    //         input->addWidget(guide);
+    //         input->addWidget(lineEdit_hour);
+    //         input->addWidget(label_hour);
+    //         input->addWidget(lineEdit_min);
+    //         input->addWidget(label_min);
+    //         input->addWidget(lineEdit_second);
+    //         input->addWidget(label_second);
+
+    //         // 添加确定和取消按钮
+    //         QHBoxLayout *buttonLayout = new QHBoxLayout();
+    //         QPushButton *okButton = new QPushButton("确定", this);
+    //         okButton->setStyleSheet("color: black; font-size: 14px;"
+    //                                 "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+    //         okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+    //         QPushButton *cancelButton = new QPushButton("取消", this);
+    //         cancelButton->setStyleSheet("color: black; font-size: 14px;"
+    //                                     "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+    //         cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+    //         buttonLayout->setAlignment(Qt::AlignRight);
+    //         buttonLayout->addWidget(cancelButton);
+    //         buttonLayout->addSpacing(8);
+    //         buttonLayout->addWidget(okButton);
+    //         buttonLayout->addSpacing(8);
+    //         buttonLayout->setContentsMargins(0, 5, 0, 5);
+    //         // 连接确定按钮的点击事件
+    //         connect(okButton, &QPushButton::clicked, [=]() {
+    //             int min = lineEdit_min->text().toInt();
+    //             int hour = lineEdit_hour->text().toInt();
+    //             int second = lineEdit_second->text().toInt();
+    //             int hh=3600*hour+60*min+second;
+    //             FocusWindow *focus = new FocusWindow(1,hh);
+    //             focus->show();
+    //             close();
+    //         });
+    //         connect(cancelButton, &QPushButton::clicked,[=](){
+    //             close();
+    //         });
+    //         layout->addLayout(input);
+    //         layout->addSpacing(10);
+    //         layout->addLayout(buttonLayout);
+    //     }
+    //     else
+    //     {
+    //         // 添加确定和取消按钮
+    //         QHBoxLayout *buttonLayout = new QHBoxLayout();
+    //         QPushButton *okButton = new QPushButton("确定", this);
+    //         okButton->setStyleSheet("color: black; font-size: 14px;"
+    //                                 "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+    //         okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+    //         QPushButton *cancelButton = new QPushButton("取消", this);
+    //         cancelButton->setStyleSheet("color: black; font-size: 14px;"
+    //                                     "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
+    //         cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
+    //         buttonLayout->setAlignment(Qt::AlignRight);
+    //         buttonLayout->addWidget(cancelButton);
+    //         buttonLayout->addSpacing(8);
+    //         buttonLayout->addWidget(okButton);
+    //         buttonLayout->addSpacing(8);
+    //         buttonLayout->setContentsMargins(0, 5, 0, 5);
+    //         // 连接确定按钮的点击事件
+    //         connect(okButton, &QPushButton::clicked, [=]() {
+    //             FocusWindow *focus = new FocusWindow(0);
+    //             focus->show();
+    //             close();
+    //         });
+    //         connect(cancelButton, &QPushButton::clicked,[=](){
+    //             close();
+    //         });
+    //         layout->addSpacing(10);
+    //         layout->addLayout(buttonLayout);
+    //     }
+
+
+
+
+
+    //     reallayout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Minimum));
+    //     reallayout->addLayout(layout);
+    //     reallayout->addItem(new QSpacerItem(30, 30, QSizePolicy::Fixed, QSizePolicy::Minimum));
+
+    //     setLayout(reallayout);
+
+    // }
+
+private:
+    QButtonGroup buttonGroup;
+    bool flag;
+};
+
 void SettingsDialog::setupUi()
 {
     setPalette(QPalette(QColor(Qt::white)));
@@ -356,8 +650,8 @@ void MainWindow::on_button_menu_clicked()
     });
     connect(focus_mode, &QAction::triggered, this, [this] () {
         //show_info("专注模式", "该功能正在开发中，将在未来版本中更新，敬请期待……");
-        FocusWindow *window = new FocusWindow();
-        window->show();
+        FocusDialog aa;
+        aa.exec();
     });
     connect(action_feedback, &QAction::triggered, this, [this] () {
         show_info("反馈与帮助", "您可以联系 zyy@stu.pku.edu.cn 以反馈问题或获取帮助。");

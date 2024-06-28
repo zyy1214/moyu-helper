@@ -16,7 +16,7 @@ class FocusWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    FocusWindow(QWidget *parent = nullptr);
+    FocusWindow(bool flag, int time = 0 , QWidget *parent = nullptr);
     ~FocusWindow();
     bool is_night=0;
 protected:
@@ -24,6 +24,9 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void checkAndBringToFront() ;
 private:
+    bool flag;
+    bool canclose;
+    int countdowntime;
     Ui::FocusWindow *ui;
     QDateTime startTime; // 声明 QDateTime 对象，用于记录窗口打开时的时间
     int picturetype=0;

@@ -65,6 +65,7 @@ ConfirmDialog::ConfirmDialog(QMainWindow *window, QString title, QString content
     QLabel *textLabel = new QLabel(content, this);
     textLabel->setWordWrap(true);
     textLabel->setStyleSheet("font-size: 18px;");
+    textLabel->setSizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
     textLayout->addSpacing(25);
     textLayout->addWidget(iconLabel);
     textLayout->addSpacing(20);
@@ -173,7 +174,7 @@ QPushButton *create_icon_button(QString icon_name, int size) {
 QPushButton *create_standard_button(QString text, int size) {
     QPushButton *button = new QPushButton(text);
     button->setStyleSheet("font-size: " + QString::number(size) + "px;"
-                          "padding-left: 15px; padding-right: 15px; padding-top: 6px; padding-bottom: 6px;");
+                                                                  "padding-left: 15px; padding-right: 15px; padding-top: 6px; padding-bottom: 6px;");
     button->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
     return button;
 }

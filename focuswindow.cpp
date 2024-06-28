@@ -12,6 +12,7 @@
 #include <shobjidl.h>
 #include <ctime>
 #include <unistd.h>
+#include <cmath>
 
 #include "network.h"
 #include "uitools.h"
@@ -81,12 +82,19 @@ void FocusWindow::checkAndBringToFront() {
     }
 }
 
-FocusWindow::FocusWindow(QWidget *parent)
-    : QMainWindow(parent)
+FocusWindow::FocusWindow(bool flag,int time,QWidget *parent)
+    : QMainWindow(parent),flag(flag),countdowntime(time)
     , ui(new Ui::FocusWindow)
 {
     ui->setupUi(this);
 
+    if(flag==1)
+    {
+        canclose=0;
+        ui->close->setEnabled(false);
+    }
+    else
+        canclose=1;
 
     // 获取窗口句柄
     g_hWnd = (HWND)this->winId();
@@ -268,9 +276,13 @@ void FocusWindow::closeEvent(QCloseEvent *event)
     // 暂停定时器以允许用户与消息框交互
     checkTimer->start(2000);
 
+    if(canclose==0){
+        event->ignore();
+        return ;
+    }
 
     // 禁用窗口关闭事件，只有点击按钮时才能关闭
-    QMessageBox::StandardButton resBtn = QMessageBox::question(this, "Close",
+    QMessageBox::StandardButton resBtn = QMessageBox::question(this, "退出",
                                                                "确定退出专注模式？",
                                                                QMessageBox::No | QMessageBox::Yes,
                                                                QMessageBox::No);
@@ -300,9 +312,29 @@ void FocusWindow::updateTime()
     int hours = elapsedSeconds / 3600;
     int minutes = (elapsedSeconds % 3600) / 60;
     int seconds = elapsedSeconds % 60;
-    QString elapsedTimeString = QString("已专注时间: %1:%2:%3")
-                                    .arg(hours, 2, 10, QChar('0'))
-                                    .arg(minutes, 2, 10, QChar('0'))
-                                    .arg(seconds, 2, 10, QChar('0'));
-    ui->elapsedTimeLabel->setText(elapsedTimeString);
+    if(flag==0)
+    {
+        QString elapsedTimeString = QString("已专注时间: %1:%2:%3")
+                                        .arg(hours, 2, 10, QChar('0'))
+                                        .arg(minutes, 2, 10, QChar('0'))
+                                        .arg(seconds, 2, 10, QChar('0'));
+        ui->elapsedTimeLabel->setText(elapsedTimeString);
+    }
+    else
+    {
+        if(elapsedSeconds>=countdowntime)
+        {
+            ui->close->setEnabled(true);
+            canclose=1;
+        }
+        elapsedSeconds=fmax(0,countdowntime-elapsedSeconds);
+        int hours = elapsedSeconds / 3600;
+        int minutes = (elapsedSeconds % 3600) / 60;
+        int seconds = elapsedSeconds % 60;
+        QString elapsedTimeString = QString("还需专注时间: %1:%2:%3")
+                                        .arg(hours, 2, 10, QChar('0'))
+                                        .arg(minutes, 2, 10, QChar('0'))
+                                        .arg(seconds, 2, 10, QChar('0'));
+        ui->elapsedTimeLabel->setText(elapsedTimeString);
+    }
 }
