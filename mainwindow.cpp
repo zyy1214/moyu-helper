@@ -19,6 +19,7 @@
 #include <QWheelEvent>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QPainter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -710,5 +711,33 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     if (trayIcon->isVisible()) {
         hide();
         event->ignore();
+    }
+}
+
+void MainWindow::paintEvent(QPaintEvent *event) {
+    Q_UNUSED(event);
+
+    if(get_value("backgroundpic")=="1"){
+        QPainter painter(this);
+        QPixmap pixmap(":/images/theme"); // 加载图片
+        painter.setOpacity(0.5);
+        QRect rect(QPoint((width() - pixmap.width()) / 2, (height() - pixmap.height()) / 2), pixmap.size()); // 计算居中的位置
+        painter.drawPixmap(rect, pixmap); // 在计算出的位置绘制图片
+    }
+    if(get_value("backgroundpic")=="2"){
+        QPainter painter(this);
+        QPixmap pixmap(":/images/theme2"); // 加载图片
+        pixmap = pixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        painter.setOpacity(0.5);
+        QRect rect(QPoint((width() - pixmap.width()) / 2, (height() - pixmap.height()) / 2), pixmap.size()); // 计算居中的位置
+        painter.drawPixmap(rect, pixmap); // 在计算出的位置绘制图片
+    }
+    if(get_value("backgroundpic")=="3"){
+        QPainter painter(this);
+        QPixmap pixmap(":/images/theme3"); // 加载图片
+        pixmap = pixmap.scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        painter.setOpacity(0.5);
+        QRect rect(QPoint((width() - pixmap.width()) / 2, (height() - pixmap.height()) / 2), pixmap.size()); // 计算居中的位置
+        painter.drawPixmap(rect, pixmap); // 在计算出的位置绘制图片
     }
 }

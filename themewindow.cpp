@@ -10,6 +10,7 @@ ThemeWindow::ThemeWindow(QMainWindow* mainwindow,QWidget *parent)
     , ui(new Ui::ThemeWindow),mainwindow(mainwindow)
 {
     ui->setupUi(this);
+    mainwindow->setPalette(QPalette(QColor(Qt::white)));
     ui->themebutton1->setStyleSheet("QPushButton {"
                                     "border-image: url(:/images/theme) 0 0 0 0 stretch stretch;"
                                     "}");
@@ -41,43 +42,47 @@ ThemeWindow::~ThemeWindow()
 
 void ThemeWindow::on_themebutton1_clicked()
 {
-    mainwindow->setStyleSheet("QMainWindow {"
-                        "background-image: url(:/images/theme);"
-                        "background-repeat: no-repeat;"
-                        "background-position: center;"
-                        "}");
+    // mainwindow->setStyleSheet("QMainWindow {"
+    //                     "background-image: url(:/images/theme);"
+    //                     "background-repeat: no-repeat;"
+    //                     "background-position: center;"
+    //                     "}");
     save_value("backgroundpic","1");
+    mainwindow->repaint();
 }
 
 
 void ThemeWindow::on_themebutton2_clicked()
 {
-    mainwindow->setStyleSheet("QMainWindow {"
-                             "background-image: url(:/images/theme2);"
-                             "background-repeat: no-repeat;"
-                             "background-position: center;"
-                             "}");
+    // mainwindow->setStyleSheet("QMainWindow {"
+    //                          "background-image: url(:/images/theme2);"
+    //                          "background-repeat: no-repeat;"
+    //                          "background-position: center;"
+    //                          "}");
     save_value("backgroundpic","2");
+    mainwindow->repaint();
 }
 
 
 void ThemeWindow::on_themebutton3_clicked()
 {
-    mainwindow->setStyleSheet("QMainWindow {"
-                             "background-image: url(:/images/theme3);"
-                             "background-repeat: no-repeat;"
-                             "background-position: center;"
-                             "}");
+    // mainwindow->setStyleSheet("QMainWindow {"
+    //                          "background-image: url(:/images/theme3);"
+    //                          "background-repeat: no-repeat;"
+    //                          "background-position: center;"
+    //                          "}");
     save_value("backgroundpic","3");
+    mainwindow->repaint();
 }
 
 
 void ThemeWindow::on_themebutton4_clicked()
 {
-    mainwindow->setStyleSheet("QMainWindow {"
-                             "background-image: none;"
-                             "background-color: white"
-                             "}");
+    // mainwindow->setStyleSheet("QMainWindow {"
+    //                          "background-image: none;"
+    //                          "background-color: white"
+    //                          "}");
     save_value("backgroundpic","0");
+    mainwindow->repaint();
 }
 

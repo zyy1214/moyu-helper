@@ -38,6 +38,7 @@ private slots:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     Ui::MainWindow *ui;
