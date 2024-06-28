@@ -138,6 +138,7 @@ void init_icon_map() {
         icon_map["refresh"] = "R";
         icon_map["dark"] = "d";
         icon_map["light"] = "l";
+        icon_map["info"] = "i";
         icon_map_inited = true;
     }
 }
@@ -212,6 +213,7 @@ public:
         QLabel *textLabel = new QLabel(content, this);
         textLabel->setWordWrap(true);
         textLabel->setStyleSheet("font-size: 18px;");
+        textLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         textLayout->addSpacing(25);
         textLayout->addWidget(iconLabel);
         textLayout->addSpacing(20);

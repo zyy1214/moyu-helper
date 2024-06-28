@@ -268,6 +268,10 @@ public:
         label_name->setFont(font);
         QLabel *label_formula=new QLabel("请输入公式：");
         label_formula->setFont(font);
+        QPushButton *formula_help = create_icon_button("info", 18);
+        connect(formula_help, &QPushButton::clicked, [] () {
+            show_info("公式", "您可以在模版内容中用大括号定义变量，然后在公式中使用。例如：您可以设置模版为“玩游戏{x}小时”，公式内容为 max(x^2,x*10).");
+        });
         QLineEdit *lineEdit_shortname = new QLineEdit();
         lineEdit_shortname->setFont(font);
         QLineEdit *lineEdit_name = new QLineEdit();
@@ -283,6 +287,7 @@ public:
         input_name->addWidget(lineEdit_name);
         input_formula->addWidget(label_formula);
         input_formula->addWidget(lineEdit_formula);
+        input_formula->addWidget(formula_help);
 
         // 添加确定和取消按钮
         QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -413,6 +418,10 @@ public:
         label_name->setFont(font);
         QLabel *label_formula=new QLabel("请输入公式：");
         label_formula->setFont(font);
+        QPushButton *formula_help = create_icon_button("info", 18);
+        connect(formula_help, &QPushButton::clicked, [] () {
+            show_info("公式", "您可以在模版内容中用大括号定义变量，然后在公式中使用。例如：您可以设置模版为“玩游戏{x}小时”，公式内容为 max(x^2,x*10).");
+        });
         QLineEdit *lineEdit_shortname = new QLineEdit();
         lineEdit_shortname->setText(x->get_shortname());
         lineEdit_shortname->setFont(font);
@@ -431,6 +440,7 @@ public:
         input_name->addWidget(lineEdit_name);
         input_formula->addWidget(label_formula);
         input_formula->addWidget(lineEdit_formula);
+        input_formula->addWidget(formula_help);
 
         // 添加确定和取消按钮
         QHBoxLayout *buttonLayout = new QHBoxLayout();
