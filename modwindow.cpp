@@ -69,6 +69,12 @@ private:
 
         scrollArea->setStyleSheet("background-color: #eeeeee;");
 
+        // 设置对话框的透明度
+        this->setStyleSheet("background-color: rgba(255, 255, 255, 188);");
+
+        // 确保滚动区域的背景也是透明的
+        //scrollArea->setStyleSheet("background-color: transparent;");
+
         // 设置滚动区域
         scrollArea->setWidgetResizable(true);
         scrollArea->setWidget(new QWidget());
