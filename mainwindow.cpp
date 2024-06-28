@@ -37,6 +37,21 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->addWidget(tw);
     ui->stackedWidget->setCurrentWidget(rw);
     setWindowTitle("摸鱼小助手 - 主页");
+
+    trayIcon = new QSystemTrayIcon(this);
+    trayIcon->setIcon(QIcon(":/images/background"));
+    QMenu *menu = new QMenu(this);
+    QAction *restoreAction = new QAction("恢复窗口", this);
+    QAction *quitAction = new QAction("退出", this);
+
+    connect(restoreAction, &QAction::triggered, this, &MainWindow::showNormal);
+    connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
+
+    menu->addAction(restoreAction);
+    menu->addAction(quitAction);
+
+    trayIcon->setContextMenu(menu);
+    trayIcon->show();
 }
 
 MainWindow::~MainWindow()
@@ -271,7 +286,7 @@ void SettingsDialog::setupUi()
     overallPageLayout->addSpacing(10);
     connect(data_unit_combo, &QComboBox::currentIndexChanged, [=] (int index) {
         save_value("data_unit", data_unit_combo->currentText(), true);
-        save_value("data_unit_time", QTime::currentTime().toString(), true);
+        save_value("data_unit_time", QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss"), true);
         sync_settings(((MainWindow *) window)->data);
         emit ((MainWindow *) window)->data->settings_changed();
     });
@@ -387,7 +402,6 @@ void MainWindow::on_button_chart_clicked()
     setWindowTitle("摸鱼小助手 - 统计");
 }
 
-
 void MainWindow::on_button_theme_clicked()
 {
     clear_page_choice();
@@ -396,3 +410,10 @@ void MainWindow::on_button_theme_clicked()
     setWindowTitle("摸鱼小助手 - 主题");
 }
 
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (trayIcon->isVisible()) {
+        hide();
+        event->ignore();
+    }
+}

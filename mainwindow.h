@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSystemTrayIcon>
 
 #include "recordwindow.h"
 #include "modwindow.h"
@@ -35,12 +36,16 @@ private slots:
 
     void on_button_theme_clicked();
 
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
 private:
     Ui::MainWindow *ui;
     RecordWindow *rw;
     ModWindow *mw;
     ChartWindow *cw;
     ThemeWindow *tw;
+    QSystemTrayIcon *trayIcon;
 
     void clear_page_choice();
 };
