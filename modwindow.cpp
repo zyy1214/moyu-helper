@@ -79,7 +79,7 @@ private:
         scrollArea->setWidgetResizable(true);
         scrollArea->setWidget(new QWidget());
         scrollArea->widget()->setLayout(labelsLayout);
-
+        scrollArea->setFrameStyle(QFrame::NoFrame);
 
         for (int i = 0; i < (aa->labels).size(); i++) {
             QHBoxLayout *label_layout=new QHBoxLayout;
@@ -132,9 +132,7 @@ private:
                 {
                     window->add_label(aa, addtag);
                 }
-                qDebug()<<"1"<<aa->labels;
                 setupUI();
-                qDebug()<<"2"<<aa->labels;
             });
 
 
@@ -146,8 +144,6 @@ private:
 
         mainLayout->addWidget(scrollArea);
     }
-
-
 };
 
 
