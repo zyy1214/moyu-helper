@@ -197,17 +197,17 @@ LoginWindow::LoginWindow(QWidget *parent)
 }
 
 void LoginWindow::skipButtonClicked() {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "跳过登录", "跳过登录后将无法使用在线分享、云端同步等功能，且数据存在丢失风险。", QMessageBox::Yes|QMessageBox::No);
-
-    if (reply == QMessageBox::Yes) {
+    ConfirmDialog *cd = new ConfirmDialog(this, "跳过登录", "跳过登录后将无法使用在线分享、云端同步等功能，且数据存在丢失风险。");
+    connect(cd, &ConfirmDialog::confirmed, [=] () {
         save_value("username", "");
         save_value("password", "");
         save_value("token", "");
+        save_value("skipped_login", "true");
         MainWindow *mainWindow = new MainWindow();
         mainWindow->show();
         close();
-    }
+    });
+    cd->exec();
 }
 
 void LoginWindow::login_clicked() {

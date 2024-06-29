@@ -544,19 +544,36 @@ void SettingsDialog::setupUi()
     logoutButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
     accountPageLayout->addWidget(logoutButton);
 
-    connect(logoutButton, &QPushButton::clicked, [=] () {
-        ConfirmDialog *confirmDialog = new ConfirmDialog(window, "退出登录", "退出登录后需联网重新登录，方能继续使用软件。");
-        connect(confirmDialog, &ConfirmDialog::confirmed, [=] () {
+    if (get_value("username") == "") {
+        accountLabel->setText("当前未登录");
+        accountLabel->setStyleSheet("QLabel {font-size: 24px; color : gray;}");
+        modify_password_button->setVisible(false);
+        logoutButton->setText("退出本地账号");
+        connect(logoutButton, &QPushButton::clicked, [=] () {
             this->close();
             save_value("username", "");
             save_value("password", "");
             save_value("token", "");
+            save_value("skipped_login", "");
             LoginWindow *lw = new LoginWindow();
             lw->show();
             window->close();
         });
-        confirmDialog->show();
-    });
+    } else {
+        connect(logoutButton, &QPushButton::clicked, [=] () {
+            ConfirmDialog *confirmDialog = new ConfirmDialog(window, "退出登录", "退出登录后需联网重新登录，方能继续使用软件。");
+            connect(confirmDialog, &ConfirmDialog::confirmed, [=] () {
+                this->close();
+                save_value("username", "");
+                save_value("password", "");
+                save_value("token", "");
+                LoginWindow *lw = new LoginWindow();
+                lw->show();
+                window->close();
+            });
+            confirmDialog->show();
+        });
+    }
 
     pagesWidget->addWidget(accountPage);
 

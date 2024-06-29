@@ -539,7 +539,7 @@ public:
                 window->setup_total_points();
                 window->setup_records(); // todo: 需更改
             });
-            confirmDialog->show();
+            confirmDialog->exec();
         });
 
         QHBoxLayout *layout = new QHBoxLayout(this);

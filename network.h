@@ -10,8 +10,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-#include "data_storage.h"
-
 class Network : public QObject
 {
     Q_OBJECT
@@ -26,7 +24,7 @@ public:
     void add_data(QString key, QString value);
 
     void finished();
-    void post();
+    void post(int timeout = 0);
     void get();
 
 signals:

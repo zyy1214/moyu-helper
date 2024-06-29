@@ -639,7 +639,7 @@ void ModWindow::setup_mods() {
                 delete_mod(x);
                 setup_mods();
             });
-            confirmDialog->show();
+            confirmDialog->exec();
         });
         QPushButton *changeButton = create_icon_button("edit",24,[=]{
             ChangeDialog dialog(this, x);
