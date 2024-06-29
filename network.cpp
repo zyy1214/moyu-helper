@@ -1,5 +1,7 @@
 #include "network.h"
 
+#include <QTimer>
+
 Network::Network(QString url) {
     request = new QNetworkRequest(url);
     request->setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
@@ -11,20 +13,29 @@ void Network::add_data(QString key, QString value) {
     query_data->addQueryItem(key, value);
 }
 
-void Network::post() {
+void Network::post(int timeout) {
     reply = manager->post(*request, query_data->toString(QUrl::FullyEncoded).toUtf8());
-    //reply = manager->get(*request);
     qDebug() << reply;
     qDebug() << reply->readAll();
 
-    QObject::connect(reply, &QNetworkReply::finished, [&] () {
+    if (timeout > 0) {
+        QTimer *timeoutTimer = new QTimer();
+        timeoutTimer->setSingleShot(true);
+        QObject::connect(reply, &QNetworkReply::finished, timeoutTimer, &QTimer::stop);
+        QObject::connect(timeoutTimer, &QTimer::timeout, [=] () {
+            qDebug() << "timeout";
+            reply->abort();
+        });
+        timeoutTimer->start(timeout);
+    }
+
+    QObject::connect(reply, &QNetworkReply::finished, [=] () {
         if (reply->error() == QNetworkReply::NoError) {
             // 请求成功
             qDebug() << "Request succeeded";
             QString reply_string = reply->readAll();
             qDebug() << "Response:" << reply_string;
             emit succeeded(reply_string);
-            reply->deleteLater();
         } else {
             qDebug() << "Error:" << reply->errorString();
             emit failed();

@@ -365,13 +365,13 @@ void Data::sync_records() {
     QObject::disconnect(this, &Data::mod_sync_finished, this, &Data::sync_records);
 }
 void sync_data(Data *data) {
+    if (get_value("username") == "") return; // 跳过登录
     sync_mods_data(data);
     QObject::connect(data, &Data::mod_sync_finished, data, &Data::sync_records);
 
     //QThread workerThread;
     timer = new QTimer();
 
-    //workerThread.start();
     timer->start(300);
 
     QObject::connect(timer, &QTimer::timeout, [=] () {
@@ -902,6 +902,9 @@ void sync_mods_data(Data *data) {
         }
         emit ((Data *) data)->mod_sync_finished();
     });
+    QObject::connect(n, &Network::failed, [=] () {
+        emit ((Data *) data)->mod_sync_finished();
+    });
     return;
 }
 
@@ -1014,6 +1017,7 @@ public:
 };
 
 void sync_settings(Data *data) {
+    if (get_value("username") == "") return; // 本地账号
     Network *n = new Network("https://geomedraw.com/qt/commit_settings_change");
     n->add_data("token", get_value("token"));
 
