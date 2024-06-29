@@ -775,7 +775,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     ui->horizontalLayout_2->addWidget(addButton);
 
     // todo: 读入的 mods 中包含标签时，搜索标签功能失效
-
+    search_count=data->mods.size();
     setup_mods();
 
     connect(data, &Data::mod_added, this, &ModWindow::on_mod_added);
