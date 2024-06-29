@@ -2,6 +2,7 @@
 #define MODWINDOW_H
 
 #include <QMainWindow>
+#include <QPushButton>
 
 #include "data_storage.h"
 
@@ -40,6 +41,10 @@ public:
 private:
     Ui::ModWindow *ui;
 
+    QPushButton *addButton;
+    QPushButton *tagsButton;
+    QPushButton *searchButton;
+
     void init_mods();
     void setup_mods();
 
@@ -47,5 +52,7 @@ private slots:
     void on_mod_added(Mod *mod);
     void on_mod_modified(Mod *mod);
     void on_all_mod_changed();
+
+    void on_color_mode_changed();
 };
 #endif // MODWINDOW_H

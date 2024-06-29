@@ -145,11 +145,14 @@ void init_icon_map() {
         icon_map["chart"] = "C";
         icon_map["theme"] = "P";
         icon_map["menu"] = "M";
+        icon_map["tag"] = "L";
+        icon_map["search"] = "S";
+        icon_map["plus"] = "A";
         icon_map_inited = true;
     }
 }
 
-void setup_icon_button(QPushButton *button, QString icon_name, int size, QString color) {
+void setup_icon_button(QPushButton *button, QString icon_name, int size, QString color, bool change_style_sheet) {
     init_icon_map();
 
     if (icon_map.find(icon_name) != icon_map.end()) {
@@ -160,10 +163,15 @@ void setup_icon_button(QPushButton *button, QString icon_name, int size, QString
         button->setText(icon_map[icon_name]);
         button->setFont(customFont);
         button->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
-        // button->setStyleSheet("QPushButton { border: none; outline: none; color: " + color + "; }");
-        QPalette palette = button->palette();
-        palette.setColor(QPalette::WindowText, color);
-        button->setPalette(palette);
+        if (change_style_sheet) {
+            button->setStyleSheet("QPushButton { border: none; outline: none; color: " + color + "; }");
+        } else {
+            button->setFlat(true);
+            button->setFocusPolicy(Qt::NoFocus);
+            QPalette palette = button->palette();
+            palette.setColor(QPalette::WindowText, color);
+            button->setPalette(palette);
+        }
         return;
     }
 

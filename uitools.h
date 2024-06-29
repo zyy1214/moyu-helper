@@ -11,8 +11,11 @@
 #include <QStyle>
 #include <QVBoxLayout>
 
+#include "colorprovider.h"
+
 QIcon *get_icon(QString name);
-void setup_icon_button(QPushButton *button, QString icon_name, int size, QString color = "#000000");
+void setup_icon_button(QPushButton *button, QString icon_name, int size,
+                       QString color = get_color("text_color").name(), bool change_style_sheet = true);
 QPushButton *create_icon_button(QString icon_name, int size);
 QPushButton *create_standard_button(QString text, int size);
 

@@ -1,6 +1,5 @@
 #include "themewindow.h"
 #include "ui_themewindow.h"
-#include "mainwindow.h"
 #include "colorprovider.h"
 #include "data_storage.h"
 #include <QPushButton>
@@ -37,10 +36,10 @@ ThemeWindow::ThemeWindow(QMainWindow* mainwindow, QWidget *parent)
         on_themebutton3_clicked();
     }
 
-    if (get_value("dark_mode") != "1") {
-        dark_mode = true;
+    if (get_value("dark_mode") == "1") {
+        ui->checkBox->setCheckState(Qt::Checked);
+        on_checkBox_stateChanged(0);
     }
-    on_night_clicked();
 }
 
 ThemeWindow::~ThemeWindow()
@@ -94,17 +93,15 @@ void ThemeWindow::on_themebutton4_clicked()
     mainwindow->repaint();
 }
 
-
-void ThemeWindow::on_night_clicked()
-{
-    dark_mode = !dark_mode;
+void ThemeWindow::on_checkBox_stateChanged(int arg1) {
+    dark_mode = (ui->checkBox->checkState() == Qt::Checked);
     ColorProvider::set_dark_mode(dark_mode);
-    if(!dark_mode) {
-        save_value("dark_mode", "0");
-        ui->night->setText("夜间模式");
-    }
-    else {
+    ui->checkBox->setStyleSheet("QCheckBox::indicator {width: 16px; height: 16px;} "
+                                "QCheckBox {color:" + get_color("text_color").name() + ";}");
+    if(dark_mode) {
         save_value("dark_mode", "1");
-        ui->night->setText("日间模式");
+    } else {
+        save_value("dark_mode", "0");
     }
 }
+

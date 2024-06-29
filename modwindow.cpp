@@ -1,12 +1,15 @@
 #include "modwindow.h"
 #include "ui_modwindow.h"
 #include "mod.h"
+
+#include "colorprovider.h"
+#include "data_storage.h"
 #include "uitools.h"
+
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QDebug>
 #include <QSpacerItem>
-#include <bits/stdc++.h>
 #include <QScrollArea>
 #include <QSizePolicy>
 #include <QLabel>
@@ -19,9 +22,6 @@
 #include <QRadioButton>
 #include <QTimer>
 #include <QMouseEvent>
-
-#include "data_storage.h"
-
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QScrollArea>
@@ -86,10 +86,11 @@ private:
             QLabel *label = new QLabel(aa->labels[i]);
             label->setFont(font);
             //删除更改按钮
-            QPushButton *delete_button=create_icon_button("delete", 24,[=](){
+            QPushButton *delete_button=create_icon_button("delete", 24, [=](){
                 window->delete_label(aa, label->text());
                 setupUI();
             });
+            setup_icon_button(delete_button, "delete", 24, "#000000");
             label_layout->addWidget(label);
             label_layout->addWidget(delete_button);
             labelsLayout->addLayout(label_layout);
@@ -98,10 +99,11 @@ private:
         }
         if(flag==0)
         {
-            QPushButton *addButton = create_icon_button("plus",24,[=]{
+            QPushButton *addButton = create_icon_button("plus", 24, [=]{
                 flag=1;
                 setupUI();
             });
+            setup_icon_button(addButton, "plus", 24, "#000000");
             labelsLayout->addWidget(addButton);
         }
         else
@@ -633,7 +635,7 @@ void ModWindow::setup_mods() {
         //fun_label->setAlignment(Qt::AlignCenter);
 
         //删除更改按钮
-        QPushButton *delete_button=create_icon_button("delete", 26,[=](){
+        QPushButton *delete_button = create_icon_button("delete", 26, [=](){
             ConfirmDialog *confirmDialog = new ConfirmDialog(this, "删除模版", "确认删除模版吗？删除后，之前的记录不会受到影响。");
             connect(confirmDialog, &ConfirmDialog::confirmed, [=] () {
                 delete_mod(x);
@@ -641,17 +643,14 @@ void ModWindow::setup_mods() {
             });
             confirmDialog->exec();
         });
-        QPushButton *changeButton = create_icon_button("edit",24,[=]{
+        QPushButton *changeButton = create_icon_button("edit", 24, [=] {
             ChangeDialog dialog(this, x);
             dialog.exec();
             setup_mods();
         });
 
         TagButton *tagbutton = new TagButton(this, x);
-        tagbutton->setIcon(QIcon(":/images/tag"));
-        tagbutton->setIconSize(QSize(24, 24));
-        tagbutton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
-        tagbutton->setStyleSheet("QPushButton { border: none; outline: none; }");
+        setup_icon_button(tagbutton, "tag", 24);
 
         //设置字体
         shortname_label->setFont(font);
@@ -718,7 +717,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     ui->setupUi(this);
 
     //添加模板
-    QPushButton *addButton = create_icon_button("plus",40,[=]{
+    addButton = create_icon_button("plus", 40, [=] () {
         AddDialog dialog(this);
         dialog.exec();
         setup_mods();
@@ -733,10 +732,10 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
 
     QString textEditStyle = "QLineEdit {background: transparent; border: 1px solid gray; border-radius: 17px; "
                             "padding-left: 10px; padding-right: 10px; padding-top: 5px; padding-bottom: 5px; }"
-                            "QLineEdit:focus { border-color: #add8e6; }";
+                            "QLineEdit:focus { border-color:" + get_color("selected").name() + "; }";
     lineEdit_search_string->setStyleSheet(textEditStyle);
 
-    QPushButton *tagsButton = create_icon_button("tag",32,[=]{
+    tagsButton = create_icon_button("tag", 30, [=] () {
         Tags_shearch_Dialog dialog(this);
         dialog.exec();
     });
@@ -747,7 +746,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     picture1->addSpacing(4);
 
     //搜索按钮
-    QPushButton *searchButton = create_icon_button("search",36,[=]{
+    searchButton = create_icon_button("search", 36, [=] () {
         std::vector<QString> b;
         for(int i=0;i<data->totallabels.size();i++)
             if(ischose[i])
@@ -767,15 +766,15 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     });
 
     QVBoxLayout *picture2=new QVBoxLayout();
-    picture2->addSpacing(3);
+    picture2->addSpacing(2);
     picture2->addWidget(searchButton);
     picture2->addSpacing(2);
 
 
     ui->horizontalLayout_2->addWidget(lineEdit_search_string);
-    ui->horizontalLayout_2->addSpacing(5);
+    ui->horizontalLayout_2->addSpacing(12);
     ui->horizontalLayout_2->addLayout(picture1);
-    ui->horizontalLayout_2->addSpacing(5);
+    ui->horizontalLayout_2->addSpacing(10);
     ui->horizontalLayout_2->addLayout(picture2);
     ui->horizontalLayout_2->addWidget(addButton);
 
@@ -786,6 +785,7 @@ ModWindow::ModWindow(Data *data, QWidget *parent)
     connect(data, &Data::mod_added, this, &ModWindow::on_mod_added);
     connect(data, &Data::mod_modified, this, &ModWindow::on_mod_modified);
     connect(data, &Data::all_mod_changed, this, &ModWindow::on_all_mod_changed);
+    connect(&ColorProvider::get_color_provider(), &ColorProvider::color_mode_switched, this, &ModWindow::on_color_mode_changed);
 }
 
 
@@ -938,5 +938,13 @@ void ModWindow::on_mod_modified(Mod *mod) {
 
 void ModWindow::on_all_mod_changed() {
     init_mods();
+    setup_mods();
+}
+
+void ModWindow::on_color_mode_changed() {
+    QString color = get_color("text_color").name();
+    setup_icon_button(addButton, "plus", 40, color);
+    setup_icon_button(tagsButton, "tag", 30, color);
+    setup_icon_button(searchButton, "search", 36, color);
     setup_mods();
 }

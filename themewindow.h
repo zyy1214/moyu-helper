@@ -24,7 +24,7 @@ private slots:
 
     void on_themebutton4_clicked();
 
-    void on_night_clicked();
+    void on_checkBox_stateChanged(int arg1);
 
 private:
     Ui::ThemeWindow *ui;

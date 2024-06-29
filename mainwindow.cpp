@@ -31,6 +31,14 @@ MainWindow::MainWindow(QWidget *parent)
     data = new Data();
     load_data(data);
     sync_settings(data);
+
+    QString color = get_color("text_color").name();
+    setup_icon_button(ui->button_record, "home", 40, color, false);
+    setup_icon_button(ui->button_mod, "mod", 40, color, false);
+    setup_icon_button(ui->button_chart, "chart", 40, color, false);
+    setup_icon_button(ui->button_theme, "theme", 40, color, false);
+    setup_icon_button(ui->button_menu, "menu", 40, color, false);
+
     connect(&ColorProvider::get_color_provider(), &ColorProvider::color_mode_switched, this, &MainWindow::on_color_mode_changed);
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
@@ -770,11 +778,11 @@ void MainWindow::on_color_mode_changed() {
     setPalette(QPalette(get_color("palette")));
 
     QString color = get_color("text_color").name();
-    setup_icon_button(ui->button_record, "home", 40, color);
-    setup_icon_button(ui->button_mod, "mod", 40, color);
-    setup_icon_button(ui->button_chart, "chart", 40, color);
-    setup_icon_button(ui->button_theme, "theme", 40, color);
-    setup_icon_button(ui->button_menu, "menu", 40, color);
+    setup_icon_button(ui->button_record, "home", 40, color, false);
+    setup_icon_button(ui->button_mod, "mod", 40, color, false);
+    setup_icon_button(ui->button_chart, "chart", 40, color, false);
+    setup_icon_button(ui->button_theme, "theme", 40, color, false);
+    setup_icon_button(ui->button_menu, "menu", 40, color, false);
 
     if (ui->stackedWidget->currentWidget() == rw) on_button_record_clicked();
     else if (ui->stackedWidget->currentWidget() == mw) on_button_mod_clicked();
