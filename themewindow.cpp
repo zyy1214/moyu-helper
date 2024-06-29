@@ -8,9 +8,8 @@
 #include <QLayoutItem>
 #include <QLayout>
 #include <QFont>
-ThemeWindow::ThemeWindow(QMainWindow* mainwindow,RecordWindow* rww,QWidget *parent)
-    : QMainWindow(parent),rw(rww)
-    , ui(new Ui::ThemeWindow),mainwindow(mainwindow)
+ThemeWindow::ThemeWindow(QMainWindow* mainwindow, QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::ThemeWindow),mainwindow(mainwindow)
 {
     ui->setupUi(this);
     mainwindow->setPalette(QPalette(QColor(Qt::white)));
@@ -36,6 +35,11 @@ ThemeWindow::ThemeWindow(QMainWindow* mainwindow,RecordWindow* rww,QWidget *pare
     else if(get_value("backgroundpic")=="3"){
         on_themebutton3_clicked();
     }
+
+    if (get_value("dark_mode") != "1") {
+        dark_mode = true;
+    }
+    on_night_clicked();
 }
 
 ThemeWindow::~ThemeWindow()
@@ -92,21 +96,19 @@ void ThemeWindow::on_themebutton4_clicked()
 
 void ThemeWindow::on_night_clicked()
 {
-    flag=1-flag;
-    if(flag==0)
-    {
+    dark_mode = !dark_mode;
+    if(!dark_mode) {
+        save_value("dark_mode", "0");
         ui->night->setText("夜间模式");
         mainwindow->setStyleSheet("QPushButton, QLabel { color: black; }");
         mainwindow->setPalette(QPalette(QColor(Qt::white)));
-        rw->turntolight();
-        //mainwindow->repaint();
+        ((MainWindow *) mainwindow)->turn_to_light();
     }
-    else
-    {
+    else {
+        save_value("dark_mode", "1");
         ui->night->setText("日间模式");
         mainwindow->setStyleSheet("QPushButton, QLabel { color: white; }");
         mainwindow->setPalette(QPalette(QColor(Qt::black)));
-        rw->turntonight();
-        //mainwindow->repaint();
+        ((MainWindow *) mainwindow)->turn_to_dark();
     }
 }

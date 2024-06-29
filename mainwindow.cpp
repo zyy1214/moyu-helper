@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
     cw = new ChartWindow(data, this);
-    tw = new ThemeWindow(this,rw,this);
+    tw = new ThemeWindow(this, this);
     ui->stackedWidget->addWidget(rw);
     ui->stackedWidget->addWidget(mw);
     ui->stackedWidget->addWidget(cw);
@@ -759,11 +759,19 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     }
 }
 
-void MainWindow::turntonight(){
-    if(rw)
-        rw->turntonight();
+void MainWindow::turn_to_dark() {
+    setup_icon_button(ui->button_record, "home", 40, "#FFFFFF");
+    setup_icon_button(ui->button_mod, "mod", 40, "#FFFFFF");
+    setup_icon_button(ui->button_chart, "chart", 40, "#FFFFFF");
+    setup_icon_button(ui->button_theme, "theme", 40, "#FFFFFF");
+    setup_icon_button(ui->button_menu, "menu", 40, "#FFFFFF");
+    rw->turntonight();
 }
-void MainWindow::turntolight(){
-    if(rw)
-        rw->turntolight();
+void MainWindow::turn_to_light() {
+    setup_icon_button(ui->button_record, "home", 40);
+    setup_icon_button(ui->button_mod, "mod", 40);
+    setup_icon_button(ui->button_chart, "chart", 40);
+    setup_icon_button(ui->button_theme, "theme", 40);
+    setup_icon_button(ui->button_menu, "menu", 40);
+    rw->turntolight();
 }

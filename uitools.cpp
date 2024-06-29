@@ -140,6 +140,11 @@ void init_icon_map() {
         icon_map["dark"] = "d";
         icon_map["light"] = "l";
         icon_map["info"] = "i";
+        icon_map["home"] = "H";
+        icon_map["mod"] = "T";
+        icon_map["chart"] = "C";
+        icon_map["theme"] = "P";
+        icon_map["menu"] = "M";
         icon_map_inited = true;
     }
 }
@@ -155,7 +160,10 @@ void setup_icon_button(QPushButton *button, QString icon_name, int size, QString
         button->setText(icon_map[icon_name]);
         button->setFont(customFont);
         button->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
-        button->setStyleSheet("QPushButton { border: none; outline: none; color: " + color + "; }");
+        // button->setStyleSheet("QPushButton { border: none; outline: none; color: " + color + "; }");
+        QPalette palette = button->palette();
+        palette.setColor(QPalette::WindowText, color);
+        button->setPalette(palette);
         return;
     }
 

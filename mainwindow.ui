@@ -60,10 +60,6 @@
         <property name="text">
          <string/>
         </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/home</normaloff>:/images/home</iconset>
-        </property>
         <property name="iconSize">
          <size>
           <width>40</width>
@@ -84,10 +80,6 @@
         </property>
         <property name="text">
          <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/puzzle</normaloff>:/images/puzzle</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -110,10 +102,6 @@
         <property name="text">
          <string/>
         </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/chart</normaloff>:/images/chart</iconset>
-        </property>
         <property name="iconSize">
          <size>
           <width>40</width>
@@ -134,10 +122,6 @@
         </property>
         <property name="text">
          <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/palette</normaloff>:/images/palette</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -173,10 +157,6 @@
         <property name="text">
          <string/>
         </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/images/menu</normaloff>:/images/menu</iconset>
-        </property>
         <property name="iconSize">
          <size>
           <width>40</width>
@@ -200,8 +180,6 @@
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

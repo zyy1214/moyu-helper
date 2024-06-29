@@ -22,8 +22,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void turntonight();
-    void turntolight();
+    void turn_to_dark();
+    void turn_to_light();
 
     Data *data;
 
