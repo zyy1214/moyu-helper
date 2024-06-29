@@ -1,6 +1,7 @@
 #include "recordwindow.h"
 #include "./ui_recordwindow.h"
 
+#include "colorprovider.h"
 #include "record.h"
 #include "uitools.h"
 #include "data_storage.h"
@@ -60,31 +61,15 @@ QString point_to_string(int point, bool use_add = false) {
 void RecordWindow::setup_total_points() {
     ui->info_total_points->setText(point_to_string(data->total_points));
     ui->last_week_total_points->setText(point_to_string(data->last_week_points, true));
-    if(isnight==0)
-    {
-        if (data->total_points >= 0) {
-            ui->info_total_points->setStyleSheet("color: rgb(23, 112, 228)");
-        } else {
-            ui->info_total_points->setStyleSheet("color: rgb(204, 0, 0)");
-        }
-        if (data->last_week_points >= 0) {
-            ui->last_week_total_points->setStyleSheet("color: rgb(23, 112, 228)");
-        } else {
-            ui->last_week_total_points->setStyleSheet("color: rgb(204, 0, 0)");
-        }
+    if (data->total_points >= 0) {
+        ui->info_total_points->setStyleSheet("color: " + get_color("point_positive").name());
+    } else {
+        ui->info_total_points->setStyleSheet("color: " + get_color("point_negative").name());
     }
-    else
-    {
-        if (data->total_points >= 0) {
-            ui->info_total_points->setStyleSheet("color: rgb(52, 255, 246)");
-        } else {
-            ui->info_total_points->setStyleSheet("color: rgb(255, 115, 117)");
-        }
-        if (data->last_week_points >= 0) {
-            ui->last_week_total_points->setStyleSheet("color: rgb(52, 255, 246)");
-        } else {
-            ui->last_week_total_points->setStyleSheet("color: rgb(255, 115, 117)");
-        }
+    if (data->last_week_points >= 0) {
+        ui->last_week_total_points->setStyleSheet("color: " + get_color("point_positive").name());
+    } else {
+        ui->last_week_total_points->setStyleSheet("color: " + get_color("point_negative").name());
     }
 }
 
@@ -130,6 +115,7 @@ RecordWindow::RecordWindow(Data *data, QWidget *parent)
         setup_total_points();
         setup_records();
     });
+    connect(&ColorProvider::get_color_provider(), &ColorProvider::color_mode_switched, this, &RecordWindow::on_color_mode_changed);
 }
 
 RecordWindow::~RecordWindow()
@@ -776,7 +762,6 @@ void RecordWindow::on_date_selector_selectionChanged() {
 }
 
 
-
 void RecordWindow::clear_option_choose() {
     ui->option_by_day->setStyleSheet("border: none; outline: none; padding: 5;");
     ui->option_by_week->setStyleSheet("border: none; outline: none; padding: 5;");
@@ -786,25 +771,29 @@ void RecordWindow::clear_option_choose() {
 
 void RecordWindow::on_option_by_day_pressed() {
     clear_option_choose();
-    ui->option_by_day->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->option_by_day->setStyleSheet("border: none; outline: none; padding: 5; background-color: "
+                                     + get_color("selected").name() + ";");
     display_option = 1;
     setup_records();
 }
 void RecordWindow::on_option_by_week_clicked() {
     clear_option_choose();
-    ui->option_by_week->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->option_by_week->setStyleSheet("border: none; outline: none; padding: 5; background-color: "
+                                      + get_color("selected").name() + ";");
     display_option = 2;
     setup_records();
 }
 void RecordWindow::on_option_by_month_clicked() {
     clear_option_choose();
-    ui->option_by_month->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->option_by_month->setStyleSheet("border: none; outline: none; padding: 5; background-color: "
+                                       + get_color("selected").name() + ";");
     display_option = 3;
     setup_records();
 }
 void RecordWindow::on_option_by_year_clicked() {
     clear_option_choose();
-    ui->option_by_year->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->option_by_year->setStyleSheet("border: none; outline: none; padding: 5; background-color: "
+                                      + get_color("selected").name() + ";");
     display_option = 4;
     setup_records();
 }
@@ -835,33 +824,24 @@ void RecordWindow::on_all_record_changed() {
     setup_total_points();
     setup_records();
 }
-void RecordWindow::turntonight(){
-    isnight=1;
-    ui->label_total_points->setStyleSheet("color:rgb(208,208,208);");
-    ui->label_points_last_week->setStyleSheet("color:rgb(208,208,208);");
+
+void RecordWindow::on_color_mode_changed() {
+    ui->label_total_points->setStyleSheet("color: " + get_color("gray").name());
+    ui->label_points_last_week->setStyleSheet("color: " + get_color("gray").name());
     if (data->total_points >= 0) {
-        ui->info_total_points->setStyleSheet("color: rgb(52, 255, 246)");
+        ui->info_total_points->setStyleSheet("color: " + get_color("point_positive").name());
     } else {
-        ui->info_total_points->setStyleSheet("color: rgb(255, 115, 117)");
+        ui->info_total_points->setStyleSheet("color: " + get_color("point_negative").name());
     }
     if (data->last_week_points >= 0) {
-        ui->last_week_total_points->setStyleSheet("color: rgb(52, 255, 246)");
+        ui->last_week_total_points->setStyleSheet("color: " + get_color("point_positive").name());
     } else {
-        ui->last_week_total_points->setStyleSheet("color: rgb(255, 115, 117)");
+        ui->last_week_total_points->setStyleSheet("color: " + get_color("point_negative").name());
     }
-}
-void RecordWindow::turntolight(){
-    isnight=0;
-    ui->label_total_points->setStyleSheet("color:rgb(96,96,96);");
-    ui->label_points_last_week->setStyleSheet("color:rgb(96,96,96);");
-    if (data->total_points >= 0) {
-        ui->info_total_points->setStyleSheet("color: rgb(23, 112, 228)");
-    } else {
-        ui->info_total_points->setStyleSheet("color: rgb(204, 0, 0)");
-    }
-    if (data->last_week_points >= 0) {
-        ui->last_week_total_points->setStyleSheet("color: rgb(23, 112, 228)");
-    } else {
-        ui->last_week_total_points->setStyleSheet("color: rgb(204, 0, 0)");
+    switch (display_option) {
+    case 1: on_option_by_day_pressed(); break;
+    case 2: on_option_by_week_clicked(); break;
+    case 3: on_option_by_month_clicked(); break;
+    case 4: on_option_by_year_clicked(); break;
     }
 }

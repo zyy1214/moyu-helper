@@ -22,8 +22,6 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void turn_to_dark();
-    void turn_to_light();
 
     Data *data;
 
@@ -37,6 +35,8 @@ private slots:
     void on_button_chart_clicked();
 
     void on_button_theme_clicked();
+
+    void on_color_mode_changed();
 
 protected:
     void closeEvent(QCloseEvent *event) override;

@@ -4,6 +4,7 @@
 #include "recordwindow.h"
 #include "ui_mainwindow.h"
 
+#include "colorprovider.h"
 #include "data_storage.h"
 #include "network.h"
 #include "uitools.h"
@@ -30,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     data = new Data();
     load_data(data);
     sync_settings(data);
+    connect(&ColorProvider::get_color_provider(), &ColorProvider::color_mode_switched, this, &MainWindow::on_color_mode_changed);
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
     cw = new ChartWindow(data, this);
@@ -38,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->addWidget(mw);
     ui->stackedWidget->addWidget(cw);
     ui->stackedWidget->addWidget(tw);
-    ui->stackedWidget->setCurrentWidget(rw);
+    on_button_record_clicked();
     setWindowTitle("摸鱼小助手 - 主页");
     setWindowIcon(QIcon(":/images/icon"));
 
@@ -694,7 +696,8 @@ void MainWindow::clear_page_choice() {
 void MainWindow::on_button_record_clicked()
 {
     clear_page_choice();
-    ui->button_record->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->button_record->setStyleSheet("border: none; outline: none; padding: 5; background-color: "
+                                     + get_color("selected").name() + ";");
     ui->stackedWidget->setCurrentWidget(rw);
     setWindowTitle("摸鱼小助手 - 主页");
 }
@@ -702,7 +705,8 @@ void MainWindow::on_button_record_clicked()
 void MainWindow::on_button_mod_clicked()
 {
     clear_page_choice();
-    ui->button_mod->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->button_mod->setStyleSheet("border: none; outline: none; padding: 5; background-color: "
+                                  + get_color("selected").name() + ";");
     ui->stackedWidget->setCurrentWidget(mw);
     setWindowTitle("摸鱼小助手 - 模板");
 }
@@ -710,7 +714,8 @@ void MainWindow::on_button_mod_clicked()
 void MainWindow::on_button_chart_clicked()
 {
     clear_page_choice();
-    ui->button_chart->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->button_chart->setStyleSheet("border: none; outline: none; padding: 5; background-color: "
+                                    + get_color("selected").name() + ";");
     ui->stackedWidget->setCurrentWidget(cw);
     setWindowTitle("摸鱼小助手 - 统计");
 }
@@ -718,7 +723,8 @@ void MainWindow::on_button_chart_clicked()
 void MainWindow::on_button_theme_clicked()
 {
     clear_page_choice();
-    ui->button_theme->setStyleSheet("border: none; outline: none; padding: 5; background-color: rgb(192, 220, 243);");
+    ui->button_theme->setStyleSheet("border: none; outline: none; padding: 5; background-color: "
+                                    + get_color("selected").name() + ";");
     ui->stackedWidget->setCurrentWidget(tw);
     setWindowTitle("摸鱼小助手 - 主题");
 }
@@ -759,19 +765,19 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     }
 }
 
-void MainWindow::turn_to_dark() {
-    setup_icon_button(ui->button_record, "home", 40, "#FFFFFF");
-    setup_icon_button(ui->button_mod, "mod", 40, "#FFFFFF");
-    setup_icon_button(ui->button_chart, "chart", 40, "#FFFFFF");
-    setup_icon_button(ui->button_theme, "theme", 40, "#FFFFFF");
-    setup_icon_button(ui->button_menu, "menu", 40, "#FFFFFF");
-    rw->turntonight();
-}
-void MainWindow::turn_to_light() {
-    setup_icon_button(ui->button_record, "home", 40);
-    setup_icon_button(ui->button_mod, "mod", 40);
-    setup_icon_button(ui->button_chart, "chart", 40);
-    setup_icon_button(ui->button_theme, "theme", 40);
-    setup_icon_button(ui->button_menu, "menu", 40);
-    rw->turntolight();
+void MainWindow::on_color_mode_changed() {
+    setStyleSheet("QPushButton, QLabel { color:" + get_color("text_color").name() + "; }");
+    setPalette(QPalette(get_color("palette")));
+
+    QString color = get_color("text_color").name();
+    setup_icon_button(ui->button_record, "home", 40, color);
+    setup_icon_button(ui->button_mod, "mod", 40, color);
+    setup_icon_button(ui->button_chart, "chart", 40, color);
+    setup_icon_button(ui->button_theme, "theme", 40, color);
+    setup_icon_button(ui->button_menu, "menu", 40, color);
+
+    if (ui->stackedWidget->currentWidget() == rw) on_button_record_clicked();
+    else if (ui->stackedWidget->currentWidget() == mw) on_button_mod_clicked();
+    else if (ui->stackedWidget->currentWidget() == cw) on_button_chart_clicked();
+    else if (ui->stackedWidget->currentWidget() == tw) on_button_theme_clicked();
 }

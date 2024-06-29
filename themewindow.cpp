@@ -1,6 +1,7 @@
 #include "themewindow.h"
 #include "ui_themewindow.h"
 #include "mainwindow.h"
+#include "colorprovider.h"
 #include "data_storage.h"
 #include <QPushButton>
 #include <QDebug>
@@ -97,18 +98,13 @@ void ThemeWindow::on_themebutton4_clicked()
 void ThemeWindow::on_night_clicked()
 {
     dark_mode = !dark_mode;
+    ColorProvider::set_dark_mode(dark_mode);
     if(!dark_mode) {
         save_value("dark_mode", "0");
         ui->night->setText("夜间模式");
-        mainwindow->setStyleSheet("QPushButton, QLabel { color: black; }");
-        mainwindow->setPalette(QPalette(QColor(Qt::white)));
-        ((MainWindow *) mainwindow)->turn_to_light();
     }
     else {
         save_value("dark_mode", "1");
         ui->night->setText("日间模式");
-        mainwindow->setStyleSheet("QPushButton, QLabel { color: white; }");
-        mainwindow->setPalette(QPalette(QColor(Qt::black)));
-        ((MainWindow *) mainwindow)->turn_to_dark();
     }
 }
