@@ -22,6 +22,9 @@ public:
 
     void setup_records();
     void add_mr_items(QLayout *layout, QDate date, int num);
+    void turntonight();
+    void turntolight();
+
 
     Data *data;
 
@@ -45,6 +48,8 @@ private slots:
 
 private:
     Ui::RecordWindow *ui;
+
+    bool isnight=0;
 
     void clear_option_choose();
 

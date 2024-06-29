@@ -60,15 +60,31 @@ QString point_to_string(int point, bool use_add = false) {
 void RecordWindow::setup_total_points() {
     ui->info_total_points->setText(point_to_string(data->total_points));
     ui->last_week_total_points->setText(point_to_string(data->last_week_points, true));
-    if (data->total_points >= 0) {
-        ui->info_total_points->setStyleSheet("color: rgb(23, 112, 228)");
-    } else {
-        ui->info_total_points->setStyleSheet("color: rgb(204, 0, 0)");
+    if(isnight==0)
+    {
+        if (data->total_points >= 0) {
+            ui->info_total_points->setStyleSheet("color: rgb(23, 112, 228)");
+        } else {
+            ui->info_total_points->setStyleSheet("color: rgb(204, 0, 0)");
+        }
+        if (data->last_week_points >= 0) {
+            ui->last_week_total_points->setStyleSheet("color: rgb(23, 112, 228)");
+        } else {
+            ui->last_week_total_points->setStyleSheet("color: rgb(204, 0, 0)");
+        }
     }
-    if (data->last_week_points >= 0) { 
-        ui->last_week_total_points->setStyleSheet("color: rgb(23, 112, 228)");
-    } else {
-        ui->last_week_total_points->setStyleSheet("color: rgb(204, 0, 0)");
+    else
+    {
+        if (data->total_points >= 0) {
+            ui->info_total_points->setStyleSheet("color: rgb(52, 255, 246)");
+        } else {
+            ui->info_total_points->setStyleSheet("color: rgb(255, 115, 117)");
+        }
+        if (data->last_week_points >= 0) {
+            ui->last_week_total_points->setStyleSheet("color: rgb(52, 255, 246)");
+        } else {
+            ui->last_week_total_points->setStyleSheet("color: rgb(255, 115, 117)");
+        }
     }
 }
 
@@ -818,4 +834,34 @@ void RecordWindow::on_all_record_changed() {
     init_data();
     setup_total_points();
     setup_records();
+}
+void RecordWindow::turntonight(){
+    isnight=1;
+    ui->label_total_points->setStyleSheet("color:rgb(208,208,208);");
+    ui->label_points_last_week->setStyleSheet("color:rgb(208,208,208);");
+    if (data->total_points >= 0) {
+        ui->info_total_points->setStyleSheet("color: rgb(52, 255, 246)");
+    } else {
+        ui->info_total_points->setStyleSheet("color: rgb(255, 115, 117)");
+    }
+    if (data->last_week_points >= 0) {
+        ui->last_week_total_points->setStyleSheet("color: rgb(52, 255, 246)");
+    } else {
+        ui->last_week_total_points->setStyleSheet("color: rgb(255, 115, 117)");
+    }
+}
+void RecordWindow::turntolight(){
+    isnight=0;
+    ui->label_total_points->setStyleSheet("color:rgb(96,96,96);");
+    ui->label_points_last_week->setStyleSheet("color:rgb(96,96,96);");
+    if (data->total_points >= 0) {
+        ui->info_total_points->setStyleSheet("color: rgb(23, 112, 228)");
+    } else {
+        ui->info_total_points->setStyleSheet("color: rgb(204, 0, 0)");
+    }
+    if (data->last_week_points >= 0) {
+        ui->last_week_total_points->setStyleSheet("color: rgb(23, 112, 228)");
+    } else {
+        ui->last_week_total_points->setStyleSheet("color: rgb(204, 0, 0)");
+    }
 }

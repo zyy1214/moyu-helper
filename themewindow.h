@@ -2,6 +2,7 @@
 #define THEMEWINDOW_H
 
 #include <QMainWindow>
+#include "recordwindow.h"
 namespace Ui {
 class ThemeWindow;
 }
@@ -12,7 +13,7 @@ class ThemeWindow : public QMainWindow
     QMainWindow* mainwindow;
 
 public:
-    explicit ThemeWindow(QMainWindow* mainwindow,QWidget *parent = nullptr);
+    explicit ThemeWindow(QMainWindow* mainwindow,RecordWindow* rww,QWidget *parent = nullptr);
     ~ThemeWindow();
 
 private slots:
@@ -24,8 +25,12 @@ private slots:
 
     void on_themebutton4_clicked();
 
+    void on_night_clicked();
+
 private:
     Ui::ThemeWindow *ui;
+    RecordWindow* rw;
+    int flag=0;
 };
 
 #endif // THEMEWINDOW_H

@@ -5,8 +5,11 @@
 #include <QPushButton>
 #include <QDebug>
 #include <QFile>
-ThemeWindow::ThemeWindow(QMainWindow* mainwindow,QWidget *parent)
-    : QMainWindow(parent)
+#include <QLayoutItem>
+#include <QLayout>
+#include <QFont>
+ThemeWindow::ThemeWindow(QMainWindow* mainwindow,RecordWindow* rww,QWidget *parent)
+    : QMainWindow(parent),rw(rww)
     , ui(new Ui::ThemeWindow),mainwindow(mainwindow)
 {
     ui->setupUi(this);
@@ -86,3 +89,24 @@ void ThemeWindow::on_themebutton4_clicked()
     mainwindow->repaint();
 }
 
+
+void ThemeWindow::on_night_clicked()
+{
+    flag=1-flag;
+    if(flag==0)
+    {
+        ui->night->setText("夜间模式");
+        mainwindow->setStyleSheet("QPushButton, QLabel { color: black; }");
+        mainwindow->setPalette(QPalette(QColor(Qt::white)));
+        rw->turntolight();
+        //mainwindow->repaint();
+    }
+    else
+    {
+        ui->night->setText("日间模式");
+        mainwindow->setStyleSheet("QPushButton, QLabel { color: white; }");
+        mainwindow->setPalette(QPalette(QColor(Qt::black)));
+        rw->turntonight();
+        //mainwindow->repaint();
+    }
+}

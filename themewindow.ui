@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>935</width>
     <height>600</height>
    </rect>
   </property>
@@ -66,14 +66,27 @@
      <string/>
     </property>
    </widget>
+   <widget class="QPushButton" name="night">
+    <property name="geometry">
+     <rect>
+      <x>860</x>
+      <y>260</y>
+      <width>51</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>夜间模式</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>25</height>
+     <width>935</width>
+     <height>17</height>
     </rect>
    </property>
   </widget>

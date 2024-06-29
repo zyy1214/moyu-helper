@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     rw = new RecordWindow(data, this);
     mw = new ModWindow(data, this);
     cw = new ChartWindow(data, this);
-    tw = new ThemeWindow(this,this);
+    tw = new ThemeWindow(this,rw,this);
     ui->stackedWidget->addWidget(rw);
     ui->stackedWidget->addWidget(mw);
     ui->stackedWidget->addWidget(cw);
@@ -218,8 +218,8 @@ public:
         setPalette(QPalette(QColor(Qt::white)));
         QFont font("Microsoft YaHei UI", 12);//字体
 
-        setWindowTitle(QString("添加模板"));
-        setFixedSize(350, 200);
+        setWindowTitle(QString("专注模式"));
+        setFixedSize(400, 200);
         flag=0;
         QRadioButton *normalButton = new QRadioButton("普通模式");
         normalButton->setFont(font);
@@ -740,4 +740,13 @@ void MainWindow::paintEvent(QPaintEvent *event) {
         QRect rect(QPoint((width() - pixmap.width()) / 2, (height() - pixmap.height()) / 2), pixmap.size()); // 计算居中的位置
         painter.drawPixmap(rect, pixmap); // 在计算出的位置绘制图片
     }
+}
+
+void MainWindow::turntonight(){
+    if(rw)
+        rw->turntonight();
+}
+void MainWindow::turntolight(){
+    if(rw)
+        rw->turntolight();
 }
