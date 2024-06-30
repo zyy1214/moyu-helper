@@ -117,10 +117,10 @@ FocusWindow::FocusWindow(bool flag,int time,QWidget *parent)
     int icon_size = 48;
 
     // 创建一个按钮用于关闭窗口
-    setup_icon_button(ui->close, "quit", icon_size);
+    setup_icon_button(ui->close, "quit", icon_size, "black");
     connect(ui->close, &QPushButton::clicked, this, &QWidget::close);
 
-    setup_icon_button(ui->nightButton, "dark", icon_size * 0.95);
+    setup_icon_button(ui->nightButton, "dark", icon_size * 0.95, "black");
     connect(ui->nightButton, &QPushButton::clicked, [=](){
         is_night = !is_night;
         if(!is_night)
@@ -130,10 +130,10 @@ FocusWindow::FocusWindow(bool flag,int time,QWidget *parent)
             ui->timeLabel->setStyleSheet("font-size: 96px; color: #000000;");
             ui->famous->setStyleSheet("font-size: 36px; color: #000000;");
             ui->elapsedTimeLabel->setStyleSheet("font-size: 36px; color: #000000;");
-            setup_icon_button(ui->close, "quit", icon_size);
-            setup_icon_button(ui->picture, "image", icon_size);
-            setup_icon_button(ui->renew, "refresh", icon_size * 1.15);
-            setup_icon_button(ui->nightButton, "dark", icon_size * 0.95);
+            setup_icon_button(ui->close, "quit", icon_size, "black");
+            setup_icon_button(ui->picture, "image", icon_size, "black");
+            setup_icon_button(ui->renew, "refresh", icon_size * 1.15, "black");
+            setup_icon_button(ui->nightButton, "dark", icon_size * 0.95, "black");
         }
         else {
             setPalette(QPalette(QColor(Qt::black)));
@@ -148,13 +148,13 @@ FocusWindow::FocusWindow(bool flag,int time,QWidget *parent)
         }
     });
 
-    setup_icon_button(ui->picture, "image", icon_size);
+    setup_icon_button(ui->picture, "image", icon_size, "black");
     connect(ui->picture, &QPushButton::clicked,[=]{
         picturetype=(picturetype+1)%4;
         repaint();
     });
 
-    setup_icon_button(ui->renew, "refresh", icon_size * 1.15);
+    setup_icon_button(ui->renew, "refresh", icon_size * 1.15, "black");
     connect(ui->renew, &QPushButton::clicked,[=]{
         Network *n = new Network("https://v1.hitokoto.cn?c=d&c=i&c=k");
         n->post();
