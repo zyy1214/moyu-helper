@@ -477,18 +477,19 @@ public:
 
         // 连接确定按钮的点击事件
         connect(okButton, &QPushButton::clicked, [=]() {
-            int change_type=(yeschangeButton->isChecked())? 1: 0;
-            int button_type=(obtainButton->isChecked()) ? 1 : 2;
+            int change_type = (yeschangeButton->isChecked()) ? 1 : 0;
+            int button_type = (obtainButton->isChecked()) ? 1 : 2;
             QString text_name = lineEdit_name->text();
             QString text_formula = lineEdit_formula->text();
-            QString text_shortname=lineEdit_shortname->text();
+            QString text_shortname = lineEdit_shortname->text();
 
             Formula bb(text_formula);
-            Mod* aaa=new Mod(0,text_name,&bb, button_type == 1 ? OBTAIN : CONSUME,text_shortname);
+            Mod* aaa=new Mod(0, text_name, &bb, button_type == 1 ? OBTAIN : CONSUME, text_shortname);
             if(aaa->name_legal())
             {
-                window->change_mod(before_mod,text_name,new Formula(text_formula),
-                                   button_type == 1 ? OBTAIN : CONSUME, change_type == 1 ? 1 : 0,text_shortname);
+                window->change_mod(before_mod, text_name, new Formula(text_formula),
+                                   button_type == 1 ? OBTAIN : CONSUME, change_type == 1 ? 1 : 0, text_shortname);
+                emit window->data->all_record_changed(); // 可能导致记录的显示信息被修改
                 close();
             }
             else
