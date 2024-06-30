@@ -138,12 +138,11 @@ private:
     QComboBox *comboBox;
     QVBoxLayout *inputLayout;
     QLabel *preview_result_label;
+    std::vector<Mod *> mods;
 public:
     EditRecordDialog(RecordWindow *window, Record *record = nullptr, QWidget *parent = nullptr)
         : window(window), record(record), QDialog(parent) {
-        qDebug() << record;
         setWindowTitle(record ? "修改记录" : "添加记录");
-        // setFixedSize(300, 240);
 
         setPalette(QPalette(QColor(Qt::white)));
 
@@ -164,8 +163,18 @@ public:
         comboBox->setStyleSheet("font: 12pt Microsoft YaHei UI;");
         comboBox->setEditable(true);
         comboBox->addItem("-");
+        if (record && record->get_class() == BY_MOD) {
+            Mod *mod = ((RecordByMod *) record)->get_mod();
+            if (mod->is_deleted()) {
+                comboBox->addItem(mod->get_shortname());
+                mods.push_back(mod);
+            }
+        }
         for (auto mod : window->data->mods) {
-            comboBox->addItem(mod->get_shortname());
+            if (!mod->is_deleted()) {
+                comboBox->addItem(mod->get_shortname());
+                mods.push_back(mod);
+            }
         }
 
         QHBoxLayout *select_mod_layout = new QHBoxLayout();
@@ -266,9 +275,6 @@ public:
                         break;
                     }
                 }
-                if (index == 0) {
-                    // todo: 如果是被删掉的 mod，...
-                }
                 comboBox->setCurrentIndex(index);
                 updateInputFields(index);
                 double *inputs = rbm->get_inputs();
@@ -365,7 +371,7 @@ private slots:
             selected_mod = nullptr;
             return;
         }
-        selected_mod = window->data->mods[index - 1];
+        selected_mod = mods[index - 1];
         // todo: 把 variable 改成 get_variables
         std::vector<QString> variables = selected_mod->variable;
         //qDebug() << variables;
