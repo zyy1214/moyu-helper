@@ -19,7 +19,7 @@ LoginWindow::LoginWindow(QWidget *parent)
 {
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
-    centralWidget->setStyleSheet("background-color: white;"); // 设置背景颜色为白色
+    centralWidget->setStyleSheet("background-color: " + get_color("palette").name() + ";"); // 设置背景颜色为白色
 
     setWindowTitle("摸鱼小助手 - 登录");
     setWindowIcon(QIcon(":/images/icon"));

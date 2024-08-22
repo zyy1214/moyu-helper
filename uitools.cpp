@@ -13,11 +13,11 @@
 
 ConfirmLayout::ConfirmLayout(QWidget *parent): QHBoxLayout(parent) {
     okButton = new QPushButton("确定", parent);
-    okButton->setStyleSheet("color: black; font-size: 14px;"
+    okButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                             "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
     okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
     cancelButton = new QPushButton("取消", parent);
-    cancelButton->setStyleSheet("color: black; font-size: 14px;"
+    cancelButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                 "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
     cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
     setAlignment(Qt::AlignRight);
@@ -46,7 +46,7 @@ ConfirmDialog::ConfirmDialog(QMainWindow *window, QString title, QString content
 
     setFixedWidth(400);
 
-    setPalette(QPalette(QColor(Qt::white)));
+    setPalette(QPalette(get_color("palette")));
 
     QHBoxLayout *titleLayout = new QHBoxLayout();
     QLabel *titleLabel = new QLabel(title, this);
@@ -82,11 +82,11 @@ ConfirmDialog::ConfirmDialog(QMainWindow *window, QString title, QString content
     // 添加确定和取消按钮
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     QPushButton *okButton = new QPushButton("确定", this);
-    okButton->setStyleSheet("color: black; font-size: 14px;"
+    okButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                             "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
     okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
     QPushButton *cancelButton = new QPushButton("取消", this);
-    cancelButton->setStyleSheet("color: black; font-size: 14px;"
+    cancelButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                 "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
     cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
     buttonLayout->setAlignment(Qt::AlignRight);
@@ -211,7 +211,7 @@ public:
 
         setFixedWidth(400);
 
-        setPalette(QPalette(QColor(Qt::white)));
+        setPalette(QPalette(get_color("palette")));
 
         QHBoxLayout *titleLayout = new QHBoxLayout();
         QLabel *titleLabel = new QLabel(title, this);
@@ -247,7 +247,7 @@ public:
         // 添加确定和取消按钮
         QHBoxLayout *buttonLayout = new QHBoxLayout();
         QPushButton *okButton = new QPushButton("确定", this);
-        okButton->setStyleSheet("color: black; font-size: 14px;"
+        okButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                 "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
         okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
 

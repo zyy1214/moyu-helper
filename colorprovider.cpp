@@ -8,7 +8,7 @@ ColorProvider::ColorProvider() {
     register_color("point_positive", "#1770E4", "#31AFFF");
     register_color("point_negative", "#CC0000", "#D00000");
     register_color("gray", "#606060", "#D0D0D0");
-    register_color("palette", "#FFFFFF", "#000000");
+    register_color("palette", "#FFFFFF", "#282828");
 }
 
 void ColorProvider::register_color(QString color_name, QString light_mode_color, QString dark_mode_color) {

@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setPalette(QPalette(QColor(Qt::white)));
+    setPalette(QPalette(get_color("palette")));
     data = new Data();
     load_data(data);
     sync_settings(data);
@@ -79,7 +79,7 @@ public:
         : QDialog(parent), window(window)
     {
         setWindowTitle("修改密码");
-        setPalette(QPalette(QColor(Qt::white)));
+        setPalette(QPalette(get_color("palette")));
         setFixedWidth(320);
         QVBoxLayout *modify_password_layout = new QVBoxLayout(this);
         setLayout(modify_password_layout);
@@ -205,8 +205,8 @@ private:
     QMainWindow *window;
 
     void cancel_button_selection() {
-        accountButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: black; }");
-        overallButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: black; }");
+        accountButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: " + get_color("text_color").name() + "; }");
+        overallButton->setStyleSheet("QPushButton {background-color: transparent; border: none; font-size: 18px; color: " + get_color("text_color").name() + "; }");
     }
     void set_button_selection(int index) {
         cancel_button_selection();
@@ -225,7 +225,7 @@ public:
     FocusDialog(QWidget *parent = nullptr)
         : QDialog(parent) {
 
-        setPalette(QPalette(QColor(Qt::white)));
+        setPalette(QPalette(get_color("palette")));
         QFont font("Microsoft YaHei UI", 12);//字体
 
         setWindowTitle(QString("专注模式"));
@@ -284,11 +284,11 @@ public:
         // 添加确定和取消按钮
         QHBoxLayout *buttonLayout = new QHBoxLayout();
         QPushButton *okButton = new QPushButton("确定", this);
-        okButton->setStyleSheet("color: black; font-size: 14px;"
+        okButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                 "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
         okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         QPushButton *cancelButton = new QPushButton("取消", this);
-        cancelButton->setStyleSheet("color: black; font-size: 14px;"
+        cancelButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                     "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
         cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         buttonLayout->setAlignment(Qt::AlignRight);
@@ -513,7 +513,7 @@ private:
 
 void SettingsDialog::setupUi()
 {
-    setPalette(QPalette(QColor(Qt::white)));
+    setPalette(QPalette(get_color("palette")));
     setFixedSize(500, 300);
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
 
@@ -665,7 +665,7 @@ void MainWindow::on_button_menu_clicked()
     // palette.setColor(QPalette::Window, Qt::white);
     // menu->setPalette(palette);
     menu->setStyleSheet("QMenu { background-color: 0xdddddd; border: none; padding: 0px; }"
-                        "QMenu::item:selected { background-color: rgb(192, 220, 243); }"
+                        "QMenu::item:selected { background-color: " + get_color("selected").name() + "; }"
                         "QMenu::item { padding-top: 8px; padding-bottom: 8px; padding-left: 25px; padding-right: 25px}");
 
     QAction *action_settings = menu->addAction("设置");

@@ -238,7 +238,7 @@ public:
 
         QFont font("Microsoft YaHei UI", 12);//字体
 
-        setPalette(QPalette(QColor(Qt::white)));
+        setPalette(QPalette(get_color("palette")));
 
 
         setWindowTitle(QString("添加模板"));
@@ -290,11 +290,11 @@ public:
         // 添加确定和取消按钮
         QHBoxLayout *buttonLayout = new QHBoxLayout();
         QPushButton *okButton = new QPushButton("确定", this);
-        okButton->setStyleSheet("color: black; font-size: 14px;"
+        okButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                 "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
         okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         QPushButton *cancelButton = new QPushButton("取消", this);
-        cancelButton->setStyleSheet("color: black; font-size: 14px;"
+        cancelButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                     "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
         cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         buttonLayout->setAlignment(Qt::AlignRight);
@@ -361,7 +361,7 @@ public:
     ChangeDialog(ModWindow *window, Mod* x,QWidget *parent = nullptr)
         : window(window), before_mod(x), QDialog(parent) {
 
-        setPalette(QPalette(QColor(Qt::white)));
+        setPalette(QPalette(get_color("palette")));
 
         QFont font("Microsoft YaHei UI", 12);//字体
 
@@ -443,11 +443,11 @@ public:
         // 添加确定和取消按钮
         QHBoxLayout *buttonLayout = new QHBoxLayout();
         QPushButton *okButton = new QPushButton("确定", this);
-        okButton->setStyleSheet("color: black; font-size: 14px;"
+        okButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                 "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
         okButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         QPushButton *cancelButton = new QPushButton("取消", this);
-        cancelButton->setStyleSheet("color: black; font-size: 14px;"
+        cancelButton->setStyleSheet("color: " + get_color("text_color").name() + "; font-size: 14px;"
                                     "padding-left: 25px; padding-right: 25px; padding-top: 6px; padding-bottom: 6px;");
         cancelButton->setSizePolicy(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Maximum);
         buttonLayout->setAlignment(Qt::AlignRight);
