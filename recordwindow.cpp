@@ -152,6 +152,7 @@ public:
         tabWidget = new QTabWidget(this);
         tabWidget->setTabPosition(QTabWidget::North);
         tabWidget->setFont(font);
+        tabWidget->setFixedWidth(400);
 
         QWidget *mod_widget = new QWidget();
 
@@ -170,7 +171,7 @@ public:
                 mods.push_back(mod);
             }
         }
-        for (auto mod : window->data->mods) {
+        for (Mod *mod : window->data->mods) {
             if (!mod->is_deleted()) {
                 comboBox->addItem(mod->get_shortname());
                 mods.push_back(mod);
@@ -251,7 +252,7 @@ public:
 
         optionLayout->setContentsMargins(0, 0, 0, 5);
         textInputLayout->setContentsMargins(0, 5, 0, 5);
-        numberInputLayout->setContentsMargins(0, 5, 0, 5);
+        numberInputLayout->setContentsMargins(0, 5, 0, 50);
 
         direct_layout->addLayout(optionLayout);
         direct_layout->addLayout(textInputLayout);
@@ -277,11 +278,11 @@ public:
                 }
                 comboBox->setCurrentIndex(index);
                 updateInputFields(index);
-                double *inputs = rbm->get_inputs();
+                QString *inputs = rbm->get_inputs();
                 // todo: input_num 理应是 private 的
                 qDebug() << selected_mod->input_num;
                 for (int i = 0; i < selected_mod->input_num; i++) {
-                    variable_inputs[i]->setText(QString::number(inputs[i]));
+                    variable_inputs[i]->setText(inputs[i]);
                 }
             }
         }
@@ -353,10 +354,10 @@ private:
     std::vector<QLineEdit *> variable_inputs;
     Mod *selected_mod;
 
-    double *get_inputs() {
-        double *inputs = new double[variable_inputs.size()];
+    QString *get_inputs() {
+        QString *inputs = new QString[variable_inputs.size()];
         for (int i = 0, len = variable_inputs.size(); i < len; i++) {
-            inputs[i] = variable_inputs[i]->text().toDouble();
+            inputs[i] = variable_inputs[i]->text();
         }
         return inputs;
     }
@@ -383,7 +384,7 @@ private slots:
             QHBoxLayout *rowLayout = new QHBoxLayout();
             QLabel *label = new QLabel(variable + "：");
             QLineEdit *lineEdit = new QLineEdit();
-            lineEdit->setValidator(new QDoubleValidator(lineEdit));
+            // lineEdit->setValidator(new QDoubleValidator(lineEdit));
             connect(lineEdit, &QLineEdit::textChanged, this, &EditRecordDialog::variable_edited);
             label->setFont(font);
             lineEdit->setFont(font);
@@ -397,7 +398,7 @@ private slots:
     }
 
     void variable_edited(const QString &text) {
-        double *inputs = get_inputs();
+        QString *inputs = get_inputs();
         RecordByMod record(selected_mod, inputs, QDate::currentDate());
         preview_result_label->setText((record.get_type() == OBTAIN ? "将获取 " : "将消耗 ")
                                       + point_to_string(record.get_point()) + " 分");

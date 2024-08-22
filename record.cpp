@@ -15,7 +15,7 @@ int Date::get_weekday() const {
     return (d + 2 * m + int(3 * (m + 1) / 5) + y + int(y / 4) - int(y / 100) + int(y / 400)) % 7;
 }
 
-RecordByMod::RecordByMod(Mod *mod, double *inputs, QDate date)
+RecordByMod::RecordByMod(Mod *mod, QString *inputs, QDate date)
     : inputs(inputs), mod(mod){
     set_date(date);
 }
@@ -49,7 +49,7 @@ int RecordByMod::get_point() const {
                 hh=pos+len;
                 continue;
             }
-            a.replace(pos,len,QString::number(inputs[i]));
+            a.replace(pos, len, QString::number(inputs[i].toDouble()));
         }
     }
     return calc(a);
@@ -73,7 +73,7 @@ QString RecordByMod::get_display_name() const {
                 hh=pos+len;
                 continue;
             }
-            a.replace(pos-1,len+2,QString::number(inputs[i]));
+            a.replace(pos-1, len+2, inputs[i]);
         }
     }
     return a;
@@ -82,7 +82,7 @@ QString RecordByMod::to_string() const {
     QString result = mod->get_uuid().toString(QUuid::WithoutBraces);
     for(int i=0;i<mod->input_num;i++) {
         result += "\n";
-        result += QString::number(inputs[i]);
+        result += inputs[i];
     }
     return result;
 }
@@ -92,9 +92,9 @@ void RecordByMod::from_string(std::unordered_map<QString, Mod *> uuid_map, QStri
 
     mod = uuid_map[list[0]];
 
-    inputs = new double[list.size() - 1];
+    inputs = new QString[list.size() - 1];
     for (int i = 1, len = list.size(); i < len; i++) {
-        inputs[i - 1] = list[i].toDouble();
+        inputs[i - 1] = list[i];
     }
     // QString a="";
     // int flag=0;
@@ -127,11 +127,11 @@ Mod* RecordByMod::get_mod(){
 void RecordByMod::set_mod(Mod *mod) {
     this->mod = mod;
 }
-void RecordByMod::set_inputs(double *inputs) {
+void RecordByMod::set_inputs(QString *inputs) {
     this->inputs = inputs;
 }
 
-double *RecordByMod::get_inputs() {
+QString *RecordByMod::get_inputs() {
     return inputs;
 }
 

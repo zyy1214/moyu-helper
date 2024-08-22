@@ -69,9 +69,9 @@ public:
 
 class RecordByMod: public Record {
     Mod *mod;
-    double *inputs;
+    QString *inputs;
 public:
-    RecordByMod(Mod *mod, double *inputs, QDate date);
+    RecordByMod(Mod *mod, QString *inputs, QDate date);
     virtual enum RECORD_CLASS get_class() const {
         return BY_MOD;
     }
@@ -85,8 +85,8 @@ public:
         return true;
     }
     void set_mod(Mod *mod);
-    void set_inputs(double *inputs);
-    double *get_inputs();
+    void set_inputs(QString *inputs);
+    QString *get_inputs();
 };
 
 class RecordDirect: public Record {
