@@ -828,10 +828,19 @@ void ModWindow::change_mod(Mod *before_mod, QString name, Formula *formula, enum
     }
     else
     {
+        std::vector<QString> old_variables = before_mod->variable;
         before_mod->change(name,formula,type,short_name);
         db_modify_mod(data, before_mod);
-        /////////////////////////////  还要更改总积分，要看记录怎么写   /////////////////////////////
-
+        // 模板的变量列表可能已变化，需重建该模板下所有记录的 inputs 数组并写回数据库
+        for (auto &entry : data->records) {
+            for (Record *r : *entry.second) {
+                if (r->get_class() != BY_MOD) continue;
+                RecordByMod *rbm = static_cast<RecordByMod *>(r);
+                if (rbm->get_mod() != before_mod) continue;
+                rbm->remap_inputs(old_variables);
+                db_modify_record(data, rbm);
+            }
+        }
     }
 }
 

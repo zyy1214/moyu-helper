@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "record.h"
 #include "calculate.h"
 
@@ -87,14 +89,21 @@ QString RecordByMod::to_string() const {
     return result;
 }
 void RecordByMod::from_string(std::unordered_map<QString, Mod *> uuid_map, QString str) {
-    std::vector<QString> result;
     QStringList list = str.split('\n');
 
-    mod = uuid_map[list[0]];
+    auto it = uuid_map.find(list[0]);
+    mod = (it != uuid_map.end()) ? it->second : nullptr;
 
-    inputs = new QString[list.size() - 1];
-    for (int i = 1, len = list.size(); i < len; i++) {
-        inputs[i - 1] = list[i];
+    // 存储的变量值数量可能少于模板当前的变量数（旧版本数据），按较大者分配，缺失的补 "0"
+    int stored = list.size() - 1;
+    int needed = mod ? std::max(stored, mod->input_num) : stored;
+    delete[] inputs;
+    inputs = new QString[needed];
+    for (int i = 0; i < stored; i++) {
+        inputs[i] = list[i + 1];
+    }
+    for (int i = stored; i < needed; i++) {
+        inputs[i] = "0";
     }
     // QString a="";
     // int flag=0;
@@ -133,6 +142,22 @@ void RecordByMod::set_inputs(QString *inputs) {
 
 QString *RecordByMod::get_inputs() {
     return inputs;
+}
+
+void RecordByMod::remap_inputs(const std::vector<QString> &old_variables) {
+    if (mod == nullptr) return;
+    QString *new_inputs = new QString[mod->input_num];
+    for (int i = 0; i < mod->input_num; i++) {
+        new_inputs[i] = "0";
+        for (size_t j = 0; j < old_variables.size(); j++) {
+            if (old_variables[j] == mod->variable[i]) {
+                new_inputs[i] = inputs[j];
+                break;
+            }
+        }
+    }
+    delete[] inputs;
+    inputs = new_inputs;
 }
 
 RecordDirect::RecordDirect(QString name, enum RECORD_TYPE type, int point, QDate date): name(name), type(type), point(point) {

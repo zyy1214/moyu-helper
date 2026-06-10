@@ -87,6 +87,8 @@ public:
     void set_mod(Mod *mod);
     void set_inputs(QString *inputs);
     QString *get_inputs();
+    // 模板的变量列表被修改后，按变量名重建 inputs 数组（新变量默认为 "0"）
+    void remap_inputs(const std::vector<QString> &old_variables);
 };
 
 class RecordDirect: public Record {
