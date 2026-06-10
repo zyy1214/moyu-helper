@@ -1,7 +1,9 @@
 #include <QCloseEvent>
 #include <QCoreApplication>
+#include <QDir>
 #include <QFile>
 #include <QJsonDocument>
+#include <QStandardPaths>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
@@ -38,10 +40,20 @@ bool db_kv_inited = false;
 QSqlDatabase db_kv;
 std::unordered_map<QString, QString> kv_cache;
 
+// 返回应用可写的数据目录（跨平台），并确保其存在。
+static QString app_data_dir() {
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    if (dir.isEmpty()) {
+        dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    }
+    QDir().mkpath(dir);
+    return dir;
+}
+
 void init_db_kv() {
     if (!db_kv_inited) {
         db_kv = QSqlDatabase::addDatabase("QSQLITE");
-        db_kv.setDatabaseName("database.db");
+        db_kv.setDatabaseName(app_data_dir() + "/database.db");
         if (!db_kv.open()) {
             qDebug() << "Error: Failed to connect to database:" << db_kv.lastError().text();
             return;
@@ -117,7 +129,7 @@ void load_data(Data *data) {
     username = get_value("username");
     username = username == "" ? "local" : "user-" + username;
     db = QSqlDatabase::addDatabase("QSQLITE", "main");
-    db.setDatabaseName("user_" + get_value("userid") + ".db");
+    db.setDatabaseName(app_data_dir() + "/user_" + get_value("userid") + ".db");
 
     if (!db.open()) {
         qDebug() << "Error: Failed to connect to database:" << db.lastError().text();
@@ -817,6 +829,7 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
             case MODIFY_MOD: {
                 if (uuid_map.find(mod_uuid) != uuid_map.end()) {
                     Mod *mod = uuid_map[mod_uuid];
+                    std::vector<QString> old_variables = mod->variable;
                     mod->set_short_name(name);
                     mod->set_name(content);
                     mod->set_name_merge(name_merge);
@@ -826,6 +839,16 @@ void merge_mod_operations(Data *data, QJsonArray &jsonArray) {
                     mod->set_formula_text(formula);
                     // emit data->mod_modified(mod);
                     // emit data->label_modified(mod);
+                    // 模板的变量列表可能已变化，需重建该模板下所有记录的 inputs 数组并写回数据库
+                    for (auto &entry : data->records) {
+                        for (Record *r : *entry.second) {
+                            if (r->get_class() != BY_MOD) continue;
+                            RecordByMod *rbm = static_cast<RecordByMod *>(r);
+                            if (rbm->get_mod() != mod) continue;
+                            rbm->remap_inputs(old_variables);
+                            db_modify_record(data, rbm, false);
+                        }
+                    }
                     db_modify_mod(data, mod, false);
                 } else {
                     qDebug() << "Error! Can't find uuid.";

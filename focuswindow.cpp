@@ -7,23 +7,30 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QPainter>
+#ifdef Q_OS_WIN
 #include <Windows.h>
 #include <wrl.h>
 #include <shobjidl.h>
+#endif
 #include <ctime>
+#ifndef Q_OS_WIN
 #include <unistd.h>
+#endif
 #include <cmath>
 
 #include "network.h"
 #include "uitools.h"
 
 
+#ifdef Q_OS_WIN
 HHOOK g_hKeyboardHook = NULL;
 HWND g_hWnd;
 HWND hh1;
+#endif
 QTimer *checkTimer = nullptr; // 定义一个全局的定时器指针
 
 
+#ifdef Q_OS_WIN
 // 钩子过程函数
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
@@ -53,9 +60,11 @@ void bringToFrontAndMaximize() {
     // 显示并最大化窗口
     //ShowWindow(g_hWnd, SW_SHOWMAXIMIZED);
 }
+#endif
 
 // 检查并将窗口移到前台
 void FocusWindow::checkAndBringToFront() {
+#ifdef Q_OS_WIN
     a.close();
     bringToFrontAndMaximize();
     showFullScreen();
@@ -80,6 +89,11 @@ void FocusWindow::checkAndBringToFront() {
             showFullScreen();
         }
     }
+#else
+    // Android/其他平台：操作系统的应用生命周期会处理后台切换；
+    // 仅确保本窗口处于全屏，无法注册全局键盘钩子。
+    showFullScreen();
+#endif
 }
 
 FocusWindow::FocusWindow(bool flag,int time,QWidget *parent)
@@ -96,16 +110,20 @@ FocusWindow::FocusWindow(bool flag,int time,QWidget *parent)
     else
         canclose=1;
 
+#ifdef Q_OS_WIN
     // 获取窗口句柄
     g_hWnd = (HWND)this->winId();
+#endif
 
     // 定时器每100毫秒检查一次窗口位置
     checkTimer = new QTimer(this);
     connect(checkTimer, &QTimer::timeout, this, &FocusWindow::checkAndBringToFront);
     checkTimer->start(2000); // 每2000毫秒检查一次
 
+#ifdef Q_OS_WIN
     // 注册低级别键盘钩子，阻止桌面切换键
     g_hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
+#endif
 
 
     //setStyleSheet("QWidget { background-image: url(:/images/background); }");
@@ -264,8 +282,10 @@ void FocusWindow::paintEvent(QPaintEvent *event) {
 
 FocusWindow::~FocusWindow()
 {
+#ifdef Q_OS_WIN
     // 卸载钩子
     UnhookWindowsHookEx(g_hKeyboardHook);
+#endif
     a.close();
 
     delete ui;
@@ -295,7 +315,9 @@ void FocusWindow::closeEvent(QCloseEvent *event)
     } else {
         a.close();
         delete checkTimer;
+#ifdef Q_OS_WIN
         UnhookWindowsHookEx(g_hKeyboardHook);
+#endif
         event->accept();
     }
 }

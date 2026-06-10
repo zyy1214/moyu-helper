@@ -74,7 +74,18 @@ target_link_libraries(moyu-helper PRIVATE Qt6::Sql)
 target_link_libraries(moyu-helper PRIVATE Qt6::Network)
 target_link_libraries(moyu-helper PRIVATE Qt6::Charts)
 
-target_link_libraries(moyu-helper PRIVATE Shell32.lib Ole32.lib)
+if(WIN32)
+    target_link_libraries(moyu-helper PRIVATE Shell32.lib Ole32.lib)
+endif()
+
+if(ANDROID)
+    set_property(TARGET moyu-helper APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
+                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
+    set_property(TARGET moyu-helper PROPERTY QT_ANDROID_TARGET_SDK_VERSION 34)
+    set_property(TARGET moyu-helper PROPERTY QT_ANDROID_MIN_SDK_VERSION 23)
+    set_property(TARGET moyu-helper PROPERTY QT_ANDROID_VERSION_NAME ${PROJECT_VERSION})
+    set_property(TARGET moyu-helper PROPERTY QT_ANDROID_VERSION_CODE 1)
+endif()
 
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
